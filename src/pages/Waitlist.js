@@ -184,7 +184,7 @@ function Waitlist() {
         .then(res => setMyData(d => ({...d, refs: res.data.count || 0})))
         .catch(() => {});
     }
-  }, []);
+ }, [refCode, emailFromUrl]);
 
   const handleJoin = async () => {
     if (!email.trim()) { setErrorMsg("Please enter your email address."); return; }
