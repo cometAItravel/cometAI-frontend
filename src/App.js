@@ -727,6 +727,7 @@ function App(){
         <Route path="/register" element={<Register/>}/>
         <Route path="/bookings" element={<MyBookings/>}/>
         <Route path="/admin" element={<AdminDashboard/>}/>
+        <Route path="/waitlist" element={<Waitlist/>}/>
       </Routes>
     </Router>
   );
