@@ -96,7 +96,7 @@ function AdminLogin({ onLogin }) {
   };
 
   return (
-    <div className="login-screen">
+    <div style={{minHeight:"100vh",background:"#080a0f",display:"flex",alignItems:"center",justifyContent:"center",padding:"24px",position:"relative"}}>
       <style>{styles}</style>
       <div className="admin-bg"/>
       <div className="login-box">
