@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import BlurText from "./components/BlurText";
 
 const API = "https://cometai-backend.onrender.com";
 
@@ -360,9 +361,22 @@ export default function LandingPage() {
                 <span style={{ fontSize: 11, color: "#a5b4fc", letterSpacing: "2px", textTransform: "uppercase", fontFamily: "'Space Mono',monospace" }}>AI-Powered Travel</span>
               </div>
 
-              <h1 className="hero-title hologram" style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(40px,6vw,72px)", fontWeight: 800, lineHeight: 1.05, marginBottom: 14, letterSpacing: "-1.5px" }}>
-                Travel Beyond<br />The Ordinary
-              </h1>
+              <div style={{ marginBottom: 14 }}>
+  <BlurText
+    text="Travel Beyond"
+    delay={120}
+    animateBy="words"
+    direction="top"
+    className="hero-title hologram"
+  />
+  <BlurText
+    text="The Ordinary"
+    delay={180}
+    animateBy="words"
+    direction="top"
+    className="hero-title hologram"
+  />
+</div>
 
               <div style={{ fontFamily: "'Space Mono',monospace", fontSize: isMobile ? 13 : 15, color: "#6366f1", marginBottom: 18, minHeight: 24 }}>
                 {typed}{showCursor ? "|" : " "}
