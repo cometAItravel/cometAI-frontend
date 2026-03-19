@@ -7,7 +7,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [typed, setTyped] = useState("");
   const [showCursor, setShowCursor] = useState(true);
-  const [scrollY, setScrollY] = useState(0);
+  const [, setScrollY] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const canvasRef = useRef(null);
   const animRef = useRef(null);
