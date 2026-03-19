@@ -12,7 +12,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [waking, setWaking] = useState(true);
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
-  const [focused, setFocused] = useState("");
+  const [, setFocused] = useState("");
   const [trail, setTrail] = useState([]);
   const trailId = useRef(0);
 

@@ -6,7 +6,7 @@ const API = "https://cometai-backend.onrender.com";
 export default function LandingPage() {
   const navigate = useNavigate();
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
-  const [scrollY, setScrollY] = useState(0);
+  const [, setScrollY] = useState(0);
   const [cursorTrail, setCursorTrail] = useState([]);
   const [typed, setTyped] = useState("");
   const [showCursor, setShowCursor] = useState(true);
