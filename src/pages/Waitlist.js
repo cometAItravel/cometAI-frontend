@@ -81,10 +81,13 @@ const styles = `
   .sbtn-wa { background: #25D366; color: white; }
   .sbtn-ig { background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color: white; }
   .sbtn-tw { background: #1DA1F2; color: white; }
-  .sbtn-cp { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1) !important; color: rgba(165,180,252,0.7); }
+  .sbtn-cp { background: rgba(255,255,255,0.07); color: rgba(165,180,252,0.7); border: 1px solid rgba(255,255,255,0.1) !important; }
+  .btn-logout-wl { background: transparent; border: 1px solid rgba(255,255,255,0.08); color: rgba(165,180,252,0.3); padding: 6px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 11px; cursor: pointer; margin-top: 12px; transition: all 0.2s; }
+  .btn-logout-wl:hover { color: #f87171; border-color: rgba(239,68,68,0.3); }
 
   .lb-wrap { width: 100%; max-width: 480px; margin-top: 24px; animation: fadeUp 0.6s ease 0.5s both; }
   .lb-heading { font-family: 'Orbitron', sans-serif; font-size: 11px; color: rgba(165,180,252,0.35); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  .lb-note { font-size: 11px; color: rgba(165,180,252,0.25); margin-bottom: 8px; }
   .lb-list { background: rgba(15,17,26,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; overflow: hidden; }
   .lb-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .lb-item:last-child { border-bottom: none; }
@@ -130,6 +133,7 @@ function ShootingStars() {
 function maskEmail(email) {
   if (!email) return "***@***.com";
   const parts = email.split("@");
+  if (parts.length < 2) return "***";
   return parts[0].slice(0,2) + "***@" + parts[1];
 }
 
@@ -138,40 +142,36 @@ function Waitlist() {
   const [status, setStatus] = useState("idle"); // idle | loading | success
   const [errorMsg, setErrorMsg] = useState("");
   const [count, setCount] = useState(0);
-  const [myData, setMyData] = useState(null); // { email, refCode, refs }
+  const [myData, setMyData] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  useEffect(() => {
-    // get URL params safely
-    const params = new URLSearchParams(window.location.search || "");
-    const urlRef = params.get("ref") || "";
-    const urlEmail = params.get("email") || "";
+  // read URL params ONCE on mount — only used for referral tracking, NOT for restoring session
+  const [incomingRef] = useState(() => {
+    try {
+      const p = new URLSearchParams(window.location.search || "");
+      return p.get("ref") || "";
+    } catch { return ""; }
+  });
 
-    // fetch count
+  useEffect(() => {
+    // fetch count and leaderboard always
     axios.get(`${API}/waitlist/count`).then(r => setCount(r.data.count || 0)).catch(() => setCount(47));
-    // fetch leaderboard
     axios.get(`${API}/waitlist/leaderboard`).then(r => setLeaderboard(r.data || [])).catch(() => {});
 
-    // check localStorage first
+    // ONLY restore session from localStorage — never from URL params
+    // This means a friend opening your link ALWAYS sees the join form
     const savedEmail = localStorage.getItem("waitlist_email") || "";
     const savedCode = localStorage.getItem("waitlist_code") || "";
     if (savedEmail && savedCode) {
       setMyData({ email: savedEmail, refCode: savedCode, refs: 0 });
       setStatus("success");
-      axios.get(`${API}/waitlist/my-refs/${savedCode}`).then(r => setMyData(d => d ? {...d, refs: r.data.count||0} : d)).catch(() => {});
-      return;
+      axios.get(`${API}/waitlist/my-refs/${savedCode}`)
+        .then(r => setMyData(d => d ? {...d, refs: r.data.count || 0} : d))
+        .catch(() => {});
     }
-
-    // if coming from email link
-    if (urlRef && urlEmail) {
-      localStorage.setItem("waitlist_email", urlEmail);
-      localStorage.setItem("waitlist_code", urlRef);
-      setMyData({ email: urlEmail, refCode: urlRef, refs: 0 });
-      setStatus("success");
-      axios.get(`${API}/waitlist/my-refs/${urlRef}`).then(r => setMyData(d => d ? {...d, refs: r.data.count||0} : d)).catch(() => {});
-    }
+    // If URL has ref but no localStorage → friend is visiting → show join form (do nothing)
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleJoin = async () => {
@@ -180,9 +180,10 @@ function Waitlist() {
     setStatus("loading");
     setErrorMsg("");
     try {
-      const params = new URLSearchParams(window.location.search || "");
-      const urlRef = params.get("ref") || "";
-      const res = await axios.post(`${API}/waitlist`, { email: email.trim().toLowerCase(), ref: urlRef || null });
+      const res = await axios.post(`${API}/waitlist`, {
+        email: email.trim().toLowerCase(),
+        ref: incomingRef || null
+      });
       const data = res.data;
       localStorage.setItem("waitlist_email", email.trim().toLowerCase());
       localStorage.setItem("waitlist_code", data.refCode);
@@ -209,24 +210,33 @@ function Waitlist() {
     }
   };
 
-  const refLink = myData ? `${window.location.origin}/waitlist?ref=${myData.refCode}&email=${encodeURIComponent(myData.email)}` : "";
+  // referral link — only uses ref code, NOT email (so friends see join form)
+  const refLink = myData ? `${window.location.origin}/waitlist?ref=${myData.refCode}` : "";
 
   const copyRefLink = () => { navigator.clipboard.writeText(refLink); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   const copyLink2 = () => { navigator.clipboard.writeText(refLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); };
 
   const shareWA = () => {
-    const msg = encodeURIComponent(`✈️ I joined CometAI — India's AI-powered flight booking!\n\n🎁 Use my link and get ₹100 off your first flight above ₹5,000!\n\n👉 ${refLink}`);
+    const msg = encodeURIComponent(`✈️ I joined CometAI — India's AI-powered flight booking!\n\n🎁 Join using my link and get ₹100 off your first flight booking above ₹5,000!\n\n👉 ${refLink}`);
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
 
   const shareIG = () => {
-    navigator.clipboard.writeText(`✈️ Join CometAI and get ₹100 off your first flight! ${refLink}`);
-    alert("Caption copied to clipboard!\n\nOpen Instagram → Create a Story or Post → Paste the caption.");
+    navigator.clipboard.writeText(`✈️ Join CometAI waitlist and get ₹100 off your first flight booking!\n\n👉 ${refLink}`);
+    alert("Caption copied!\n\nNow open Instagram → create a Story or Post → paste the caption.");
   };
 
   const shareTW = () => {
-    const msg = encodeURIComponent(`🚀 Just joined @CometAI — book flights via AI or WhatsApp, zero fees!\n\nJoin with my link & get ₹100 off your first booking:\n${refLink}`);
+    const msg = encodeURIComponent(`🚀 Just joined CometAI — book flights via AI or WhatsApp, zero fees!\n\nJoin with my link & get ₹100 off your first booking 👇\n${refLink}`);
     window.open(`https://twitter.com/intent/tweet?text=${msg}`, "_blank");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("waitlist_email");
+    localStorage.removeItem("waitlist_code");
+    setMyData(null);
+    setStatus("idle");
+    setEmail("");
   };
 
   const emoji = (i) => ["🥇","🥈","🥉"][i] || `#${i+1}`;
@@ -254,7 +264,6 @@ function Waitlist() {
 
         {status !== "success" ? (
           <>
-            {/* REFERRAL INFO — shown before joining */}
             <div className="ref-preview">
               <div className="ref-preview-title">🎁 Join & Earn Launch Rewards</div>
               <div className="ref-step">
@@ -263,13 +272,13 @@ function Waitlist() {
               </div>
               <div className="ref-step">
                 <span className="ref-step-icon">2️⃣</span>
-                <div className="ref-step-text">Share your link on <strong>WhatsApp, Instagram or Twitter</strong> with friends</div>
+                <div className="ref-step-text">Share your link on <strong>WhatsApp, Instagram or Twitter</strong> with friends and family</div>
               </div>
               <div className="ref-step">
                 <span className="ref-step-icon">3️⃣</span>
-                <div className="ref-step-text">When your friend books a flight above <strong>₹5,000</strong> — <strong>you get ₹150 off</strong> your next booking + <strong>friend gets ₹100 off</strong> their first booking!</div>
+                <div className="ref-step-text">When your friend books any flight above <strong>₹5,000</strong> — <strong>you get ₹150 off</strong> your next booking + <strong>your friend gets ₹100 off</strong> their first booking! Every referral counts — no limit!</div>
               </div>
-              <div className="ref-preview-note">📧 Your referral link will be emailed to you right after joining</div>
+              <div className="ref-preview-note">📧 Your personal referral link will be emailed right after you join</div>
             </div>
 
             <div className="counter">
@@ -294,7 +303,7 @@ function Waitlist() {
                   {status === "loading" ? "Joining..." : "Join & Get Link →"}
                 </button>
               </div>
-              <div className="hint">🔒 No spam. We only email you when CometAI launches.</div>
+              <div className="hint">🔒 No spam ever. We only email you when CometAI launches.</div>
             </div>
           </>
         ) : (
@@ -302,23 +311,23 @@ function Waitlist() {
             <div className="success-box">
               <div className="success-icon">🎉</div>
               <div className="success-title">You're on the list!</div>
-              <div className="success-sub">Your referral link was sent to your email. Share it to earn rewards!</div>
+              <div className="success-sub">Your referral link was sent to your email. Share it with everyone to earn ₹150 per booking!</div>
             </div>
 
             <div className="ref-card">
               <div className="ref-card-title">✦ Your Referral Rewards</div>
               <div className="ref-card-desc">
-                When a friend books a flight above ₹5,000 using your link — you both get rewarded at launch!
+                Share your link — <strong>every person</strong> who joins using your link and books a flight above ₹5,000 earns you ₹150. No limit on how many friends you can refer!
               </div>
 
               <div className="rewards">
                 <div className="reward">
                   <div className="reward-amt">₹150</div>
-                  <div className="reward-lbl">You get per referral booking</div>
+                  <div className="reward-lbl">You get per referral (no limit!)</div>
                 </div>
                 <div className="reward">
                   <div className="reward-amt">₹100</div>
-                  <div className="reward-lbl">Friend gets on first booking</div>
+                  <div className="reward-lbl">Your friend gets on first booking</div>
                 </div>
               </div>
 
@@ -343,17 +352,18 @@ function Waitlist() {
                 <button className="sbtn sbtn-wa" onClick={shareWA}>📱 WhatsApp</button>
                 <button className="sbtn sbtn-ig" onClick={shareIG}>📸 Instagram</button>
                 <button className="sbtn sbtn-tw" onClick={shareTW}>🐦 Twitter</button>
-                <button className="sbtn sbtn-cp" onClick={copyLink2} style={{border:"1px solid rgba(255,255,255,0.1)"}}>
-                  {linkCopied?"✓ Copied!":"🔗 Copy link"}
-                </button>
+                <button className="sbtn sbtn-cp" onClick={copyLink2}>{linkCopied?"✓ Copied!":"🔗 Copy link"}</button>
               </div>
             </div>
+
+            <button className="btn-logout-wl" onClick={handleLogout}>Not you? Switch account</button>
           </div>
         )}
 
         {leaderboard.length > 0 && (
           <div className="lb-wrap">
             <div className="lb-heading">🏆 Top Referrers</div>
+            <div className="lb-note">Everyone earns ₹150 per referral — this is just for fun!</div>
             <div className="lb-list">
               {leaderboard.slice(0,5).map((item,i) => (
                 <div className="lb-item" key={i}>
