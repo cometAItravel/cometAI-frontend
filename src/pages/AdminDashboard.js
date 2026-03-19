@@ -11,18 +11,6 @@ const styles = `
   body { background: #080a0f; color: #e2e8f0; font-family: 'DM Sans', sans-serif; min-height: 100vh; }
   .admin-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: #080a0f; background-image: linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px); background-size: 40px 40px; }
   .admin-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 60%); }
-  .login-screen { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .login-box { background: rgba(15,17,26,0.95); border: 1px solid rgba(99,102,241,0.2); border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 400px; box-shadow: 0 0 0 1px rgba(99,102,241,0.05), 0 32px 80px rgba(0,0,0,0.6); }
-  .login-eyebrow { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #6366f1; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
-  .login-eyebrow::before { content: ''; width: 20px; height: 1px; background: #6366f1; }
-  .login-title { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; letter-spacing: -0.5px; }
-  .login-sub { font-size: 13px; color: #64748b; margin-bottom: 32px; }
-  .login-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 13px 16px; color: #f8fafc; font-family: 'Space Mono', monospace; font-size: 14px; outline: none; transition: all 0.2s; margin-bottom: 16px; letter-spacing: 2px; }
-  .login-input:focus { border-color: rgba(99,102,241,0.5); background: rgba(99,102,241,0.05); }
-  .login-input::placeholder { color: #334155; letter-spacing: 0; font-family: 'DM Sans', sans-serif; }
-  .login-error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; padding: 10px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 16px; }
-  .btn-login-admin { width: 100%; padding: 13px; background: #6366f1; border: none; border-radius: 10px; color: white; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; }
-  .btn-login-admin:hover { background: #5558e3; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,0.3); }
   .dashboard { position: relative; z-index: 1; min-height: 100vh; }
   .topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(8,10,15,0.8); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; }
   .topbar-left { display: flex; align-items: center; gap: 16px; }
@@ -96,16 +84,16 @@ function AdminLogin({ onLogin }) {
   };
 
   return (
-    <div style={{minHeight:"100vh",background:"#080a0f",display:"flex",alignItems:"center",justifyContent:"center",padding:"24px",position:"relative"}}>
+    <div style={{minHeight:"100vh", background:"#080a0f", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px"}}>
       <style>{styles}</style>
       <div className="admin-bg"/>
-      <div className="login-box">
-        <div className="login-eyebrow">Admin Access</div>
-        <div className="login-title">CometAI Control</div>
-        <div className="login-sub">Restricted area. Authorized personnel only.</div>
-        {error && <div className="login-error">⚠ {error}</div>}
+      <div style={{background:"rgba(15,17,26,0.95)", border:"1px solid rgba(99,102,241,0.4)", borderRadius:"16px", padding:"48px 40px", width:"100%", maxWidth:"400px", position:"relative", zIndex:1}}>
+        <div style={{color:"#6366f1", fontSize:"11px", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"24px"}}>— Admin Access</div>
+        <div style={{fontFamily:"'Space Mono',monospace", color:"#f8fafc", fontSize:"22px", fontWeight:"700", marginBottom:"8px"}}>CometAI Control</div>
+        <div style={{color:"#64748b", fontSize:"13px", marginBottom:"32px"}}>Restricted area. Authorized personnel only.</div>
+        {error && <div style={{background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.2)", color:"#f87171", padding:"10px 14px", borderRadius:"8px", fontSize:"12px", marginBottom:"16px"}}>⚠ {error}</div>}
         <input
-          className="login-input"
+          style={{width:"100%", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:"10px", padding:"13px 16px", color:"#f8fafc", fontSize:"14px", outline:"none", marginBottom:"16px", boxSizing:"border-box", fontFamily:"monospace", letterSpacing:"2px"}}
           type="password"
           placeholder="Enter admin password"
           value={password}
@@ -113,7 +101,10 @@ function AdminLogin({ onLogin }) {
           onKeyPress={e => { if (e.key === "Enter") handleLogin(); }}
           autoFocus
         />
-        <button className="btn-login-admin" onClick={handleLogin}>Access Dashboard →</button>
+        <button
+          style={{width:"100%", padding:"13px", background:"#6366f1", border:"none", borderRadius:"10px", color:"white", fontSize:"14px", fontWeight:"600", cursor:"pointer", fontFamily:"'DM Sans',sans-serif"}}
+          onClick={handleLogin}
+        >Access Dashboard →</button>
       </div>
     </div>
   );
@@ -223,7 +214,7 @@ function AdminDashboard() {
                     <tr key={b.id}>
                       <td style={{fontFamily:"Space Mono",fontSize:"11px",color:"#475569"}}>#{b.id}</td>
                       <td className="td-highlight">{b.passenger_name}</td>
-                      <td><div className="td-route"><span style={{color:"#e2e8f0",fontWeight:"500"}}>{b.from_city}</span><span style={{color:"#475569"}}>→</span><span style={{color:"#e2e8f0",fontWeight:"500"}}>{b.to_city}</span></div></td>
+                      <td><div className="td-route"><span style={{color:"#e2e8f0",fontWeight:"500"}}>{b.from_city}</span><span style={{color:"#475569",margin:"0 4px"}}>→</span><span style={{color:"#e2e8f0",fontWeight:"500"}}>{b.to_city}</span></div></td>
                       <td>{formatDate(b.departure_time)} {formatTime(b.departure_time)}</td>
                       <td className="td-price">₹{b.price?.toLocaleString()}</td>
                       <td><span className="td-badge badge-confirmed">✓ Confirmed</span></td>
