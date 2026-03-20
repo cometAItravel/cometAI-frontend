@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 const API = "https://cometai-backend.onrender.com";
 
@@ -429,15 +429,57 @@ export default function LandingPage() {
               </div>
 
               <div style={{ marginBottom: 14 }}>
-  <BlurText
-    text="Travel Beyond The Ordinary"
-    delay={80}
-    animateBy="words"
-    direction="top"
-    className="hero-title hologram"
-    onAnimationComplete={() => console.log("Hero animation done")}
-  />
+  <div style={{ marginBottom: 20 }}>
+
+  <div className="hero-title" style={{ marginBottom: 20 }}>
+  {"Travel Like Never Before".split(" ").map((word, i) => (
+    <motion.span
+      key={i}
+      initial={{ opacity: 0, y: 60, filter: "blur(12px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      transition={{
+        delay: i * 0.2,
+        duration: 0.8,
+        ease: "easeOut"
+      }}
+      style={{ display: "inline-block", marginRight: 10 }}
+    >
+      {word}
+    </motion.span>
+  ))}
 </div>
+
+</div>
+
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(48px, 7vw, 96px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -2px;
+
+  background: linear-gradient(
+    90deg,
+    #e0e7ff,
+    #a5b4fc,
+    #c084fc,
+    #818cf8,
+    #38bdf8
+  );
+  background-size: 300% auto;
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  animation: shimmerText 6s linear infinite, glowPulse 3s ease-in-out infinite;
+  text-shadow: 0 0 40px rgba(99,102,241,0.3);
+}
+
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 30px rgba(99,102,241,0.2); }
+  50% { text-shadow: 0 0 60px rgba(139,92,246,0.5); }
+}
 
               <div style={{ fontFamily: "'Space Mono',monospace", fontSize: isMobile ? 13 : 15, color: "#6366f1", marginBottom: 18, minHeight: 24 }}>
                 {typed}{showCursor ? "|" : " "}
