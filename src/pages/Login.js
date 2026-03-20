@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const API = "https://cometai-backend.onrender.com";
 
@@ -11,10 +12,9 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [waking, setWaking] = useState(true);
-  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
-  const [, setFocused] = useState("");
-  const [trail, setTrail] = useState([]);
-  const trailId = useRef(0);
+  const [scrollY, setScrollY] = useState(0);
+  const canvasRef = useRef(null);
+  const animRef = useRef(null);
 
   useEffect(() => {
     fetch(`${API}/test`).then(() => setWaking(false)).catch(() => setWaking(false));
@@ -22,15 +22,62 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    const onMove = (e) => {
-      setMouse({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight });
-      const id = ++trailId.current;
-      setTrail(p => [...p.slice(-12), { id, x: e.clientX, y: e.clientY }]);
-      setTimeout(() => setTrail(p => p.filter(t => t.id !== id)), 500);
-    };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const themeIndex = scrollY < 300 ? 0 : 1;
+  const themes = [
+    { bg:'linear-gradient(135deg,#f8f6ff 0%,#f0ebff 30%,#e8f4ff 60%,#f5f8ff 100%)', accent:'#6d28d9', accent2:'#8b5cf6', text:'#1e1033', sub:'#4c1d95', card:'rgba(255,255,255,0.85)', cardBorder:'rgba(109,40,217,0.15)' },
+    { bg:'linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 30%,#bae6fd 60%,#f0f9ff 100%)', accent:'#0284c7', accent2:'#0ea5e9', text:'#0c4a6e', sub:'#075985', card:'rgba(255,255,255,0.85)', cardBorder:'rgba(2,132,199,0.15)' },
+  ];
+  const theme = themes[themeIndex];
+
+  useEffect(() => {
+    const cv = canvasRef.current; if (!cv) return;
+    const ctx = cv.getContext("2d");
+    cv.width = window.innerWidth; cv.height = window.innerHeight;
+    const particles = Array.from({length:120},()=>({
+      x:Math.random()*cv.width, y:Math.random()*cv.height,
+      r:Math.random()*2.5+0.4, op:Math.random()*.4+.1,
+      vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+      tw:Math.random()*Math.PI*2, ts:Math.random()*.013+.003,
+      hue:Math.floor(Math.random()*60)+200,
+    }));
+    const meteors=[]; let mt=0;
+    const spawn=()=>meteors.push({x:Math.random()*cv.width*.7,y:Math.random()*cv.height*.4,len:70+Math.random()*120,spd:5+Math.random()*5,ang:Math.PI/6+Math.random()*.3,life:0,max:28+Math.random()*16});
+    const draw=()=>{
+      ctx.clearRect(0,0,cv.width,cv.height);
+      particles.forEach(p=>{
+        p.tw+=p.ts; p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0)p.x=cv.width; if(p.x>cv.width)p.x=0;
+        if(p.y<0)p.y=cv.height; if(p.y>cv.height)p.y=0;
+        const op=p.op*(0.5+0.5*Math.sin(p.tw));
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`hsla(${p.hue},75%,60%,${op})`; ctx.fill();
+      });
+      mt++; if(mt>100+Math.random()*60){spawn();mt=0;}
+      meteors.forEach((m,i)=>{
+        m.life++;
+        const op=Math.sin((m.life/m.max)*Math.PI)*.5;
+        const tx=Math.cos(m.ang)*m.len; const ty=Math.sin(m.ang)*m.len;
+        const g=ctx.createLinearGradient(m.x,m.y,m.x-tx,m.y-ty);
+        g.addColorStop(0,`rgba(100,100,255,${op})`);
+        g.addColorStop(.4,`rgba(150,120,255,${op*.6})`);
+        g.addColorStop(1,"transparent");
+        ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(m.x-tx,m.y-ty);
+        ctx.strokeStyle=g;ctx.lineWidth=1.3;ctx.stroke();
+        m.x+=Math.cos(m.ang)*m.spd; m.y+=Math.sin(m.ang)*m.spd;
+        if(m.life>=m.max)meteors.splice(i,1);
+      });
+      animRef.current=requestAnimationFrame(draw);
+    };
+    draw();
+    const r=()=>{cv.width=window.innerWidth;cv.height=window.innerHeight;};
+    window.addEventListener("resize",r);
+    return()=>{cancelAnimationFrame(animRef.current);window.removeEventListener("resize",r);};
+  },[]);
 
   const handleLogin = async () => {
     if (!email || !password) { setError("Please fill all fields"); return; }
@@ -45,104 +92,91 @@ export default function Login() {
     setLoading(false);
   };
 
-  const tiltStyle = {
-    transform: `perspective(1200px) rotateX(${(mouse.y - 0.5) * -10}deg) rotateY(${(mouse.x - 0.5) * 10}deg)`,
-    transition: "transform 0.2s ease"
-  };
-
   return (
-    <div style={{ minHeight: "100vh", background: "#00000a", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, position: "relative", overflow: "hidden", cursor: "none", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight:"100vh", overflowX:"hidden", fontFamily:"'DM Sans',sans-serif", position:"relative", transition:"background 1.6s ease", background:theme.bg, display:"flex", flexDirection:"column" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
-        *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-        @keyframes orbitLogin { from{transform:rotate(0deg) translateX(180px) rotate(0deg);} to{transform:rotate(360deg) translateX(180px) rotate(-360deg);} }
-        @keyframes orbitLogin2 { from{transform:rotate(120deg) translateX(220px) rotate(-120deg);} to{transform:rotate(480deg) translateX(220px) rotate(-480deg);} }
-        @keyframes orbitLogin3 { from{transform:rotate(240deg) translateX(160px) rotate(-240deg);} to{transform:rotate(600deg) translateX(160px) rotate(-600deg);} }
-        @keyframes pulseCore { 0%,100%{box-shadow:0 0 40px rgba(99,102,241,0.4),0 0 80px rgba(99,102,241,0.15);} 50%{box-shadow:0 0 80px rgba(99,102,241,0.7),0 0 160px rgba(99,102,241,0.3);} }
-        @keyframes shimmer { 0%{background-position:200% center;} 100%{background-position:-200% center;} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
-        @keyframes trailFade { 0%{opacity:0.7;} 100%{opacity:0;transform:scale(0.2);} }
-        @keyframes borderGlow { 0%,100%{border-color:rgba(99,102,241,0.3);} 50%{border-color:rgba(99,102,241,0.7);box-shadow:0 0 20px rgba(99,102,241,0.3);} }
-        .input-field { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(99,102,241,0.2); border-radius:12px; padding:14px 18px; color:#e0e7ff; font-family:'DM Sans',sans-serif; font-size:15px; outline:none; transition:all 0.3s; }
-        .input-field:focus { border-color:rgba(99,102,241,0.6); background:rgba(99,102,241,0.06); box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
-        .input-field::placeholder { color:rgba(165,180,252,0.25); }
-        .btn-primary { width:100%; padding:15px; background:linear-gradient(135deg,#6366f1,#8b5cf6); border:none; border-radius:12px; color:white; font-family:'DM Sans',sans-serif; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden; }
-        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(99,102,241,0.5); }
-        .btn-primary::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent); }
-        .grain { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.04; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); background-size:200px; }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        @keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(2%,-3%) scale(1.05);}66%{transform:translate(-2%,2%) scale(0.97);}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes scanLine{0%{top:-1px;opacity:0;}5%{opacity:.3;}95%{opacity:.3;}100%{top:100%;opacity:0;}}
+        .input-field{width:100%;border-radius:12px;padding:14px 18px;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:all .3s;border:1.5px solid;}
+        .btn-main{border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;position:relative;overflow:hidden;transition:all .3s;}
+        .btn-main::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent);}
+        .btn-main:hover{transform:translateY(-2px);}
+        .scan{position:fixed;left:0;width:100%;height:1px;pointer-events:none;z-index:2;animation:scanLine 14s linear infinite;}
       `}</style>
 
-      <div className="grain"/>
+      <canvas ref={canvasRef} style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none',opacity:.55}}/>
+      <motion.div animate={{background:`radial-gradient(ellipse at 20% 40%,${theme.accent}18 0%,transparent 55%)`}} transition={{duration:1.8}}
+        style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none',animation:'floatBlob 12s ease-in-out infinite'}}/>
+      <motion.div animate={{background:`radial-gradient(ellipse at 80% 20%,${theme.accent2}14 0%,transparent 50%)`}} transition={{duration:1.8}}
+        style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none',animation:'floatBlob 16s ease-in-out infinite reverse'}}/>
+      <motion.div animate={{backgroundImage:`linear-gradient(${theme.accent}07 1px,transparent 1px),linear-gradient(90deg,${theme.accent}07 1px,transparent 1px)`}} transition={{duration:1.8}}
+        style={{position:'fixed',inset:0,backgroundSize:'72px 72px',maskImage:'radial-gradient(ellipse 80% 70% at 50% 40%,black 20%,transparent 80%)',zIndex:0,pointerEvents:'none'}}/>
+      <div className="scan" style={{background:`linear-gradient(90deg,transparent,${theme.accent}18,transparent)`}}/>
 
-      {/* CURSOR */}
-      {trail.map((t,i) => (
-        <div key={t.id} style={{position:"fixed",left:t.x,top:t.y,width:6,height:6,borderRadius:"50%",pointerEvents:"none",zIndex:9999,background:`rgba(99,102,241,${0.7-i*0.05})`,transform:"translate(-50%,-50%)",animation:"trailFade 0.5s ease forwards"}}/>
-      ))}
-      <div style={{position:"fixed",left:mouse.x*window.innerWidth,top:mouse.y*window.innerHeight,width:18,height:18,borderRadius:"50%",pointerEvents:"none",zIndex:9999,border:"2px solid rgba(99,102,241,0.8)",transform:"translate(-50%,-50%)",boxShadow:"0 0 16px rgba(99,102,241,0.5)"}}/>
-
-      {/* BG */}
-      <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse at 20% 50%,rgba(60,20,140,0.3) 0%,transparent 50%),radial-gradient(ellipse at 80% 30%,rgba(20,40,160,0.2) 0%,transparent 50%),#00000a",zIndex:0}}/>
-      <div style={{position:"fixed",inset:0,backgroundImage:"linear-gradient(rgba(99,102,241,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,0.04) 1px,transparent 1px)",backgroundSize:"60px 60px",zIndex:0,maskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent)"}}/>
-      <div style={{position:"fixed",inset:0,background:`radial-gradient(ellipse 600px 500px at ${mouse.x*100}% ${mouse.y*100}%,rgba(99,102,241,0.07) 0%,transparent 70%)`,zIndex:0,pointerEvents:"none"}}/>
-
-      {/* WAKE UP BANNER */}
       {waking && (
-        <div style={{position:"fixed",top:0,left:0,right:0,zIndex:200,background:"linear-gradient(135deg,rgba(251,191,36,0.15),rgba(245,158,11,0.1))",borderBottom:"1px solid rgba(251,191,36,0.3)",padding:"10px 24px",textAlign:"center",backdropFilter:"blur(10px)"}}>
-          <span style={{fontSize:12,color:"#fcd34d",fontFamily:"'Space Mono',monospace",letterSpacing:"1px"}}>⚡ Waking up servers... first load may take 30s</span>
+        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:'rgba(251,191,36,.12)',borderBottom:'1px solid rgba(251,191,36,.3)',padding:'10px 24px',textAlign:'center',backdropFilter:'blur(10px)'}}>
+          <span style={{fontSize:12,color:'#92400e',fontFamily:"'Space Mono',monospace",letterSpacing:'1px'}}>⚡ Waking up servers... first load may take 30s</span>
         </div>
       )}
 
-      {/* 3D ORBIT LOGO */}
-      <div style={{position:"fixed",right:"5%",top:"50%",transform:"translateY(-50%)",width:300,height:300,zIndex:1,display:"flex",alignItems:"center",justifyContent:"center",opacity:0.5}}>
-        <div style={{position:"absolute",width:80,height:80,borderRadius:"50%",background:"radial-gradient(circle at 35% 35%,#4f33aa,#1a0a60)",boxShadow:"0 0 60px rgba(99,102,241,0.5)",animation:"pulseCore 3s ease infinite",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>☄</div>
-        {[{a:"orbitLogin",d:"6s",s:18,c:"#818cf8"},{a:"orbitLogin2",d:"9s",s:14,c:"#c084fc"},{a:"orbitLogin3",d:"7s",s:10,c:"#38bdf8"}].map((o,i)=>(
-          <div key={i} style={{position:"absolute",width:o.s,height:o.s,borderRadius:"50%",background:o.c,boxShadow:`0 0 16px ${o.c}`,animation:`${o.a} ${o.d} linear infinite`}}/>
-        ))}
-        {[180,220,160].map((r,i)=>(
-          <div key={i} style={{position:"absolute",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid rgba(99,102,241,${0.1-i*0.02})`}}/>
-        ))}
-      </div>
-
-      {/* MAIN CARD */}
-      <div style={{...tiltStyle,position:"relative",zIndex:10,width:"100%",maxWidth:440,animation:"fadeUp 0.7s ease both"}}>
-        <div style={{
-          background:"rgba(8,8,24,0.95)",border:"1px solid rgba(99,102,241,0.2)",
-          borderRadius:24,padding:"48px 40px",backdropFilter:"blur(30px)",
-          boxShadow:"0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(99,102,241,0.05)"
-        }}>
-          {/* top accent */}
-          <div style={{position:"absolute",top:0,left:"20%",right:"20%",height:1,background:"linear-gradient(90deg,transparent,rgba(99,102,241,0.6),rgba(192,132,252,0.6),transparent)"}}/>
-
-          <div style={{textAlign:"center",marginBottom:36}}>
-            <div style={{width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,margin:"0 auto 16px",boxShadow:"0 8px 24px rgba(99,102,241,0.4)"}}>☄</div>
-            <h1 style={{fontFamily:"'Syne',sans-serif",fontSize:26,fontWeight:800,color:"#f8fafc",marginBottom:6,letterSpacing:"-0.5px"}}>Welcome back</h1>
-            <p style={{fontSize:13,color:"rgba(165,180,252,0.45)"}}>Sign in to continue your journey</p>
+      {/* NAV */}
+      <motion.nav animate={{background:'rgba(255,255,255,0.8)',borderBottomColor:`${theme.accent}15`}} transition={{duration:1.6}}
+        style={{position:'fixed',top:0,left:0,right:0,zIndex:100,backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)',borderBottom:'1px solid',boxShadow:`0 1px 20px ${theme.accent}10`}}>
+        <div style={{maxWidth:900,margin:'0 auto',padding:'14px 24px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}} onClick={()=>navigate('/')}>
+            <motion.div animate={{background:`linear-gradient(135deg,${theme.accent},${theme.accent2})`,boxShadow:`0 4px 14px ${theme.accent}40`}} transition={{duration:1.6}}
+              style={{width:34,height:34,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,color:'white',flexShrink:0}}>☄</motion.div>
+            <motion.span animate={{color:theme.text}} transition={{duration:1.6}} style={{fontFamily:"'Syne',sans-serif",fontSize:17,fontWeight:800,letterSpacing:'.5px'}}>COMETAI</motion.span>
           </div>
-
-          {error && (
-            <div style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:10,padding:"10px 14px",marginBottom:20,fontSize:13,color:"#f87171"}}>⚠ {error}</div>
-          )}
-
-          <div style={{marginBottom:16}}>
-            <label style={{fontSize:11,color:"rgba(165,180,252,0.45)",letterSpacing:"1.5px",textTransform:"uppercase",display:"block",marginBottom:8,fontFamily:"'Space Mono',monospace"}}>Email</label>
-            <input className="input-field" type="email" placeholder="your@email.com" value={email} onChange={e=>setEmail(e.target.value)} onFocus={()=>setFocused("email")} onBlur={()=>setFocused("")} onKeyPress={e=>{if(e.key==="Enter")handleLogin();}}/>
-          </div>
-          <div style={{marginBottom:28}}>
-            <label style={{fontSize:11,color:"rgba(165,180,252,0.45)",letterSpacing:"1.5px",textTransform:"uppercase",display:"block",marginBottom:8,fontFamily:"'Space Mono',monospace"}}>Password</label>
-            <input className="input-field" type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onFocus={()=>setFocused("pass")} onBlur={()=>setFocused("")} onKeyPress={e=>{if(e.key==="Enter")handleLogin();}}/>
-          </div>
-
-          <button className="btn-primary" onClick={handleLogin} disabled={loading}>
-            {loading ? "Signing in..." : "Sign In →"}
-          </button>
-
-          <div style={{textAlign:"center",marginTop:24,fontSize:13,color:"rgba(165,180,252,0.4)"}}>
-            Don't have an account?{" "}
-            <span style={{color:"#818cf8",cursor:"pointer"}} onClick={()=>navigate("/register")}>Create one</span>
-          </div>
-
-          <div style={{position:"absolute",bottom:0,left:"20%",right:"20%",height:1,background:"linear-gradient(90deg,transparent,rgba(99,102,241,0.2),transparent)"}}/>
+          <motion.span animate={{color:`${theme.sub}88`}} transition={{duration:1.6}} style={{fontSize:13,fontFamily:"'Space Mono',monospace"}}>Sign In</motion.span>
         </div>
+      </motion.nav>
+
+      {/* CARD */}
+      <div style={{position:'relative',zIndex:2,flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'90px 24px 40px'}}>
+        <motion.div initial={{opacity:0,y:30,scale:.97}} animate={{opacity:1,y:0,scale:1}} transition={{duration:.7,ease:'easeOut'}}
+          style={{width:'100%',maxWidth:440}}>
+          <motion.div animate={{background:theme.card,borderColor:theme.cardBorder,boxShadow:`0 8px 48px ${theme.accent}10`}} transition={{duration:1.6}}
+            style={{border:'1px solid',borderRadius:24,padding:'44px 36px',backdropFilter:'blur(20px)',position:'relative',overflow:'hidden'}}>
+            <motion.div animate={{background:`linear-gradient(90deg,transparent,${theme.accent}35,${theme.accent2}25,transparent)`}} transition={{duration:1.6}}
+              style={{position:'absolute',top:0,left:0,right:0,height:1}}/>
+
+            <div style={{textAlign:'center',marginBottom:32}}>
+              <motion.div animate={{background:`linear-gradient(135deg,${theme.accent},${theme.accent2})`,boxShadow:`0 8px 24px ${theme.accent}40`}} transition={{duration:1.6}}
+                style={{width:52,height:52,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,color:'white',margin:'0 auto 16px'}}>☄</motion.div>
+              <motion.h1 animate={{color:theme.text}} transition={{duration:1.6}} style={{fontFamily:"'Syne',sans-serif",fontSize:24,fontWeight:800,marginBottom:6,letterSpacing:'-.5px'}}>Welcome back</motion.h1>
+              <motion.p animate={{color:`${theme.sub}88`}} transition={{duration:1.6}} style={{fontSize:13}}>Sign in to continue your journey</motion.p>
+            </div>
+
+            {error && (
+              <div style={{background:'rgba(239,68,68,.06)',border:'1px solid rgba(239,68,68,.2)',borderRadius:10,padding:'10px 14px',marginBottom:20,fontSize:13,color:'#dc2626'}}>⚠ {error}</div>
+            )}
+
+            {[{label:'Email',val:email,set:setEmail,type:'email',ph:'your@email.com'},{label:'Password',val:password,set:setPassword,type:'password',ph:'••••••••'}].map((f,i)=>(
+              <div key={i} style={{marginBottom:16}}>
+                <motion.label animate={{color:`${theme.sub}88`}} transition={{duration:1.6}} style={{fontSize:11,letterSpacing:'1.5px',textTransform:'uppercase',display:'block',marginBottom:8,fontFamily:"'Space Mono',monospace"}}>{f.label}</motion.label>
+                <motion.input className="input-field" type={f.type} placeholder={f.ph} value={f.val} onChange={e=>f.set(e.target.value)} onKeyPress={e=>{if(e.key==="Enter")handleLogin();}}
+                  animate={{borderColor:`${theme.accent}25`,background:'rgba(255,255,255,.9)',color:theme.text}} transition={{duration:1.6}}
+                  style={{caretColor:theme.accent}}/>
+              </div>
+            ))}
+
+            <div style={{marginBottom:24}}/>
+            <motion.button className="btn-main" onClick={handleLogin} disabled={loading}
+              animate={{background:`linear-gradient(135deg,${theme.accent},${theme.accent2})`,boxShadow:`0 8px 28px ${theme.accent}40`}} transition={{duration:1.6}}
+              style={{width:'100%',padding:'14px',fontSize:15,color:'white'}}>
+              {loading ? "Signing in..." : "Sign In →"}
+            </motion.button>
+
+            <motion.p animate={{color:`${theme.sub}66`}} transition={{duration:1.6}} style={{textAlign:'center',marginTop:20,fontSize:13}}>
+              Don't have an account?{" "}
+              <motion.span animate={{color:theme.accent}} transition={{duration:1.6}} style={{cursor:'pointer',fontWeight:600}} onClick={()=>navigate('/register')}>Create one</motion.span>
+            </motion.p>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
