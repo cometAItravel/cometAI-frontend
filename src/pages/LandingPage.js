@@ -3,6 +3,75 @@ import { useNavigate } from "react-router-dom";
 
 const API = "https://cometai-backend.onrender.com";
 
+import { motion } from "motion/react";
+
+const buildKeyframes = (from, steps) => {
+  const keys = new Set([...Object.keys(from), ...steps.flatMap(s => Object.keys(s))]);
+
+  const keyframes = {};
+  keys.forEach(k => {
+    keyframes[k] = [from[k], ...steps.map(s => s[k])];
+  });
+  return keyframes;
+};
+
+const BlurText = ({
+  text = '',
+  delay = 200,
+  className = '',
+  animateBy = 'words',
+  direction = 'top',
+  onAnimationComplete,
+  stepDuration = 0.35
+}) => {
+  const elements = animateBy === 'words' ? text.split(' ') : text.split('');
+  const [inView, setInView] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setInView(true);
+        observer.disconnect();
+      }
+    });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const from = direction === 'top'
+    ? { filter: 'blur(10px)', opacity: 0, y: -50 }
+    : { filter: 'blur(10px)', opacity: 0, y: 50 };
+
+  const to = [
+    { filter: 'blur(5px)', opacity: 0.5, y: direction === 'top' ? 5 : -5 },
+    { filter: 'blur(0px)', opacity: 1, y: 0 }
+  ];
+
+  return (
+    <p ref={ref} className={className} style={{ display: "flex", flexWrap: "wrap" }}>
+      {elements.map((word, i) => {
+        const keyframes = buildKeyframes(from, to);
+
+        return (
+          <motion.span
+            key={i}
+            initial={from}
+            animate={inView ? keyframes : from}
+            transition={{
+              duration: stepDuration * 2,
+              delay: (i * delay) / 1000
+            }}
+            style={{ display: "inline-block" }}
+          >
+            {word}&nbsp;
+          </motion.span>
+        );
+      })}
+    </p>
+  );
+};
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const [typed, setTyped] = useState("");
@@ -360,9 +429,16 @@ export default function LandingPage() {
                 <span style={{ fontSize: 11, color: "#a5b4fc", letterSpacing: "2px", textTransform: "uppercase", fontFamily: "'Space Mono',monospace" }}>AI-Powered Travel</span>
               </div>
 
-              <h1 className="hero-title hologram" style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(40px,6vw,72px)", fontWeight: 800, lineHeight: 1.05, marginBottom: 14, letterSpacing: "-1.5px" }}>
-                Travel Beyond<br />The Ordinary
-              </h1>
+              <div style={{ marginBottom: 14 }}>
+  <BlurText
+    text="Travel Beyond The Ordinary"
+    delay={80}
+    animateBy="words"
+    direction="top"
+    className="hero-title hologram"
+    onAnimationComplete={() => console.log("Hero animation done")}
+  />
+</div>
 
               <div style={{ fontFamily: "'Space Mono',monospace", fontSize: isMobile ? 13 : 15, color: "#6366f1", marginBottom: 18, minHeight: 24 }}>
                 {typed}{showCursor ? "|" : " "}
