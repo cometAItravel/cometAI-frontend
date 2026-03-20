@@ -5,8 +5,7 @@ import MyBookings from "./pages/MyBookings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
-import AdminDashboard from "./pages/AdminDashboard";
-import Waitlist from "./pages/Waitlist";
+import SearchPage from "./pages/SearchPage";
 
 const API = "https://cometai-backend.onrender.com";
 
@@ -452,7 +451,7 @@ function SearchPage(){
     try{
       const params=new URLSearchParams({from:fromCity.name,to:toCity.name});
       if(date)params.append("date",date);
-      const res = await axios.get(`${API}/real-flights?${params}`);
+      const res=await axios.get(`${API}/flights?${params}`);
       setFlights(res.data);
       setFilterMaxPrice(res.data.length>0?Math.max(...res.data.map(f=>f.price))+1000:20000);
     }catch{setFlights([]);}
@@ -724,11 +723,10 @@ function App(){
       <Routes>
         <Route path="/" element={<LandingPage/>}/>
         <Route path="/search" element={<SearchPage/>}/>
+        <Route path="/search" element={<SearchPage/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/register" element={<Register/>}/>
         <Route path="/bookings" element={<MyBookings/>}/>
-        <Route path="/admin" element={<AdminDashboard/>}/>
-        <Route path="/waitlist" element={<Waitlist/>}/>
       </Routes>
     </Router>
   );
