@@ -4,8 +4,6 @@ import { motion } from "motion/react";
 
 const API = "https://cometai-backend.onrender.com";
 
-import { motion } from "motion/react";
-
 const buildKeyframes = (from, steps) => {
   const keys = new Set([...Object.keys(from), ...steps.flatMap(s => Object.keys(s))]);
 
