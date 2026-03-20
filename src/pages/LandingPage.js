@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 
 const API = "https://cometai-backend.onrender.com";
 
