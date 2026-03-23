@@ -1,281 +1,269 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 
-const API = "https://cometai-backend.onrender.com";
-const ADMIN_PASSWORD = "user2026admin";
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes floatUD{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+  @keyframes orbitRing{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  @keyframes planeOrbit{from{transform:rotate(0deg) translateX(22px) rotate(0deg);}to{transform:rotate(360deg) translateX(22px) rotate(-360deg);}}
+  @keyframes spinSlow{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+`;
 
-const theme = {
-  bg:'linear-gradient(135deg,#f8f6ff 0%,#f0ebff 30%,#e8f4ff 60%,#f5f8ff 100%)',
-  accent:'#6d28d9', accent2:'#8b5cf6', text:'#1e1033', sub:'#4c1d95',
-  card:'rgba(255,255,255,0.88)', cardBorder:'rgba(109,40,217,0.14)'
-};
-
-function AdminLogin({ onLogin }) {
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  const handleLogin = () => {
-    if (password === ADMIN_PASSWORD) { sessionStorage.setItem("admin_auth","true"); onLogin(); }
-    else { setError("Invalid password."); setPassword(""); }
-  };
-
+function AlvrynIcon({ size = 40, spin = false }) {
   return (
-    <div style={{minHeight:'100vh',background:theme.bg,display:'flex',alignItems:'center',justifyContent:'center',padding:24,fontFamily:"'DM Sans',sans-serif",position:'relative',overflow:'hidden'}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}@keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(2%,-3%) scale(1.05);}66%{transform:translate(-2%,2%) scale(0.97);}}`}</style>
-      <div style={{position:'fixed',inset:0,background:`radial-gradient(ellipse at 20% 40%,${theme.accent}18 0%,transparent 55%)`,animation:'floatBlob 12s ease-in-out infinite',pointerEvents:'none'}}/>
-      <div style={{position:'fixed',inset:0,background:`radial-gradient(ellipse at 80% 20%,${theme.accent2}14 0%,transparent 50%)`,animation:'floatBlob 16s ease-in-out infinite reverse',pointerEvents:'none'}}/>
-
-      <motion.div initial={{opacity:0,y:28,scale:.97}} animate={{opacity:1,y:0,scale:1}} transition={{duration:.7}}
-        style={{background:theme.card,border:`1px solid ${theme.cardBorder}`,borderRadius:24,padding:'44px 36px',width:'100%',maxWidth:420,position:'relative',zIndex:10,boxShadow:`0 8px 48px ${theme.accent}12`}}>
-        <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${theme.accent}35,${theme.accent2}25,transparent)`,borderRadius:'24px 24px 0 0'}}/>
-        <div style={{textAlign:'center',marginBottom:32}}>
-          <div style={{width:52,height:52,borderRadius:'50%',background:`linear-gradient(135deg,${theme.accent},${theme.accent2})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,color:'white',margin:'0 auto 16px',boxShadow:`0 8px 24px ${theme.accent}40`}}>☄</div>
-          <h1 style={{fontFamily:"'Syne',sans-serif",fontSize:22,fontWeight:800,color:theme.text,marginBottom:6}}>CometAI Control</h1>
-          <p style={{fontSize:13,color:`${theme.sub}88`}}>Restricted area. Authorized personnel only.</p>
-        </div>
-        {error && <div style={{background:'rgba(239,68,68,.06)',border:'1px solid rgba(239,68,68,.2)',borderRadius:10,padding:'10px 14px',marginBottom:16,fontSize:13,color:'#dc2626'}}>⚠ {error}</div>}
-        <label style={{fontSize:11,color:`${theme.sub}88`,letterSpacing:'1.5px',textTransform:'uppercase',display:'block',marginBottom:8,fontFamily:"'Space Mono',monospace"}}>Admin Password</label>
-        <input type="password" placeholder="Enter password..." value={password} onChange={e=>setPassword(e.target.value)} onKeyPress={e=>{if(e.key==="Enter")handleLogin();}} autoFocus
-          style={{width:'100%',background:'rgba(255,255,255,.9)',border:`1.5px solid ${theme.accent}25`,borderRadius:12,padding:'13px 16px',color:theme.text,fontFamily:'monospace',fontSize:14,outline:'none',marginBottom:20,letterSpacing:'2px',caretColor:theme.accent}}/>
-        <button onClick={handleLogin}
-          style={{width:'100%',padding:'13px',background:`linear-gradient(135deg,${theme.accent},${theme.accent2})`,border:'none',borderRadius:12,color:'white',fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:700,cursor:'pointer',boxShadow:`0 8px 24px ${theme.accent}40`}}>
-          Access Dashboard →
-        </button>
-      </motion.div>
-    </div>
+    <svg width={size} height={size} viewBox="0 0 60 60" fill="none">
+      <defs>
+        <linearGradient id="ag1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FF6B6B"/><stop offset="100%" stopColor="#FFD93D"/>
+        </linearGradient>
+        <linearGradient id="ag2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#6C63FF"/><stop offset="100%" stopColor="#00C2FF"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="30" cy="30" rx="27" ry="11" stroke="url(#ag1)" strokeWidth="1.2" strokeDasharray="5 3" opacity="0.45"
+        style={spin?{animation:"orbitRing 5s linear infinite",transformOrigin:"30px 30px"}:{}}/>
+      <text x="10" y="47" fontFamily="'Syne',sans-serif" fontWeight="900" fontSize="40" fill="url(#ag1)">A</text>
+      <g style={spin?{animation:"planeOrbit 5s linear infinite",transformOrigin:"30px 30px"}:{}}>
+        <path d="M57 30 L50 26 L52 30 L50 34 Z" fill="url(#ag2)"/>
+        <path d="M51 26.5 L51 22 L54 27 Z" fill="url(#ag2)" opacity="0.75"/>
+      </g>
+    </svg>
   );
 }
 
+function AuroraBackground({ colors }) {
+  const ref = useRef(null);
+  const raf = useRef(null);
+  useEffect(() => {
+    const c = ref.current; if (!c) return;
+    const ctx = c.getContext("2d");
+    let W=c.offsetWidth,H=c.offsetHeight; c.width=W; c.height=H;
+    const blobs=Array.from({length:4},(_,i)=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:180+Math.random()*150,ci:i%colors.length}));
+    const resize=()=>{W=c.offsetWidth;H=c.offsetHeight;c.width=W;c.height=H;};
+    window.addEventListener("resize",resize);
+    const draw=()=>{ctx.clearRect(0,0,W,H);blobs.forEach(b=>{b.x+=b.vx;b.y+=b.vy;if(b.x<-b.r||b.x>W+b.r)b.vx*=-1;if(b.y<-b.r||b.y>H+b.r)b.vy*=-1;const g=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);g.addColorStop(0,colors[b.ci%colors.length]+"1E");g.addColorStop(1,"transparent");ctx.fillStyle=g;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();});raf.current=requestAnimationFrame(draw);};
+    draw();
+    return()=>{cancelAnimationFrame(raf.current);window.removeEventListener("resize",resize);};
+  },[colors]);
+  return <canvas ref={ref} style={{position:"fixed",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0}}/>;
+}
+
+const ADMIN_PW = "user2026admin";
+const accent = "#FF6B6B";
+const grad = "linear-gradient(135deg,#FF6B6B,#FFD93D)";
+
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const [authed, setAuthed] = useState(false);
+  const [pw, setPw] = useState("");
+  const [pwErr, setPwErr] = useState("");
   const [tab, setTab] = useState("bookings");
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
   const [waitlist, setWaitlist] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [authed, setAuthed] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (sessionStorage.getItem("admin_auth")==="true") { setAuthed(true); fetchData(); }
-    else setLoading(false);
-  }, []);
-
-  const fetchData = async () => {
+  const fetchAll = async () => {
     setLoading(true);
     try {
-      const [bRes,uRes,wRes] = await Promise.all([
-        axios.get(`${API}/admin/bookings`).catch(()=>({data:[]})),
-        axios.get(`${API}/admin/users`).catch(()=>({data:[]})),
-        axios.get(`${API}/admin/waitlist`).catch(()=>({data:[]})),
+      const [rb,ru,rw] = await Promise.all([
+        fetch("https://cometai-backend.onrender.com/admin/bookings"),
+        fetch("https://cometai-backend.onrender.com/admin/users"),
+        fetch("https://cometai-backend.onrender.com/admin/waitlist"),
       ]);
-      setBookings(bRes.data); setUsers(uRes.data); setWaitlist(wRes.data);
-    } catch(e){console.error(e);}
+      const [db,du,dw] = await Promise.all([rb.json(),ru.json(),rw.json()]);
+      if (Array.isArray(db)) setBookings(db);
+      if (Array.isArray(du)) setUsers(du);
+      if (Array.isArray(dw)) setWaitlist(dw);
+    } catch {}
     setLoading(false);
   };
 
-  const handleLogout = () => { sessionStorage.removeItem("admin_auth"); setAuthed(false); };
+  const login = () => {
+    if (pw === ADMIN_PW) { setAuthed(true); fetchAll(); }
+    else setPwErr("Wrong password");
+  };
 
-  if (!authed) return <AdminLogin onLogin={()=>{setAuthed(true);fetchData();}}/>;
-
-  const totalRevenue = bookings.reduce((s,b)=>s+(Number(b.price)||0),0);
-  const routeCounts = {};
-  bookings.forEach(b=>{const r=`${b.from_city} → ${b.to_city}`;routeCounts[r]=(routeCounts[r]||0)+1;});
-  const topRoutes = Object.entries(routeCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const maxRoute = topRoutes[0]?.[1]||1;
-  const fmt = dt => dt ? new Date(dt).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}) : "—";
-  const fmtT = dt => dt ? new Date(dt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:false}) : "";
-
-  const statCards = [
-    {icon:'✈️',label:'Total Bookings',val:bookings.length,sub:'All time'},
-    {icon:'👥',label:'Total Users',val:users.length,sub:'Registered'},
-    {icon:'💰',label:'Total Revenue',val:`₹${totalRevenue.toLocaleString()}`,sub:'Mock payments'},
-    {icon:'📧',label:'Waitlist',val:waitlist.length,sub:'Signed up'},
+  const tabs = [
+    { id:"bookings", label:"Bookings", icon:"🎫", data:bookings },
+    { id:"users",    label:"Users",    icon:"👥", data:users    },
+    { id:"waitlist", label:"Waitlist", icon:"📋", data:waitlist },
   ];
 
-  const tabs = [['bookings','✈️ Bookings'],['users','👥 Users'],['waitlist','📧 Waitlist'],['routes','🗺️ Routes']];
+  // ── LOGIN SCREEN ──
+  if (!authed) return (
+    <div style={{ minHeight:"100vh", background:"#f8f8fa", position:"relative",
+      display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <style>{CSS}</style>
+      <AuroraBackground colors={["#FF6B6B","#FFD93D","#FF8C42"]}/>
+      <div style={{ position:"relative", zIndex:2, width:"100%", maxWidth:400, padding:"0 20px",
+        animation:"fadeUp 0.6s both" }}>
+        <div style={{ background:"rgba(255,255,255,0.9)", backdropFilter:"blur(24px)",
+          borderRadius:28, padding:"48px 40px",
+          boxShadow:"0 24px 80px rgba(0,0,0,0.10)", border:"1px solid rgba(255,255,255,0.9)" }}>
+          <div style={{ textAlign:"center", marginBottom:36 }}>
+            <div style={{ display:"flex", justifyContent:"center", marginBottom:16,
+              animation:"floatUD 4s ease-in-out infinite" }}>
+              <AlvrynIcon size={52} spin/>
+            </div>
+            <h1 style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, fontSize:26, color:"#0a0a0a" }}>Admin Access</h1>
+            <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:"#999", marginTop:6 }}>Alvryn Dashboard</p>
+          </div>
+          <input type="password" value={pw} onChange={e=>setPw(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&login()} placeholder="Admin password"
+            style={{ width:"100%", padding:"13px 16px", borderRadius:13, fontSize:15,
+              fontFamily:"'DM Sans',sans-serif", border:`1.5px solid ${accent}44`,
+              outline:"none", background:"#fafafa", color:"#0a0a0a", marginBottom:14 }}/>
+          {pwErr && <div style={{ color:"#C62828", fontSize:13, fontFamily:"'DM Sans',sans-serif",
+            marginBottom:14 }}>{pwErr}</div>}
+          <button onClick={login}
+            style={{ width:"100%", padding:"14px", borderRadius:13, fontSize:15, fontWeight:800,
+              fontFamily:"'Syne',sans-serif", color:"#fff", border:"none", cursor:"pointer",
+              background:grad, boxShadow:`0 8px 28px ${accent}44` }}>
+            Enter Dashboard →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── DASHBOARD ──
+  const activeData = tabs.find(t=>t.id===tab)?.data || [];
 
   return (
-    <div style={{minHeight:'100vh',background:theme.bg,fontFamily:"'DM Sans',sans-serif",color:theme.text,overflowX:'hidden'}}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-        @keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(2%,-3%) scale(1.05);}66%{transform:translate(-2%,2%) scale(0.97);}}
-        table{width:100%;border-collapse:collapse;}
-        th{padding:11px 18px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;border-bottom:1.5px solid;font-family:'Space Mono',monospace;font-weight:500;}
-        td{padding:13px 18px;font-size:13px;border-bottom:1px solid;}
-        tr:last-child td{border-bottom:none!important;}
-        tr:hover td{background:rgba(109,40,217,.03);}
-      `}</style>
+    <div style={{ minHeight:"100vh", background:"#f8f8fa", position:"relative", fontFamily:"'DM Sans',sans-serif" }}>
+      <style>{CSS}</style>
+      <AuroraBackground colors={["#FF6B6B","#FFD93D","#FF8C42"]}/>
 
-      <div style={{position:'fixed',inset:0,background:`radial-gradient(ellipse at 15% 35%,${theme.accent}14 0%,transparent 55%)`,animation:'floatBlob 12s ease-in-out infinite',pointerEvents:'none',zIndex:0}}/>
-      <div style={{position:'fixed',inset:0,background:`radial-gradient(ellipse at 80% 20%,${theme.accent2}10 0%,transparent 50%)`,animation:'floatBlob 16s ease-in-out infinite reverse',pointerEvents:'none',zIndex:0}}/>
-
-      {/* TOPBAR */}
-      <nav style={{position:'sticky',top:0,zIndex:50,background:'rgba(255,255,255,.88)',backdropFilter:'blur(24px)',WebkitBackdropFilter:'blur(24px)',borderBottom:`1px solid ${theme.accent}12`,boxShadow:`0 1px 20px ${theme.accent}08`}}>
-        <div style={{maxWidth:1200,margin:'0 auto',padding:'13px 28px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div style={{display:'flex',alignItems:'center',gap:14}}>
-            <div style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}} onClick={()=>navigate('/')}>
-              <div style={{width:32,height:32,borderRadius:'50%',background:`linear-gradient(135deg,${theme.accent},${theme.accent2})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,color:'white',boxShadow:`0 4px 14px ${theme.accent}40`}}>☄</div>
-              <span style={{fontFamily:"'Syne',sans-serif",fontSize:16,fontWeight:800,color:theme.text}}>COMETAI</span>
-            </div>
-            <div style={{width:1,height:18,background:`${theme.accent}20`}}/>
-            <span style={{fontSize:12,color:`${theme.sub}88`,fontFamily:"'Space Mono',monospace",letterSpacing:'1px'}}>Admin Dashboard</span>
+      {/* Top bar */}
+      <nav style={{ position:"sticky", top:0, zIndex:200, height:66, padding:"0 6%",
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        background:"rgba(248,248,250,0.92)", backdropFilter:"blur(22px)",
+        borderBottom:"1px solid rgba(0,0,0,0.05)" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ animation:"floatUD 4s ease-in-out infinite" }}><AlvrynIcon size={38} spin/></div>
+          <div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, fontSize:15, color:"#0a0a0a" }}>ALVRYN ADMIN</div>
+            <div style={{ fontFamily:"'Space Mono',monospace", fontSize:7, color:accent, letterSpacing:"0.18em" }}>DASHBOARD</div>
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <div style={{display:'flex',alignItems:'center',gap:6,fontSize:11,color:'#059669',background:'rgba(5,150,105,.08)',border:'1px solid rgba(5,150,105,.2)',padding:'4px 10px',borderRadius:20}}>
-              <div style={{width:5,height:5,borderRadius:'50%',background:'#059669'}}/>LIVE
-            </div>
-            <button onClick={()=>navigate('/search')} style={{background:'transparent',border:`1px solid ${theme.accent}25`,color:theme.sub,padding:'6px 14px',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>← Back to App</button>
-            <button onClick={handleLogout} style={{background:'rgba(239,68,68,.07)',border:'1px solid rgba(239,68,68,.2)',color:'#dc2626',padding:'6px 14px',borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>Logout</button>
-          </div>
+        </div>
+        <div style={{ display:"flex", gap:10 }}>
+          <button onClick={fetchAll}
+            style={{ padding:"8px 18px", borderRadius:10, fontSize:13, fontWeight:600,
+              fontFamily:"'DM Sans',sans-serif", color:accent,
+              border:`1.5px solid ${accent}44`, background:"transparent", cursor:"pointer" }}>↻ Refresh</button>
+          <button onClick={()=>navigate("/")}
+            style={{ padding:"8px 18px", borderRadius:10, fontSize:13, fontWeight:500,
+              fontFamily:"'DM Sans',sans-serif", color:"#888",
+              border:"1.5px solid rgba(0,0,0,0.1)", background:"transparent", cursor:"pointer" }}>← Home</button>
         </div>
       </nav>
 
-      <div style={{position:'relative',zIndex:2,maxWidth:1200,margin:'0 auto',padding:'32px 28px'}}>
-        {/* STATS */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:16,marginBottom:28}}>
-          {statCards.map((s,i)=>(
-            <motion.div key={i} initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:i*.08,duration:.5}}
-              whileHover={{y:-3,boxShadow:`0 16px 40px ${theme.accent}14`}}
-              style={{background:theme.card,border:`1px solid ${theme.cardBorder}`,borderRadius:16,padding:22,position:'relative',overflow:'hidden',boxShadow:`0 4px 20px ${theme.accent}06`,cursor:'default'}}>
-              <div style={{position:'absolute',top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${theme.accent}25,transparent)`}}/>
-              <div style={{fontSize:22,marginBottom:10}}>{s.icon}</div>
-              <div style={{fontSize:10,letterSpacing:'1.5px',textTransform:'uppercase',color:`${theme.sub}77`,marginBottom:6,fontFamily:"'Space Mono',monospace"}}>{s.label}</div>
-              <div style={{fontFamily:"'Syne',sans-serif",fontSize:26,fontWeight:800,color:theme.text}}>{s.val}</div>
-              <div style={{fontSize:11,color:'#059669',marginTop:4}}>↑ {s.sub}</div>
-            </motion.div>
+      <div style={{ position:"relative", zIndex:1, padding:"40px 6%" }}>
+
+        {/* Stats */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginBottom:32 }}>
+          {tabs.map((t,i)=>(
+            <div key={t.id} style={{ padding:"28px 24px", background:"#fff", borderRadius:18,
+              boxShadow:"0 4px 18px rgba(0,0,0,0.05)", border:"1px solid rgba(0,0,0,0.05)",
+              animation:`fadeUp 0.5s ${i*80}ms both` }}>
+              <div style={{ fontSize:28, marginBottom:10 }}>{t.icon}</div>
+              <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, fontSize:40,
+                color:accent }}>{loading?"…":t.data.length}</div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:"#888", marginTop:4 }}>
+                Total {t.label}
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* TABS */}
-        <div style={{display:'flex',gap:4,marginBottom:20,background:'rgba(255,255,255,.7)',border:`1px solid ${theme.accent}12`,borderRadius:14,padding:4,width:'fit-content',backdropFilter:'blur(10px)'}}>
-          {tabs.map(([id,label])=>(
-            <button key={id} onClick={()=>setTab(id)}
-              style={{padding:'8px 18px',border:'none',background:tab===id?`linear-gradient(135deg,${theme.accent}15,${theme.accent2}10)`:'transparent',color:tab===id?theme.accent:`${theme.sub}77`,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,cursor:'pointer',borderRadius:10,transition:'all .2s',boxShadow:tab===id?`0 2px 8px ${theme.accent}12`:'none'}}>
-              {label}
+        {/* Tabs */}
+        <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+          {tabs.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)}
+              style={{ padding:"10px 22px", borderRadius:12, fontSize:14, fontWeight:700,
+                fontFamily:"'Syne',sans-serif", border:"none", cursor:"pointer", transition:"all 0.2s",
+                background: tab===t.id ? grad : "#fff",
+                color: tab===t.id ? "#fff" : "#888",
+                boxShadow: tab===t.id ? `0 4px 16px ${accent}44` : "0 2px 8px rgba(0,0,0,0.05)" }}>
+              {t.icon} {t.label}
             </button>
           ))}
         </div>
 
-        {loading && <div style={{textAlign:'center',padding:'60px',color:`${theme.sub}66`,fontFamily:"'Space Mono',monospace",fontSize:11,letterSpacing:'2px'}}>Loading data...</div>}
-
-        {/* TABLE WRAPPER */}
-        {!loading && (
-          <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{duration:.5}}
-            style={{background:theme.card,border:`1px solid ${theme.cardBorder}`,borderRadius:18,overflow:'hidden',boxShadow:`0 4px 24px ${theme.accent}06`}}>
-
-            {/* header */}
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 22px',borderBottom:`1px solid ${theme.accent}10`}}>
-              <span style={{fontFamily:"'Syne',sans-serif",fontSize:14,fontWeight:700,color:theme.text}}>
-                {tab==='bookings'?'All Bookings':tab==='users'?'All Users':tab==='waitlist'?'Waitlist Signups':'Popular Routes'}
-              </span>
-              <span style={{fontSize:11,color:`${theme.sub}66`,background:`${theme.accent}08`,border:`1px solid ${theme.accent}15`,padding:'3px 10px',borderRadius:20,fontFamily:"'Space Mono',monospace"}}>
-                {tab==='bookings'?`${bookings.length} total`:tab==='users'?`${users.length} users`:tab==='waitlist'?`${waitlist.length} signups`:`${topRoutes.length} routes`}
-              </span>
+        {/* Table */}
+        <div style={{ background:"#fff", borderRadius:20,
+          boxShadow:"0 4px 20px rgba(0,0,0,0.05)", border:"1px solid rgba(0,0,0,0.05)",
+          overflow:"hidden" }}>
+          {loading ? (
+            <div style={{ padding:"60px", textAlign:"center" }}>
+              <div style={{ width:40,height:40,border:`3px solid ${accent}22`,borderTopColor:accent,
+                borderRadius:"50%",animation:"spinSlow 1s linear infinite",margin:"0 auto 14px"}}/>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:"#bbb" }}>Loading…</div>
             </div>
-
-            {/* BOOKINGS */}
-            {tab==='bookings' && (
-              bookings.length===0 ? <div style={{textAlign:'center',padding:'48px',color:`${theme.sub}55`,fontSize:13}}>No bookings yet</div> : (
-                <div style={{overflowX:'auto'}}>
-                  <table>
-                    <thead><tr>
-                      {['#','Passenger','Route','Date','Amount','Email','Status'].map(h=>(
-                        <th key={h} style={{color:`${theme.sub}77`,borderBottomColor:`${theme.accent}12`}}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>
-                      {bookings.map(b=>(
-                        <tr key={b.id}>
-                          <td style={{fontFamily:'monospace',fontSize:11,color:`${theme.sub}55`,borderBottomColor:`${theme.accent}08`}}>#{b.id}</td>
-                          <td style={{fontWeight:600,color:theme.text,borderBottomColor:`${theme.accent}08`}}>{b.passenger_name}</td>
-                          <td style={{color:theme.sub,borderBottomColor:`${theme.accent}08`}}>{b.from_city} → {b.to_city}</td>
-                          <td style={{color:`${theme.sub}88`,borderBottomColor:`${theme.accent}08`}}>{fmt(b.departure_time)} {fmtT(b.departure_time)}</td>
-                          <td style={{fontFamily:'monospace',fontSize:13,fontWeight:700,color:theme.accent,borderBottomColor:`${theme.accent}08`}}>₹{Number(b.price)?.toLocaleString()}</td>
-                          <td style={{color:`${theme.sub}77`,fontSize:12,borderBottomColor:`${theme.accent}08`}}>{b.user_email||'—'}</td>
-                          <td style={{borderBottomColor:`${theme.accent}08`}}><span style={{background:'rgba(5,150,105,.08)',border:'1px solid rgba(5,150,105,.2)',color:'#059669',padding:'3px 8px',borderRadius:6,fontSize:10,fontFamily:"'Space Mono',monospace"}}>✓ Confirmed</span></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )
-            )}
-
-            {/* USERS */}
-            {tab==='users' && (
-              users.length===0 ? <div style={{textAlign:'center',padding:'48px',color:`${theme.sub}55`,fontSize:13}}>No users yet</div> : (
-                <div style={{overflowX:'auto'}}>
-                  <table>
-                    <thead><tr>
-                      {['#','Name','Email','User ID','Role'].map(h=>(
-                        <th key={h} style={{color:`${theme.sub}77`,borderBottomColor:`${theme.accent}12`}}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>
-                      {users.map((u,i)=>(
-                        <tr key={u.id}>
-                          <td style={{fontFamily:'monospace',fontSize:11,color:`${theme.sub}55`,borderBottomColor:`${theme.accent}08`}}>#{i+1}</td>
-                          <td style={{fontWeight:600,color:theme.text,borderBottomColor:`${theme.accent}08`}}>{u.name}</td>
-                          <td style={{color:theme.sub,borderBottomColor:`${theme.accent}08`}}>{u.email}</td>
-                          <td style={{fontFamily:'monospace',fontSize:11,color:`${theme.sub}55`,borderBottomColor:`${theme.accent}08`}}>{u.id}</td>
-                          <td style={{borderBottomColor:`${theme.accent}08`}}><span style={{background:`${theme.accent}10`,border:`1px solid ${theme.accent}20`,color:theme.accent,padding:'3px 8px',borderRadius:6,fontSize:10}}>User</span></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )
-            )}
-
-            {/* WAITLIST */}
-            {tab==='waitlist' && (
-              waitlist.length===0 ? <div style={{textAlign:'center',padding:'48px',color:`${theme.sub}55`,fontSize:13}}>No waitlist signups yet</div> : (
-                <div style={{overflowX:'auto'}}>
-                  <table>
-                    <thead><tr>
-                      {['#','Email','Ref Code','Referred By','Refs Made','Joined'].map(h=>(
-                        <th key={h} style={{color:`${theme.sub}77`,borderBottomColor:`${theme.accent}12`}}>{h}</th>
-                      ))}
-                    </tr></thead>
-                    <tbody>
-                      {waitlist.map((w,i)=>(
-                        <tr key={w.id}>
-                          <td style={{fontFamily:'monospace',fontSize:11,color:`${theme.sub}55`,borderBottomColor:`${theme.accent}08`}}>#{i+1}</td>
-                          <td style={{fontWeight:600,color:theme.text,borderBottomColor:`${theme.accent}08`}}>{w.email}</td>
-                          <td style={{fontFamily:'monospace',fontSize:11,color:theme.accent,borderBottomColor:`${theme.accent}08`}}>{w.ref_code}</td>
-                          <td style={{borderBottomColor:`${theme.accent}08`}}>{w.referred_by?<span style={{background:`${theme.accent2}15`,border:`1px solid ${theme.accent2}25`,color:theme.accent2,padding:'3px 8px',borderRadius:6,fontSize:10}}>Referred</span>:<span style={{color:`${theme.sub}44`,fontSize:12}}>Direct</span>}</td>
-                          <td style={{fontFamily:'monospace',fontSize:14,fontWeight:700,color:Number(w.ref_count)>0?'#059669':`${theme.sub}44`,borderBottomColor:`${theme.accent}08`}}>{w.ref_count||0}</td>
-                          <td style={{color:`${theme.sub}77`,fontSize:12,borderBottomColor:`${theme.accent}08`}}>{fmt(w.joined_at)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )
-            )}
-
-            {/* ROUTES */}
-            {tab==='routes' && (
-              topRoutes.length===0 ? <div style={{textAlign:'center',padding:'48px',color:`${theme.sub}55`,fontSize:13}}>No booking data yet</div> : (
-                <div style={{padding:20}}>
-                  {topRoutes.map(([route,count])=>(
-                    <div key={route} style={{background:'rgba(255,255,255,.6)',border:`1px solid ${theme.accent}10`,borderRadius:12,padding:'14px 18px',marginBottom:10,display:'flex',alignItems:'center',gap:14}}>
-                      <div style={{flex:1,fontSize:14,fontWeight:500,color:theme.text}}>{route}</div>
-                      <div style={{fontFamily:'monospace',fontSize:18,fontWeight:800,color:theme.accent,minWidth:36,textAlign:'right'}}>{count}</div>
-                      <div style={{width:140,height:6,background:`${theme.accent}12`,borderRadius:3,overflow:'hidden'}}>
-                        <div style={{width:`${(count/maxRoute)*100}%`,height:'100%',background:`linear-gradient(90deg,${theme.accent},${theme.accent2})`,borderRadius:3,transition:'width 1s ease'}}/>
-                      </div>
-                      <div style={{fontSize:11,color:`${theme.sub}55`,minWidth:55,fontFamily:"'Space Mono',monospace"}}>bookings</div>
-                    </div>
+          ) : (
+            <div style={{ overflowX:"auto" }}>
+              <table style={{ width:"100%", borderCollapse:"collapse" }}>
+                <thead>
+                  <tr style={{ background:"#f8f8fa", borderBottom:"1px solid rgba(0,0,0,0.05)" }}>
+                    {tab==="bookings" && ["ID","Airline","Route","Passenger","Price","Date"].map(h=>(
+                      <th key={h} style={{ padding:"13px 18px", textAlign:"left",
+                        fontFamily:"'Space Mono',monospace", fontSize:9.5, color:"#aaa",
+                        letterSpacing:"0.1em", fontWeight:700 }}>{h}</th>
+                    ))}
+                    {tab==="users" && ["ID","Name","Email","Joined"].map(h=>(
+                      <th key={h} style={{ padding:"13px 18px", textAlign:"left",
+                        fontFamily:"'Space Mono',monospace", fontSize:9.5, color:"#aaa",
+                        letterSpacing:"0.1em", fontWeight:700 }}>{h}</th>
+                    ))}
+                    {tab==="waitlist" && ["ID","Email","Ref Code","Referred By","Joined"].map(h=>(
+                      <th key={h} style={{ padding:"13px 18px", textAlign:"left",
+                        fontFamily:"'Space Mono',monospace", fontSize:9.5, color:"#aaa",
+                        letterSpacing:"0.1em", fontWeight:700 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {tab==="bookings" && bookings.map((b,i)=>(
+                    <tr key={i} style={{ borderBottom:"1px solid rgba(0,0,0,0.03)" }}>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Space Mono',monospace", fontSize:11, color:"#ccc" }}>#{b.id}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, color:"#0a0a0a" }}>{b.airline} <span style={{ fontWeight:400, color:"#bbb", fontSize:11 }}>{b.flight_no}</span></td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'DM Sans',sans-serif", fontSize:13, color:"#555" }}>{b.from_city} → {b.to_city}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'DM Sans',sans-serif", fontSize:13, color:"#555" }}>{b.passenger_name}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:13, color:accent }}>₹{Number(b.price).toLocaleString()}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Space Mono',monospace", fontSize:10, color:"#bbb" }}>{b.booked_at?new Date(b.booked_at).toLocaleDateString("en-IN"):"—"}</td>
+                    </tr>
                   ))}
-                </div>
-              )
-            )}
-          </motion.div>
-        )}
+                  {tab==="users" && users.map((u,i)=>(
+                    <tr key={i} style={{ borderBottom:"1px solid rgba(0,0,0,0.03)" }}>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Space Mono',monospace", fontSize:11, color:"#ccc" }}>#{u.id}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, color:"#0a0a0a" }}>{u.name}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'DM Sans',sans-serif", fontSize:13, color:"#555" }}>{u.email}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Space Mono',monospace", fontSize:10, color:"#bbb" }}>{u.created_at?new Date(u.created_at).toLocaleDateString("en-IN"):"—"}</td>
+                    </tr>
+                  ))}
+                  {tab==="waitlist" && waitlist.map((w,i)=>(
+                    <tr key={i} style={{ borderBottom:"1px solid rgba(0,0,0,0.03)" }}>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Space Mono',monospace", fontSize:11, color:"#ccc" }}>#{w.id}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'DM Sans',sans-serif", fontSize:13, color:"#555" }}>{w.email}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Space Mono',monospace", fontSize:11, color:accent }}>{w.ref_code}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'DM Sans',sans-serif", fontSize:13, color:"#bbb" }}>{w.referred_by||"—"}</td>
+                      <td style={{ padding:"13px 18px", fontFamily:"'Space Mono',monospace", fontSize:10, color:"#bbb" }}>{w.joined_at?new Date(w.joined_at).toLocaleDateString("en-IN"):"—"}</td>
+                    </tr>
+                  ))}
+                  {activeData.length === 0 && (
+                    <tr><td colSpan={6} style={{ padding:"40px", textAlign:"center",
+                      fontFamily:"'DM Sans',sans-serif", fontSize:14, color:"#ccc" }}>
+                      No {tab} yet
+                    </td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
