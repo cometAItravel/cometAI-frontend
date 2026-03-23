@@ -61,9 +61,11 @@ export default function Login() {
   const [form, setForm] = useState({ email:"", password:"" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [waking, setWaking] = useState(false);
 
   const handleSubmit = async () => {
-    setError(""); setLoading(true);
+    setError(""); setLoading(true); setWaking(true);
+setTimeout(() => setWaking(false), 28000);
     try {
       const res = await fetch("https://cometai-backend.onrender.com/login", {
         method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(form),
@@ -75,7 +77,7 @@ export default function Login() {
         navigate("/search");
       } else { setError(data.message || "Invalid credentials"); }
     } catch { setError("Server error. Please try again."); }
-    finally { setLoading(false); }
+    finally { setLoading(false); setWaking(false); }
   };
 
   return (
@@ -146,7 +148,7 @@ export default function Login() {
                 transition:"transform 0.2s" }}
               onMouseEnter={e=>!loading&&(e.currentTarget.style.transform="translateY(-2px)")}
               onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
-              {loading ? "Signing in…" : "Sign In →"}
+              {waking ? "☕ Waking up server (~30s)…" : loading ? "Signing in…" : "Sign In →"}
             </button>
           </div>
 

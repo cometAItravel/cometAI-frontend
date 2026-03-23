@@ -363,6 +363,7 @@ function PaymentModal({ flight, passengerName, passengers, cabinClass, onSuccess
 function SearchPage() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
 
   // Auth guard
   useEffect(() => {
@@ -394,8 +395,8 @@ function SearchPage() {
   const [navScrolled, setNavScrolled]     = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-
+  let user = {};
+try { user = JSON.parse(localStorage.getItem("user") || "{}"); } catch(e) { user = {}; }
   useEffect(() => {
     fetch(`${API}/test`).catch(() => {});
     const t = setInterval(() => fetch(`${API}/test`).catch(() => {}), 14 * 60 * 1000);
