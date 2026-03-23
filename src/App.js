@@ -5,7 +5,6 @@ import MyBookings from "./pages/MyBookings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
-import SearchPage from "./pages/SearchPage";
 
 const API = "https://cometai-backend.onrender.com";
 
@@ -722,7 +721,6 @@ function App(){
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage/>}/>
-        <Route path="/search" element={<SearchPage/>}/>
         <Route path="/search" element={<SearchPage/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/register" element={<Register/>}/>
