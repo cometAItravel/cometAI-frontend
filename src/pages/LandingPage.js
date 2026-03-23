@@ -264,7 +264,7 @@ const SearchMockup = ({ accent }) => {
   useEffect(() => {
     const t = setInterval(() => setQi(q => (q + 1) % queries.length), 3200);
     return () => clearInterval(t);
-  }, []);
+  }, [queries.length]);
 
   return (
     <div style={{
@@ -296,9 +296,9 @@ const SearchMockup = ({ accent }) => {
       </div>
       <div style={{ padding: "10px 20px 20px", display: "flex", flexDirection: "column", gap: 9 }}>
         {[
-          { airline: "IndiGo", code: "6E-204", time: "06:10 → 08:55", price: "₹3,240", tag: "CHEAPEST" },
-          { airline: "Air India", code: "AI-501", time: "09:30 → 12:15", price: "₹3,840", tag: "" },
-          { airline: "SpiceJet", code: "SG-173", time: "14:20 → 17:05", price: "₹4,100", tag: "" },
+          { airline: "FastAir", code: "FA-204", time: "06:10 → 08:55", price: "₹3,240", tag: "CHEAPEST" },
+{ airline: "SkyLine",  code: "SL-501", time: "09:30 → 12:15", price: "₹3,840", tag: "" },
+{ airline: "BluJet",   code: "BJ-173", time: "14:20 → 17:05", price: "₹4,100", tag: "" },
         ].map((f, i) => (
           <div key={i} style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
