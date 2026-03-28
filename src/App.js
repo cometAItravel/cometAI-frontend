@@ -138,20 +138,20 @@ const CITY_ALIASES={
 
 function parseQuery(text){
   const t=text.toLowerCase()
-    .replace(/\b(flights?|buses?|bus|flight|book|mujhe|muje|chahiye|chaiye|show|me|please|kya|hai|hain|aur|ka|ke|ki|se|ko|tak|liye|ticket|tickets|direct|nonstop)\b/gi," ")
+   .replace(/\b(flights?|buses?|bus|flight|book|mujhe|muje|chahiye|chaiye|show|me|please|kya|hai|hain|aur|ka|ke|ki|se|ko|tak|liye|ticket|tickets|direct|nonstop)\b/gi, " ")
     .replace(/\b(i want|i need|looking for|search|find|get|check|can you|bata do|dikha do|dhundho|khoj)\b/gi," ")
     .trim();
   let found=[];
   const multi=Object.keys(CITY_ALIASES).filter(k=>k.includes(" ")).sort((a,b)=>b.length-a.length);
   let rem=t;
   for(const key of multi){if(rem.includes(key)&&found.length<2){found.push(CITY_ALIASES[key]);rem=rem.replace(key," ");}}
-  const words=rem.split(/[\s,\-\/→➡]+/);
+  const words=rem.split(/[\s,\-/→➡]+/);
   for(const word of words){const clean=word.replace(/[^a-z]/g,"");if(CITY_ALIASES[clean]&&found.length<2&&!found.includes(CITY_ALIASES[clean]))found.push(CITY_ALIASES[clean]);}
   const now=new Date();
   let date=null;
   const months={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
   for(const[mon,idx]of Object.entries(months)){const m=t.match(new RegExp(`(\\d{1,2})\\s*${mon}|${mon}\\s*(\\d{1,2})`));if(m){const day=parseInt(m[1]||m[2]);const d=new Date(now.getFullYear(),idx,day);if(d<now)d.setFullYear(d.getFullYear()+1);date=d;break;}}
-  if(!date){const slashM=t.match(/(\d{1,2})[\/\-](\d{1,2})/);if(slashM){const d=new Date(now.getFullYear(),parseInt(slashM[2])-1,parseInt(slashM[1]));if(d<now)d.setFullYear(d.getFullYear()+1);date=d;}}
+  if(!date){const slashM=t.match(/(\d{1,2})[//-](\d{1,2})/);if(slashM){const d=new Date(now.getFullYear(),parseInt(slashM[2])-1,parseInt(slashM[1]));if(d<now)d.setFullYear(d.getFullYear()+1);date=d;}}
   const todayW=["today","aaj","abhi","iss waqt","aajkal"];
   const tomW=["tomorrow","kal","tmrw","tommorow","tomorow","agla din","next day"];
   const dayAfW=["day after tomorrow","parso","parso ka","2 din baad"];
