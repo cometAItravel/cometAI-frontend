@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
@@ -104,69 +105,163 @@ const BUS_ROUTES=[
   {from:"Kolkata",  to:"Guwahati",   dur:"12h",   dep:"17:00",arr:"05:00",price:900, seats:28,type:"AC Sleeper",   op:"Assam SRTC"},
 ];
 
-// ─── AI PARSER ────────────────────────────────────────────────────────────────
+// ─── IMPROVED AI PARSER ───────────────────────────────────────────────────────
+// Handles broken English, typos, Hindi/Tamil/Telugu/Kannada mix
 const CITY_ALIASES={
-  "bangalore":"bangalore","bengaluru":"bangalore","blr":"bangalore","bang":"bangalore","banglore":"bangalore","bangalor":"bangalore",
+  // Bangalore variations
+  "bangalore":"bangalore","bengaluru":"bangalore","bengalore":"bangalore","bangaluru":"bangalore",
+  "blr":"bangalore","bang":"bangalore","banglore":"bangalore","bangalor":"bangalore",
+  "bangaluru":"bangalore","bengalure":"bangalore","bangalure":"bangalore","banglaore":"bangalore",
+  "b'lore":"bangalore","blore":"bangalore","namma ooru":"bangalore","garden city":"bangalore",
+  // Mumbai variations
   "mumbai":"mumbai","bombay":"mumbai","bom":"mumbai","mum":"mumbai","mumbi":"mumbai",
-  "delhi":"delhi","new delhi":"delhi","del":"delhi","dilli":"delhi","nai dilli":"delhi","dilhi":"delhi",
+  "mombai":"mumbai","bombay city":"mumbai","mumbay":"mumbai","bombai":"mumbai",
+  // Delhi variations
+  "delhi":"delhi","new delhi":"delhi","del":"delhi","dilli":"delhi","nai dilli":"delhi",
+  "dilhi":"delhi","dili":"delhi","delhii":"delhi","ncr":"delhi","new dilli":"delhi",
+  // Chennai variations
   "chennai":"chennai","madras":"chennai","maa":"chennai","chenai":"chennai","chinnai":"chennai",
-  "hyderabad":"hyderabad","hyd":"hyderabad","hydrabad":"hyderabad","secunderabad":"hyderabad",
-  "kolkata":"kolkata","calcutta":"kolkata","ccu":"kolkata","kolkatta":"kolkata",
-  "goa":"goa","goi":"goa","north goa":"goa","south goa":"goa",
-  "pune":"pune","pnq":"pune","poona":"pune","puna":"pune",
-  "kochi":"kochi","cochin":"kochi","cok":"kochi",
-  "ahmedabad":"ahmedabad","amd":"ahmedabad","ahemdabad":"ahmedabad",
-  "jaipur":"jaipur","jai":"jaipur","jaipuur":"jaipur","pink city":"jaipur",
-  "lucknow":"lucknow","lko":"lucknow","luckhnow":"lucknow",
+  "chenni":"chennai","madras city":"chennai","chennaii":"chennai","chenna":"chennai",
+  // Hyderabad variations
+  "hyderabad":"hyderabad","hyd":"hyderabad","hydrabad":"hyderabad","hederabad":"hyderabad",
+  "secunderabad":"hyderabad","hyderabad city":"hyderabad","hyderbad":"hyderabad","hidrabad":"hyderabad",
+  "cyberabad":"hyderabad","haidrabad":"hyderabad",
+  // Kolkata variations
+  "kolkata":"kolkata","calcutta":"kolkata","ccu":"kolkata","kolkatta":"kolkata","calcuta":"kolkata",
+  "kolkota":"kolkata","kolkata city":"kolkata","calkata":"kolkata",
+  // Goa variations
+  "goa":"goa","goi":"goa","north goa":"goa","south goa":"goa","panaji":"goa","panjim":"goa",
+  // Pune variations
+  "pune":"pune","pnq":"pune","poona":"pune","puna":"pune","punee":"pune",
+  // Kochi variations
+  "kochi":"kochi","cochin":"kochi","cok":"kochi","kottayam":"kochi","ernakulam":"kochi",
+  // Ahmedabad variations
+  "ahmedabad":"ahmedabad","amd":"ahmedabad","ahemdabad":"ahmedabad","ahmdabad":"ahmedabad",
+  "ahamadabad":"ahmedabad","ahmadabad":"ahmedabad",
+  // Jaipur variations
+  "jaipur":"jaipur","jai":"jaipur","jaipuur":"jaipur","pink city":"jaipur","jaipor":"jaipur",
+  // Lucknow
+  "lucknow":"lucknow","lko":"lucknow","luckhnow":"lucknow","lakhnau":"lucknow","lakhnou":"lucknow",
+  // Varanasi
   "varanasi":"varanasi","vns":"varanasi","banaras":"varanasi","benares":"varanasi","kashi":"varanasi",
+  "benaras":"varanasi","banarasi":"varanasi","baranasi":"varanasi",
+  // Other cities
   "patna":"patna","chandigarh":"chandigarh","ixc":"chandigarh","chd":"chandigarh",
-  "guwahati":"guwahati","gauhati":"guwahati","gau":"guwahati",
-  "bhubaneswar":"bhubaneswar","bbi":"bhubaneswar","bbsr":"bhubaneswar",
-  "coimbatore":"coimbatore","cbe":"coimbatore","kovai":"coimbatore",
+  "guwahati":"guwahati","gauhati":"guwahati","gau":"guwahati","guwahatti":"guwahati",
+  "bhubaneswar":"bhubaneswar","bbi":"bhubaneswar","bbsr":"bhubaneswar","bhubneshwar":"bhubaneswar",
+  "coimbatore":"coimbatore","cbe":"coimbatore","kovai":"coimbatore","koimbatore":"coimbatore",
   "madurai":"madurai","mdu":"madurai","maduri":"madurai",
-  "mangalore":"mangalore","mangaluru":"mangalore","ixe":"mangalore",
-  "surat":"surat","srt":"surat","haridwar":"haridwar","hardwar":"haridwar",
-  "jodhpur":"jodhpur","jdh":"jodhpur","udaipur":"udaipur","udr":"udaipur",
-  "amritsar":"amritsar","atq":"amritsar","agra":"agra","agara":"agra","taj city":"agra",
-  "indore":"indore","idr":"indore","raipur":"raipur","rpr":"raipur",
+  "mangalore":"mangalore","mangaluru":"mangalore","ixe":"mangalore","mangalor":"mangalore",
+  "surat":"surat","haridwar":"haridwar","jodhpur":"jodhpur","udaipur":"udaipur",
+  "amritsar":"amritsar","atq":"amritsar","agra":"agra","indore":"indore","raipur":"raipur",
+  // International
   "dubai":"dubai","dxb":"dubai","dubi":"dubai","dubay":"dubai",
-  "singapore":"singapore","sin":"singapore","singapur":"singapore",
+  "singapore":"singapore","sin":"singapore","singapur":"singapore","singapoor":"singapore",
   "bangkok":"bangkok","bkk":"bangkok","bangkock":"bangkok",
   "london":"london","lhr":"london","landan":"london",
   "new york":"new york","jfk":"new york","nyc":"new york","newyork":"new york",
 };
 
-function parseQuery(text){
-  const t=text.toLowerCase()
-   .replace(/\b(flights?|buses?|bus|flight|book|mujhe|muje|chahiye|chaiye|show|me|please|kya|hai|hain|aur|ka|ke|ki|se|ko|tak|liye|ticket|tickets|direct|nonstop)\b/gi, " ")
-    .replace(/\b(i want|i need|looking for|search|find|get|check|can you|bata do|dikha do|dhundho|khoj)\b/gi," ")
-    .trim();
+function parseQuery(text) {
+  // Normalize — remove common filler words in multiple languages
+  let t = text.toLowerCase()
+    .replace(/[^\w\s\u0900-\u097f\u0B80-\u0BFF\u0C00-\u0C7F\u0C80-\u0CFF→➡]/g," ")
+    .replace(/\b(flights?|flight|buses?|bus|book|booking|mujhe|muje|chahiye|chaiye|show|me|please|kya|hai|hain|aur|ka|ke|ki|se|ko|tak|liye|ek|ticket|tickets|direct|nonstop|non stop|cheap|cheapest|sasta|sabse|best|find|get|search|lookin|looking|want|need|i want|i need|can you|bata|dikha|check)\b/gi," ")
+    .replace(/\s+/g," ").trim();
+
+  // Find cities — check multi-word first
   let found=[];
-  const multi=Object.keys(CITY_ALIASES).filter(k=>k.includes(" ")).sort((a,b)=>b.length-a.length);
-  let rem=t;
-  for(const key of multi){if(rem.includes(key)&&found.length<2){found.push(CITY_ALIASES[key]);rem=rem.replace(key," ");}}
-  const words=rem.split(/[\s,\-/→➡]+/);
-  for(const word of words){const clean=word.replace(/[^a-z]/g,"");if(CITY_ALIASES[clean]&&found.length<2&&!found.includes(CITY_ALIASES[clean]))found.push(CITY_ALIASES[clean]);}
+  const multiWord=Object.keys(CITY_ALIASES).filter(k=>k.includes(" ")).sort((a,b)=>b.length-a.length);
+  let remaining=t;
+  for(const key of multiWord){
+    if(remaining.includes(key)&&found.length<2){
+      found.push(CITY_ALIASES[key]);
+      remaining=remaining.replace(key," ");
+    }
+  }
+  // Then single words
+  const words=remaining.split(/[\s,\-\/→➡to]+/);
+  for(const word of words){
+    const clean=word.replace(/[^a-z]/g,"");
+    if(clean.length>=2&&CITY_ALIASES[clean]&&found.length<2&&!found.includes(CITY_ALIASES[clean])){
+      found.push(CITY_ALIASES[clean]);
+    }
+  }
+
+  // If still missing cities, try fuzzy match for common typos
+  if(found.length<2){
+    const allKeys=Object.keys(CITY_ALIASES);
+    const remainWords=remaining.split(/\s+/);
+    for(const w of remainWords){
+      if(w.length<3)continue;
+      for(const key of allKeys){
+        if(key.length<3)continue;
+        // Check if word starts with same 3 chars as a city alias
+        if(w.length>=3&&key.length>=3&&w.slice(0,3)===key.slice(0,3)&&!found.includes(CITY_ALIASES[key])){
+          found.push(CITY_ALIASES[key]);
+          if(found.length===2)break;
+        }
+      }
+      if(found.length===2)break;
+    }
+  }
+
   const now=new Date();
   let date=null;
-  const months={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
-  for(const[mon,idx]of Object.entries(months)){const m=t.match(new RegExp(`(\\d{1,2})\\s*${mon}|${mon}\\s*(\\d{1,2})`));if(m){const day=parseInt(m[1]||m[2]);const d=new Date(now.getFullYear(),idx,day);if(d<now)d.setFullYear(d.getFullYear()+1);date=d;break;}}
-  if(!date){const slashM=t.match(/(\d{1,2})[//-](\d{1,2})/);if(slashM){const d=new Date(now.getFullYear(),parseInt(slashM[2])-1,parseInt(slashM[1]));if(d<now)d.setFullYear(d.getFullYear()+1);date=d;}}
-  const todayW=["today","aaj","abhi","iss waqt","aajkal"];
-  const tomW=["tomorrow","kal","tmrw","tommorow","tomorow","agla din","next day"];
-  const dayAfW=["day after tomorrow","parso","parso ka","2 din baad"];
-  const wkW=["this weekend","weekend","shanivar","itwar"];
-  if(todayW.some(w=>t.includes(w)))date=new Date(now);
-  else if(dayAfW.some(w=>t.includes(w))){date=new Date(now);date.setDate(date.getDate()+2);}
-  else if(tomW.some(w=>t.includes(w))){date=new Date(now);date.setDate(date.getDate()+1);}
-  else if(wkW.some(w=>t.includes(w))){date=new Date(now);const diff=(6-now.getDay()+7)%7||7;date.setDate(now.getDate()+diff);}
-  const dayMap={sun:0,sunday:0,mon:1,monday:1,tue:2,tuesday:2,wed:3,wednesday:3,thu:4,thursday:4,fri:5,friday:5,sat:6,saturday:6,ravivar:0,somvar:1,mangalvar:2,budhvar:3,guruvar:4,shukravar:5,shanivar:6};
-  for(const[day,idx]of Object.entries(dayMap)){if(t.includes(day)){const d=new Date(now);let diff=idx-now.getDay();if(/next|agla|agle/.test(t)){if(diff<=0)diff+=7;if(diff<7)diff+=7;}else if(/coming|is|this/.test(t)){if(diff<=0)diff+=7;}else{if(diff<=0)diff+=7;}d.setDate(now.getDate()+diff);date=d;break;}}
-  const inDays=t.match(/in\s*(\d+)\s*(din|days?)/);if(inDays){date=new Date(now);date.setDate(now.getDate()+parseInt(inDays[1]));}
-  if(date&&date<new Date(new Date(now).setHours(0,0,0,0)))return{from:found[0]||null,to:found[1]||null,date:null,pastDate:true,budget:null};
+
+  // Month names
+  const months={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
+    january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+  for(const[mon,idx]of Object.entries(months)){
+    const m=t.match(new RegExp(`(\\d{1,2})\\s*${mon}|${mon}\\s*(\\d{1,2})`));
+    if(m){const day=parseInt(m[1]||m[2]);const d=new Date(now.getFullYear(),idx,day);if(d<now)d.setFullYear(d.getFullYear()+1);date=d;break;}
+  }
+
+  // Relative date words — English + Hindi + Tamil + Telugu + Kannada
+  const todayWords=["today","aaj","aaj ka","indru","ee roju","indu","ippodu"];
+  const tomorrowWords=["tomorrow","kal","tmrw","tommorow","tomorow","nale","repu","naale","naaley","narodu"];
+  const dayAfterWords=["day after tomorrow","parso","naDiDe","aTu","marDi","maDuve"];
+  const weekendWords=["this weekend","weekend","shanivar","saturday","shanivaram"];
+
+  if(todayWords.some(w=>t.includes(w)))date=new Date(now);
+  else if(dayAfterWords.some(w=>t.includes(w))){date=new Date(now);date.setDate(date.getDate()+2);}
+  else if(tomorrowWords.some(w=>t.includes(w))){date=new Date(now);date.setDate(date.getDate()+1);}
+  else if(weekendWords.some(w=>t.includes(w))){date=new Date(now);const diff=(6-now.getDay()+7)%7||7;date.setDate(now.getDate()+diff);}
+
+  // Day names
+  const dayMap={sun:0,sunday:0,mon:1,monday:1,tue:2,tuesday:2,wed:3,wednesday:3,thu:4,thursday:4,fri:5,friday:5,sat:6,saturday:6,
+    ravivar:0,somvar:1,mangalvar:2,budhvar:3,guruvar:4,shukravar:5,shanivar:6,
+    nyayiru:0,tingal:1,sevvai:2,budhan:3,viyazhan:4,velli:5,sani:6};
+  for(const[day,idx]of Object.entries(dayMap)){
+    if(t.includes(day)){
+      const d=new Date(now);let diff=idx-now.getDay();
+      if(/next|agla|agle|munde/.test(t)){if(diff<=0)diff+=7;if(diff<7)diff+=7;}
+      else{if(diff<=0)diff+=7;}
+      d.setDate(now.getDate()+diff);date=d;break;
+    }
+  }
+
+  // "in X days"
+  const inDays=t.match(/in\s*(\d+)\s*(din|days?)/);
+  if(inDays){date=new Date(now);date.setDate(now.getDate()+parseInt(inDays[1]));}
+
+  // Past date check
+  if(date&&date<new Date(new Date(now).setHours(0,0,0,0))){
+    return{from:found[0]||null,to:found[1]||null,date:null,pastDate:true,budget:null};
+  }
+
+  // Budget detection
   let budget=null;
-  const bP=[/under\s*₹?\s*(\d+)k?/,/below\s*₹?\s*(\d+)k?/,/less\s*than\s*₹?\s*(\d+)k?/,/within\s*₹?\s*(\d+)k?/,/max\s*₹?\s*(\d+)k?/,/₹?\s*(\d+)k?\s*(se\s*)?kam/,/(\d+)k?\s*tak/,/(\d+)\s*rupees?\s*(se\s*)?kam/];
-  for(const p of bP){const m=t.match(p);if(m){let v=parseInt(m[1]||m[2]);if(t.match(/\d+k/))v*=1000;budget=v;break;}}
+  const budgetPatterns=[
+    /under\s*[₹rs\.]*\s*(\d+)k?/,/below\s*[₹rs\.]*\s*(\d+)k?/,/less\s*than\s*[₹rs\.]*\s*(\d+)k?/,
+    /within\s*[₹rs\.]*\s*(\d+)k?/,/max\s*[₹rs\.]*\s*(\d+)k?/,/[₹rs\.]*\s*(\d+)k?\s*(se\s*)?kam/,
+    /(\d+)k?\s*tak/,/budget\s*[₹rs\.]*\s*(\d+)k?/,
+  ];
+  for(const p of budgetPatterns){
+    const m=t.match(p);
+    if(m){let v=parseInt(m[1]||m[2]);if(t.match(/\d+k/))v*=1000;budget=v;break;}
+  }
+
   return{from:found[0]||null,to:found[1]||null,date,pastDate:false,budget};
 }
 
@@ -311,10 +406,14 @@ function SeatModal({type,passengers,onConfirm,onCancel}){
   );
 }
 
-// ─── PASSENGER MODAL ──────────────────────────────────────────────────────────
+// ─── PASSENGER MODAL — fixed: allows single name, example John Cena ───────────
 function PassengerModal({item,passengers,type,onConfirm,onCancel}){
   const[name,setName]=useState("");const[err,setErr]=useState("");
-  const go=()=>{if(!name.trim()||name.trim().length<2){setErr("Please enter your full name");return;}if(!name.includes(" ")){setErr("Enter first and last name (e.g. Vishaal Kumar)");return;}onConfirm(name.trim());};
+  const go=()=>{
+    if(!name.trim()||name.trim().length<2){setErr("Please enter your name");return;}
+    // Allow single names — just require at least 2 characters
+    onConfirm(name.trim());
+  };
   const isBus=type==="bus";
   return(
     <div onClick={onCancel} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(8px)",padding:20}}>
@@ -324,7 +423,8 @@ function PassengerModal({item,passengers,type,onConfirm,onCancel}){
           {isBus?`${item.op} · ${item.from} → ${item.to} · ${item.type}`:`${item.airline} · ${item.from_city} → ${item.to_city}`} · {passengers} pax
         </p>
         <label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:"#aaa",display:"block",marginBottom:7,letterSpacing:"0.1em"}}>FULL NAME (as on ID)</label>
-        <input autoFocus value={name} onChange={e=>{setName(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&go()} placeholder="e.g. Vishaal Kumar"
+        <input autoFocus value={name} onChange={e=>{setName(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&go()}
+          placeholder="e.g. John Cena"
           style={{width:"100%",padding:"13px 16px",borderRadius:13,fontSize:15,fontFamily:"'DM Sans',sans-serif",border:`1.5px solid ${err?"#ef4444":"rgba(201,168,76,0.3)"}`,outline:"none",color:"#1a1410",background:"#fafaf8",marginBottom:err?8:24}}
           onFocus={e=>e.target.style.borderColor=GOLD} onBlur={e=>e.target.style.borderColor=err?"#ef4444":"rgba(201,168,76,0.3)"}/>
         {err&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#ef4444",marginBottom:16}}>{err}</div>}
@@ -359,8 +459,12 @@ function PaymentModal({item,passengerName,passengers,cabinClass,seats,type,onSuc
   const handlePay=async()=>{
     if(payMethod==="card"&&(!cardNo||!expiry||!cvv)){alert("Fill all card details");return;}
     setStep("processing");
-    try{if(!isBus){await fetch(`${API}/book`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({flight_id:item.id,passenger_name:passengerName,cabin_class:cabinClass,seats,promo_code:promoCode||null,discount_applied:discount,final_price:total})});}}
-    catch(e){console.error(e);}
+    try{
+      if(!isBus){
+        const res=await fetch(`${API}/book`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({flight_id:item.id,passenger_name:passengerName,cabin_class:cabinClass,seats,promo_code:promoCode||null,discount_applied:discount,final_price:total})});
+        if(!res.ok){const d=await res.json();console.error("Booking error:",d.message);}
+      }
+    }catch(e){console.error(e);}
     setTimeout(()=>setStep("success"),1800);
   };
 
@@ -474,15 +578,20 @@ function SearchPage(){
 
   const searchFlights=async()=>{
     setValidErr("");if(!date){setValidErr("Please select a departure date");return;}
-    setLoading(true);setSearched(true);
-    try{const params=new URLSearchParams({from:fromCity.name,to:toCity.name});params.append("date",date);const res=await axios.get(`${API}/flights?${params}`);setFlights(res.data);setFilterMaxPrice(res.data.length>0?Math.max(...res.data.map(f=>f.price))+1000:20000);}
-    catch{setFlights([]);}
+    setLoading(true);setSearched(true);setFlights([]);
+    try{
+      const params=new URLSearchParams({from:fromCity.name,to:toCity.name});
+      params.append("date",date);
+      const res=await axios.get(`${API}/flights?${params}`);
+      setFlights(res.data||[]);
+      setFilterMaxPrice(res.data&&res.data.length>0?Math.max(...res.data.map(f=>f.price))+1000:20000);
+    }catch(e){console.error(e);setFlights([]);}
     setLoading(false);
   };
 
   const searchBuses=()=>{
     setValidErr("");if(!date){setValidErr("Please select a travel date");return;}
-    setLoading(true);setSearched(true);
+    setLoading(true);setSearched(true);setBuses([]);
     setTimeout(()=>{
       let results=BUS_ROUTES.filter(b=>b.from.toLowerCase()===busFrom.toLowerCase()&&b.to.toLowerCase()===busTo.toLowerCase());
       if(busType!=="Any")results=results.filter(b=>b.type===busType);
@@ -494,23 +603,49 @@ function SearchPage(){
 
   const searchAI=async()=>{
     if(!aiQuery.trim())return;
-    setAiError("");setLoading(true);setSearched(true);
+    setAiError("");setLoading(true);setSearched(true);setFlights([]);setBuses([]);
     const parsed=parseQuery(aiQuery);
-    if(parsed.pastDate){setAiError("That date is in the past. Please search for today or a future date.");setFlights([]);setBuses([]);setLoading(false);return;}
-    if(!parsed.from||!parsed.to){setAiError("Couldn't detect cities. Try: 'flights bangalore to mumbai tomorrow' or 'bus bangalore to chennai friday'");setFlights([]);setBuses([]);setLoading(false);return;}
+
+    if(parsed.pastDate){
+      setAiError("That date is in the past! Please search for today or a future date.");
+      setLoading(false);return;
+    }
+    if(!parsed.from||!parsed.to){
+      setAiError("Couldn't find the cities. Try: 'flights bangalore to mumbai tomorrow' or 'blr to del kal'");
+      setLoading(false);return;
+    }
+
     const isBusQ=/bus|buses|coach|volvo|sleeper|seater/i.test(aiQuery);
     if(isBusQ||travelType==="bus"){
       setTravelType("bus");
       let results=BUS_ROUTES.filter(b=>b.from.toLowerCase()===parsed.from&&b.to.toLowerCase()===parsed.to);
       if(parsed.budget)results=results.filter(b=>b.price<=parsed.budget);
       if(/cheap|sasta|budget|lowest/i.test(aiQuery))results.sort((a,b)=>a.price-b.price);
-      setBuses(results);setFilterMaxPrice(results.length>0?Math.max(...results.map(b=>b.price))+500:5000);
+      setBuses(results);
+      setFilterMaxPrice(results.length>0?Math.max(...results.map(b=>b.price))+500:5000);
       if(results.length===0)setAiError(`No buses found from ${parsed.from} to ${parsed.to}. Try different cities.`);
       setLoading(false);
     }else{
       setTravelType("flight");
-      try{const res=await axios.post(`${API}/ai-search`,{query:aiQuery});if(res.data&&res.data.message){setAiError(res.data.message);setFlights([]);}else{setFlights(res.data||[]);setFilterMaxPrice(res.data&&res.data.length>0?Math.max(...res.data.map(f=>f.price))+1000:20000);}}
-      catch(e){setAiError(e.response?.data?.message||"Search failed. Please try again.");setFlights([]);}
+      try{
+        const res=await axios.post(`${API}/ai-search`,{query:aiQuery});
+        if(res.data&&res.data.message){
+          setAiError(res.data.message);setFlights([]);
+        }else{
+          const data=res.data||[];
+          // Apply budget filter if detected
+          const filtered2=parsed.budget?data.filter(f=>f.price<=parsed.budget):data;
+          setFlights(filtered2);
+          setFilterMaxPrice(filtered2.length>0?Math.max(...filtered2.map(f=>f.price))+1000:20000);
+          if(filtered2.length===0&&data.length>0){
+            setAiError(`No flights under ₹${parsed.budget?.toLocaleString()} found. Showing all available flights.`);
+            setFlights(data);
+          }
+        }
+      }catch(e){
+        setAiError(e.response?.data?.message||"Search failed. Please try again.");
+        setFlights([]);
+      }
       setLoading(false);
     }
   };
@@ -560,14 +695,14 @@ function SearchPage(){
           </div>
         </div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          <button onClick={()=>navigate("/My bookings")} style={{padding:"8px 16px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"transparent",color:"#555",border:"1.5px solid rgba(0,0,0,0.12)"}}>Bookings</button>
+          {/* ── FIXED: "My Bookings" ── */}
+          <button onClick={()=>navigate("/bookings")} style={{padding:"8px 16px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"transparent",color:"#555",border:"1.5px solid rgba(0,0,0,0.12)"}}>My Bookings</button>
           <button onClick={()=>navigate("/profile")} style={{padding:"8px 16px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:`rgba(201,168,76,0.1)`,color:GOLD_DARK,border:`1.5px solid rgba(201,168,76,0.25)`}}>Profile</button>
           <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("user");navigate("/login");}} style={{padding:"8px 16px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"#fff0f0",color:"#e53935",border:"1.5px solid rgba(229,57,53,0.2)"}}>Sign Out</button>
         </div>
       </nav>
 
       <div style={{position:"relative",zIndex:1,maxWidth:960,margin:"0 auto",padding:"32px 5% 80px"}}>
-        {/* Greeting */}
         <div style={{marginBottom:24,animation:"fadeUp 0.6s both"}}>
           <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:GOLD,letterSpacing:"0.2em",marginBottom:8}}>SEARCH TRAVEL</div>
           <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"clamp(22px,4vw,42px)",color:"#1a1410",marginBottom:4}}>Hey {user.name?.split(" ")[0]||"Traveller"} 👋</h1>
@@ -585,7 +720,7 @@ function SearchPage(){
           ))}
         </div>
 
-        {/* Coming soon panels */}
+        {/* Coming soon */}
         {CS_DATA[travelType]&&(
           <div style={{background:"rgba(255,255,255,0.85)",backdropFilter:"blur(10px)",borderRadius:"0 0 20px 20px",padding:"52px 32px",textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,0.04)",border:"1px solid rgba(201,168,76,0.12)",borderTop:"none",animation:"fadeUp 0.4s both"}}>
             <div style={{fontSize:56,marginBottom:18}}>{CS_DATA[travelType].icon}</div>
@@ -608,7 +743,7 @@ function SearchPage(){
               ))}
             </div>
 
-            {/* ── FLIGHT STRUCTURED ── */}
+            {/* FLIGHT STRUCTURED */}
             {travelType==="flight"&&mode==="structured"&&(
               <>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,flexWrap:"wrap",gap:8}}>
@@ -619,19 +754,14 @@ function SearchPage(){
                       </button>
                     ))}
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:8,background:isDomestic?"rgba(201,168,76,0.08)":"rgba(201,168,76,0.05)",border:`1px solid rgba(201,168,76,${isDomestic?0.25:0.15})`}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:8,background:`rgba(201,168,76,${isDomestic?0.08:0.05})`,border:`1px solid rgba(201,168,76,${isDomestic?0.25:0.15})`}}>
                     <span>{isDomestic?"🇮🇳":"🌍"}</span>
                     <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,color:GOLD_DARK}}>{isDomestic?"Domestic · Seat selection available":"International"}</span>
                   </div>
                 </div>
 
-                {/* From / To */}
                 <div className="search-city-grid" style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:10,alignItems:"center",marginBottom:12}}>
-                  {[
-                    {label:"FROM",city:fromCity,onClick:()=>setShowFromModal(true)},
-                    null,
-                    {label:"TO",city:toCity,onClick:()=>setShowToModal(true)},
-                  ].map((item,i)=>item===null?(
+                  {[{label:"FROM",city:fromCity,onClick:()=>setShowFromModal(true)},null,{label:"TO",city:toCity,onClick:()=>setShowToModal(true)}].map((item,i)=>item===null?(
                     <button key="swap" onClick={swapFlight} style={{width:40,height:40,borderRadius:"50%",background:"rgba(201,168,76,0.1)",border:`1.5px solid rgba(201,168,76,0.25)`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:GOLD_DARK,transition:"transform 0.3s",justifySelf:"center"}}
                       onMouseEnter={e=>e.currentTarget.style.transform="rotate(180deg)"}
                       onMouseLeave={e=>e.currentTarget.style.transform="rotate(0)"}>⇄</button>
@@ -646,14 +776,12 @@ function SearchPage(){
                   ))}
                 </div>
 
-                {/* AI suggestion */}
                 <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(201,168,76,0.06)",borderRadius:12,padding:"10px 16px",border:`1px solid rgba(201,168,76,0.2)`,marginBottom:12,cursor:"pointer"}} onClick={()=>{setMode("ai");setFlights([]);setSearched(false);}}>
                   <span>🤖</span>
                   <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:GOLD_DARK,fontWeight:600}}>Or type naturally: "blr to goa kal cheapest"</span>
                   <span style={{marginLeft:"auto",fontFamily:"'Space Mono',monospace",fontSize:11,color:GOLD}}>AI →</span>
                 </div>
 
-                {/* Date / Pax / Class */}
                 <div className="search-date-grid" style={{display:"grid",gridTemplateColumns:tripType==="roundtrip"?"1fr 1fr 1fr 1fr":"1fr 1fr 1fr",gap:10,marginBottom:14}}>
                   <div style={{...inp,borderColor:!date&&validErr?"#ef4444":"rgba(201,168,76,0.15)"}}>
                     <label style={lbl}>DEPARTURE{!date&&<span style={{color:"#ef4444"}}> *</span>}</label>
@@ -680,14 +808,11 @@ function SearchPage(){
                   </div>
                 </div>
 
-                {/* Special fares */}
                 <div style={{marginBottom:14}}>
                   <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,color:"#aaa",letterSpacing:"0.08em",marginBottom:7}}>SPECIAL FARES</div>
                   <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                     {SPECIAL_FARES.map(sf=>(
-                      <button key={sf.id} onClick={()=>setSpecialFare(sf.id)} style={{padding:"6px 12px",borderRadius:9,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:specialFare===sf.id?`1.5px solid ${GOLD}`:"1.5px solid rgba(0,0,0,0.09)",background:specialFare===sf.id?`rgba(201,168,76,0.1)`:"#fafaf8",color:specialFare===sf.id?GOLD_DARK:"#888",transition:"all 0.2s"}}>
-                        {sf.label}
-                      </button>
+                      <button key={sf.id} onClick={()=>setSpecialFare(sf.id)} style={{padding:"6px 12px",borderRadius:9,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:specialFare===sf.id?`1.5px solid ${GOLD}`:"1.5px solid rgba(0,0,0,0.09)",background:specialFare===sf.id?`rgba(201,168,76,0.1)`:"#fafaf8",color:specialFare===sf.id?GOLD_DARK:"#888",transition:"all 0.2s"}}>{sf.label}</button>
                     ))}
                   </div>
                 </div>
@@ -699,7 +824,7 @@ function SearchPage(){
               </>
             )}
 
-            {/* ── BUS STRUCTURED ── */}
+            {/* BUS STRUCTURED */}
             {travelType==="bus"&&mode==="structured"&&(
               <>
                 <div className="search-city-grid" style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:10,alignItems:"center",marginBottom:12}}>
@@ -716,13 +841,11 @@ function SearchPage(){
                     </div>
                   ))}
                 </div>
-
                 <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(201,168,76,0.06)",borderRadius:12,padding:"10px 16px",border:`1px solid rgba(201,168,76,0.2)`,marginBottom:12,cursor:"pointer"}} onClick={()=>{setMode("ai");setBuses([]);setSearched(false);}}>
                   <span>🤖</span>
                   <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:GOLD_DARK,fontWeight:600}}>Or type: "bus bangalore to chennai kal"</span>
                   <span style={{marginLeft:"auto",fontFamily:"'Space Mono',monospace",fontSize:11,color:GOLD}}>AI →</span>
                 </div>
-
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
                   <div style={{...inp,borderColor:!date&&validErr?"#ef4444":"rgba(201,168,76,0.15)"}}>
                     <label style={lbl}>TRAVEL DATE{!date&&<span style={{color:"#ef4444"}}> *</span>}</label>
@@ -742,7 +865,6 @@ function SearchPage(){
                     <select value={busType} onChange={e=>setBusType(e.target.value)} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:"#1a1410",width:"100%",cursor:"pointer"}}>{BUS_TYPES.map(t=><option key={t}>{t}</option>)}</select>
                   </div>
                 </div>
-
                 {validErr&&<div style={{padding:"10px 14px",borderRadius:10,background:"#FFF0F0",border:"1px solid #FFCDD2",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#ef4444",marginBottom:12}}>{validErr}</div>}
                 <button onClick={searchBuses} style={{width:"100%",padding:"14px",borderRadius:14,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",boxShadow:`0 8px 28px rgba(201,168,76,0.44)`,transition:"transform 0.2s"}}
                   onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
@@ -750,20 +872,28 @@ function SearchPage(){
               </>
             )}
 
-            {/* ── AI MODE ── */}
+            {/* AI MODE */}
             {mode==="ai"&&(
               <div>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#888",marginBottom:10,lineHeight:1.55}}>
-                  Type in any language — English, Hindi, Tamil, Telugu, Kannada mix:
+                  Type in any language — English, Hindi, Tamil, Telugu, Kannada mix. Typos are fine too:
                 </div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:12}}>
-                  {["flights bangalore to goa tomorrow","blr to del friday sasta","bus bangalore to chennai kal","mumbai to delhi kal subah","goa flights this weekend under 4000","bus Hyderabad to Bangalore raat ko"].map(ex=>(
+                  {[
+                    "flights frm bangaluru to mumbai",
+                    "blr to del kal sasta",
+                    "bus bangalore to chennai kal",
+                    "mumbai to delhi tomorrow morning",
+                    "goa flights this weekend under 4000",
+                    "bengalure se goa ka flight",
+                  ].map(ex=>(
                     <button key={ex} onClick={()=>setAiQuery(ex)} style={{padding:"5px 12px",borderRadius:100,fontSize:12,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:`rgba(201,168,76,0.08)`,border:`1px solid rgba(201,168,76,0.2)`,color:GOLD_DARK}}>{ex}</button>
                   ))}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:12,background:"#fafaf8",borderRadius:14,padding:"4px 4px 4px 18px",border:`1.5px solid rgba(201,168,76,0.3)`,marginBottom:8}}>
                   <span style={{fontSize:18,opacity:0.6}}>🤖</span>
-                  <input value={aiQuery} onChange={e=>{setAiQuery(e.target.value);setAiError("");}} onKeyDown={e=>e.key==="Enter"&&searchAI()} placeholder='Type any way you want — "bangalor to goa kal" works!'
+                  <input value={aiQuery} onChange={e=>{setAiQuery(e.target.value);setAiError("");}} onKeyDown={e=>e.key==="Enter"&&searchAI()}
+                    placeholder='Type any way — "flights frm bangaluru to mumbai" works!'
                     style={{flex:1,background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:15,color:"#1a1410",padding:"12px 0"}}/>
                 </div>
                 {aiError&&<div style={{padding:"10px 14px",borderRadius:10,background:"#FFF0F0",border:"1px solid #FFCDD2",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#ef4444",marginBottom:8}}>{aiError}</div>}
@@ -806,10 +936,9 @@ function SearchPage(){
         {!loading&&searched&&(
           <>
             <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:"#bbb",letterSpacing:"0.15em",marginBottom:14}}>
-              {filtered.length>0?`${filtered.length} ${travelType==="bus"?"BUSES":"FLIGHTS"} FOUND`:"NO RESULTS MATCH FILTERS"}
+              {filtered.length>0?`${filtered.length} ${travelType==="bus"?"BUSES":"FLIGHTS"} FOUND`:"NO RESULTS — TRY A DIFFERENT DATE OR ROUTE"}
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-
               {/* Flight cards */}
               {travelType==="flight"&&filtered.map((flight,i)=>(
                 <div key={flight.id} style={{background:"rgba(255,255,255,0.85)",backdropFilter:"blur(10px)",borderRadius:18,padding:"20px 22px",boxShadow:"0 4px 16px rgba(0,0,0,0.04)",border:"1px solid rgba(201,168,76,0.1)",animation:`fadeUp 0.4s ${i*60}ms both`,transition:"all 0.2s"}}
