@@ -107,12 +107,23 @@ const BUS_ROUTES=[
 
 // ─── IMPROVED AI PARSER ───────────────────────────────────────────────────────
 // Handles broken English, typos, Hindi/Tamil/Telugu/Kannada mix
-const CITY_ALIASES={
+const CITY_ALIASES = {
   // Bangalore variations
-  "bangalore":"bangalore","bengaluru":"bangalore","bengalore":"bangalore","bangaluru":"bangalore",
-  "blr":"bangalore","bang":"bangalore","banglore":"bangalore","bangalor":"bangalore",
-  "bangaluru":"bangalore","bengalure":"bangalore","bangalure":"bangalore","banglaore":"bangalore",
-  "b'lore":"bangalore","blore":"bangalore","namma ooru":"bangalore","garden city":"bangalore",
+  "bangalore": "bangalore",
+  "bengaluru": "bangalore",
+  "bengalore": "bangalore",
+  "bangaluru": "bangalore",
+  "blr": "bangalore",
+  "bang": "bangalore",
+  "banglore": "bangalore",
+  "bangalor": "bangalore",
+  "bengalure": "bangalore",
+  "bangalure": "bangalore",
+  "banglaore": "bangalore",
+  "b'lore": "bangalore",
+  "blore": "bangalore",
+  "namma ooru": "bangalore",
+  "garden city": "bangalore",
   // Mumbai variations
   "mumbai":"mumbai","bombay":"mumbai","bom":"mumbai","mum":"mumbai","mumbi":"mumbai",
   "mombai":"mumbai","bombay city":"mumbai","mumbay":"mumbai","bombai":"mumbai",
