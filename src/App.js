@@ -19,6 +19,16 @@ import AdminDashboard from "./pages/AdminDashboard";
 import UserProfile from "./pages/UserProfile";
 
 const API = "https://cometai-backend.onrender.com";
+
+// Analytics tracker — fire and forget, never blocks UI
+function track(eventType, details = "", source = "web") {
+  const token = localStorage.getItem("token");
+  fetch(`${API}/track`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify({ event_type: eventType, details: String(details), source }),
+  }).catch(() => {});
+}
 const GOLD = "#c9a84c";
 const GOLD_DARK = "#8B6914";
 const GRAD = "linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)";
@@ -184,7 +194,7 @@ const CITY_ALIASES = {
   "aizawl":"aizawl","ajl":"aizawl",
   "agartala":"agartala","ixr2":"agartala",
   "gorakhpur":"gorakhpur","grp":"gorakhpur",
-  "jodhpur":"jodhpur","jdh":"jodhpur",
+  "jdh":"jodhpur",
   // ── International ──────────────────────────────────────────────────────────
   "dubai":"dubai","dxb":"dubai","dubi":"dubai","dubay":"dubai",
   "singapore":"singapore","sin":"singapore","singapur":"singapore","singapoor":"singapore",
@@ -234,7 +244,7 @@ const CITY_ALIASES = {
   "dhaka":"dhaka","dac":"dhaka","bangladesh":"dhaka",
   "karachi":"karachi","khi":"karachi","pakistan":"karachi",
   "lahore":"lahore","lhe":"lahore",
-  "colombo":"colombo","cmb":"colombo",
+  
   "male":"male","mle":"male","maldives":"male",
   "rangoon":"rangoon","rgn":"rangoon","myanmar":"rangoon","yangon":"rangoon",
   "phnom penh":"phnom penh","pnh":"phnom penh","cambodia":"phnom penh",
@@ -738,15 +748,17 @@ function SearchPage(){
   }, []);
 
   const openBusLink = useCallback((from, to) => {
+    track("bus_search", `${from} → ${to}`, "web");
     window.open(busLink(from, to), "_blank", "noopener,noreferrer");
   }, []);
 
   const openHotelLink = useCallback((city) => {
+    track("hotel_search", city, "web");
     window.open(hotelLink(city), "_blank", "noopener,noreferrer");
   }, []);
 
   const handleFlightDeal = (fromName, toName) => {
-    // Show seat map first, then open affiliate link
+    track("view_deal", `${fromName} → ${toName}`, "web");
     setPendingLink({ fromName, toName });
     setShowSeats(true);
   };
@@ -783,6 +795,7 @@ function SearchPage(){
   };
 
   const searchBuses = () => {
+    track("bus_search",`${busFrom} → ${busTo}`,"web");
     setValidErr(""); if (!date) { setValidErr("Please select a travel date"); return; }
     setLoading(true); setSearched(true); setBuses([]);
     setTimeout(() => {
