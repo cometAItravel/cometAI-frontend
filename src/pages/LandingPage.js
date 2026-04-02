@@ -45,7 +45,7 @@ const AlvrynIcon = ({ size = 44, color = "#6C63FF", animate = false }) => (
     <defs>
       <linearGradient id="icon_g" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#c9a84c"/>
-        <stop offset="50%" stopColor="#00C2FF"/>
+        <stop offset="50%" stopColor="#f0d080"/>
         <stop offset="100%" stopColor="#8B6914"/>
       </linearGradient>
       <filter id="icon_glow">
@@ -337,12 +337,12 @@ export default function LandingPage() {
   const [sec2Ref, sec2Offset] = useParallax(0.12);
 
   const features = [
-    { icon:"🧠", title:"AI Natural Search", desc:"Type like texting — any language, typos, Hindi-English mix. Alvryn understands everything.", color:"#6C63FF" },
-    { icon:"✈️", title:"Flight Booking", desc:"500+ domestic & international routes. Real-time fares, instant confirmation.", color:"#0284C7" },
-    { icon:"🚌", title:"Bus Booking", desc:"AC Sleeper, Semi-Sleeper across 30+ intercity routes. Book instantly.", color:"#059669" },
-    { icon:"💺", title:"Seat Selection", desc:"Pick your exact seat on flights and buses — window, aisle, or any preference.", color:"#EA580C" },
-    { icon:"💬", title:"WhatsApp Native", desc:"Book entire trips without opening a browser. Just message Alvryn AI.", color:"#25D366" },
-    { icon:"🔒", title:"Zero Hidden Fees", desc:"The price you see is the price you pay. Always.", color:"#7C3AED" },
+    { icon:"🧠", title:"AI Natural Search",  desc:"Type like texting — any language, typos, Hindi-English mix. Alvryn understands everything.", color:"#c9a84c" },
+    { icon:"✈️", title:"Flight Booking",     desc:"Domestic and international routes. Best fares via trusted partners, instantly.", color:"#0284C7" },
+    { icon:"🚌", title:"Bus Booking",        desc:"AC Sleeper, Semi-Sleeper buses across 50+ intercity routes in India.", color:"#059669" },
+    { icon:"🏨", title:"Hotel Booking",      desc:"Hotels worldwide — from budget stays to luxury resorts. Best prices via partner.", color:"#EA580C" },
+    { icon:"💬", title:"WhatsApp Native",    desc:"Book flights, buses and hotels entirely inside WhatsApp. No app needed.", color:"#25D366" },
+    { icon:"🔒", title:"Zero Hidden Fees",   desc:"The price you see is the price you pay. We may earn a small commission at no cost to you.", color:"#7C3AED" },
   ];
 
   return (
@@ -414,8 +414,9 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="nav-links" style={{ display:"flex", gap:32 }}>
-            {["How it works","Features","Flights","Buses"].map(l => (
-              <span key={l} style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:500, color:T.text, opacity:0.6, cursor:"pointer", transition:"opacity 0.2s" }}
+            {[["How it works","how-it-works"],["Features","features"],["Flights","cta"],["Buses","cta"]].map(([l,id]) => (
+              <span key={l} onClick={()=>{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth"});}}
+                style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:500, color:T.text, opacity:0.6, cursor:"pointer", transition:"opacity 0.2s" }}
                 onMouseEnter={e=>e.target.style.opacity=1} onMouseLeave={e=>e.target.style.opacity=0.6}>{l}</span>
             ))}
           </div>
@@ -519,7 +520,7 @@ export default function LandingPage() {
         {/* ══════════════════════════════════
             HOW IT WORKS
         ══════════════════════════════════ */}
-        <section ref={sec2Ref} style={{ minHeight:"100vh", background:THEMES[1].bg, position:"relative", overflow:"hidden", padding:"110px 5%", display:"flex", alignItems:"center", transition:"background 1.5s ease" }}>
+        <section id="how-it-works" ref={sec2Ref} style={{ minHeight:"100vh", background:THEMES[1].bg, position:"relative", overflow:"hidden", padding:"110px 5%", display:"flex", alignItems:"center", transition:"background 1.5s ease" }}>
           <div style={{ position:"absolute", top:"50%", right:"-8%", width:500, height:500, borderRadius:"50%",
             background:`radial-gradient(circle,${THEMES[1].accent}08,transparent 70%)`,
             transform:`translateY(calc(-50% + ${sec2Offset}px))`, pointerEvents:"none", transition:"transform 0.1s linear" }}/>
@@ -566,7 +567,7 @@ export default function LandingPage() {
         {/* ══════════════════════════════════
             FEATURES
         ══════════════════════════════════ */}
-        <section style={{ minHeight:"100vh", background:THEMES[2].bg, position:"relative", overflow:"hidden", padding:"110px 5%", transition:"background 1.5s ease" }}>
+        <section id="features" style={{ minHeight:"100vh", background:THEMES[2].bg, position:"relative", overflow:"hidden", padding:"110px 5%", transition:"background 1.5s ease" }}>
           <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background:`radial-gradient(ellipse at 25% 60%,${THEMES[2].accent}06 0%,transparent 55%)`, pointerEvents:"none" }}/>
           <div style={{ position:"relative", zIndex:2 }}>
             <Reveal style={{ textAlign:"center" }}>
@@ -606,7 +607,7 @@ export default function LandingPage() {
             </Reveal>
             <div className="stats-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:22 }}>
               {[
-                { val:12000, suf:"+", label:"Waitlist Members" },
+                { val:500,  suf:"+", label:"Routes Available" },
                 { val:98,    suf:"%", label:"Satisfaction Rate" },
                 { val:500,   suf:"+", label:"Routes Covered" },
                 { val:60,    suf:"s", label:"Avg Booking Time" },
@@ -772,7 +773,7 @@ export default function LandingPage() {
         {/* ══════════════════════════════════
             FINAL CTA
         ══════════════════════════════════ */}
-        <section style={{ minHeight:"60vh", background:THEMES[0].bg, position:"relative", overflow:"hidden", padding:"110px 5%", display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center", transition:"background 1.5s ease" }}>
+        <section id="cta" style={{ minHeight:"60vh", background:THEMES[0].bg, position:"relative", overflow:"hidden", padding:"110px 5%", display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center", transition:"background 1.5s ease" }}>
           <div style={{ position:"relative", zIndex:2, maxWidth:640 }}>
             <Reveal>
               <div style={{ animation:"floatY 4s ease-in-out infinite", marginBottom:30 }}>

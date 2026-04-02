@@ -433,6 +433,47 @@ const BUS_ROUTES = [
   {from:"Kolkata",  to:"Guwahati",   dur:"12h",   dep:"17:00",arr:"05:00",price:900,  type:"AC Sleeper",   op:"Assam SRTC"},
   {from:"Kolkata",  to:"Siliguri",   dur:"8h",    dep:"20:00",arr:"04:00",price:700,  type:"AC Sleeper",   op:"NBSTC"},
   {from:"Kolkata",  to:"Ranchi",     dur:"6h",    dep:"07:00",arr:"13:00",price:550,  type:"AC Seater",    op:"JSTC"},
+  // More South India routes
+  {from:"Bangalore",to:"Salem",      dur:"3h 30m",dep:"07:30",arr:"11:00",price:320,  type:"AC Seater",    op:"KSRTC"},
+  {from:"Bangalore",to:"Salem",      dur:"3h 30m",dep:"14:00",arr:"17:30",price:300,  type:"AC Seater",    op:"SRM Travels"},
+  {from:"Bangalore",to:"Vellore",    dur:"3h",    dep:"06:30",arr:"09:30",price:280,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Bangalore",to:"Trichy",     dur:"6h",    dep:"22:00",arr:"04:00",price:550,  type:"AC Sleeper",   op:"TNSTC"},
+  {from:"Bangalore",to:"Tirunelveli",dur:"9h",    dep:"21:00",arr:"06:00",price:750,  type:"AC Sleeper",   op:"Parveen Travels"},
+  {from:"Bangalore",to:"Nagercoil",  dur:"10h",   dep:"20:30",arr:"06:30",price:800,  type:"AC Sleeper",   op:"KSRTC"},
+  {from:"Bangalore",to:"Pondicherry",dur:"5h",    dep:"07:00",arr:"12:00",price:450,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Bangalore",to:"Ooty",       dur:"5h",    dep:"07:30",arr:"12:30",price:380,  type:"AC Seater",    op:"KSRTC"},
+  {from:"Bangalore",to:"Dharmapuri", dur:"3h",    dep:"08:00",arr:"11:00",price:260,  type:"AC Seater",    op:"KSRTC"},
+  {from:"Bangalore",to:"Hosur",      dur:"1h 30m",dep:"07:00",arr:"08:30",price:120,  type:"AC Seater",    op:"KSRTC"},
+  {from:"Chennai",  to:"Trichy",     dur:"5h",    dep:"07:00",arr:"12:00",price:400,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Chennai",  to:"Salem",      dur:"4h",    dep:"07:30",arr:"11:30",price:300,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Chennai",  to:"Vellore",    dur:"2h 30m",dep:"07:00",arr:"09:30",price:200,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Chennai",  to:"Pondicherry",dur:"3h",    dep:"07:00",arr:"10:00",price:220,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Chennai",  to:"Tirunelveli",dur:"8h",    dep:"21:00",arr:"05:00",price:600,  type:"AC Sleeper",   op:"Parveen Travels"},
+  {from:"Chennai",  to:"Nagercoil",  dur:"9h",    dep:"20:30",arr:"05:30",price:650,  type:"AC Sleeper",   op:"TNSTC"},
+  {from:"Chennai",  to:"Ooty",       dur:"7h",    dep:"22:00",arr:"05:00",price:550,  type:"AC Sleeper",   op:"TNSTC"},
+  {from:"Chennai",  to:"Thanjavur",  dur:"6h",    dep:"22:30",arr:"04:30",price:480,  type:"AC Sleeper",   op:"TNSTC"},
+  {from:"Coimbatore",to:"Chennai",   dur:"7h",    dep:"21:00",arr:"04:00",price:600,  type:"AC Sleeper",   op:"TNSTC"},
+  {from:"Coimbatore",to:"Bangalore", dur:"4h",    dep:"07:00",arr:"11:00",price:380,  type:"AC Seater",    op:"KSRTC"},
+  {from:"Coimbatore",to:"Ooty",      dur:"1h 30m",dep:"06:00",arr:"07:30",price:120,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Coimbatore",to:"Trivandrum",dur:"8h",    dep:"22:00",arr:"06:00",price:700,  type:"AC Sleeper",   op:"KSRTC"},
+  {from:"Coimbatore",to:"Madurai",   dur:"3h",    dep:"07:00",arr:"10:00",price:280,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Madurai",  to:"Chennai",    dur:"8h",    dep:"21:00",arr:"05:00",price:580,  type:"AC Sleeper",   op:"TNSTC"},
+  {from:"Madurai",  to:"Trichy",     dur:"2h",    dep:"07:00",arr:"09:00",price:180,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Madurai",  to:"Nagercoil",  dur:"3h",    dep:"07:00",arr:"10:00",price:250,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Madurai",  to:"Tirunelveli",dur:"2h",    dep:"07:00",arr:"09:00",price:180,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Madurai",  to:"Coimbatore", dur:"3h",    dep:"07:30",arr:"10:30",price:280,  type:"AC Seater",    op:"TNSTC"},
+  {from:"Trivandrum",to:"Kochi",     dur:"4h",    dep:"07:00",arr:"11:00",price:350,  type:"AC Seater",    op:"KSRTC"},
+  {from:"Kochi",    to:"Trivandrum", dur:"4h",    dep:"07:30",arr:"11:30",price:350,  type:"AC Seater",    op:"KSRTC"},
+  {from:"Kochi",    to:"Bangalore",  dur:"10h",   dep:"22:00",arr:"08:00",price:950,  type:"AC Sleeper",   op:"KSRTC"},
+  {from:"Kochi",    to:"Chennai",    dur:"8h",    dep:"22:00",arr:"06:00",price:800,  type:"AC Sleeper",   op:"TNSTC"},
+  {from:"Kochi",    to:"Coimbatore", dur:"4h 30m",dep:"07:00",arr:"11:30",price:380,  type:"AC Seater",    op:"KSRTC"},
+  // More North/Central India
+  {from:"Delhi",    to:"Manali",     dur:"14h",   dep:"17:00",arr:"07:00",price:1100, type:"Semi-Sleeper", op:"HRTC"},
+  {from:"Delhi",    to:"Rishikesh",  dur:"6h",    dep:"06:00",arr:"12:00",price:520,  type:"AC Seater",    op:"Uttarakhand Roadways"},
+  {from:"Delhi",    to:"Mathura",    dur:"3h",    dep:"07:00",arr:"10:00",price:320,  type:"AC Seater",    op:"UP Roadways"},
+  {from:"Jaipur",   to:"Ajmer",      dur:"2h 30m",dep:"07:00",arr:"09:30",price:200,  type:"AC Seater",    op:"RSRTC"},
+  {from:"Lucknow",  to:"Agra",       dur:"5h",    dep:"07:00",arr:"12:00",price:420,  type:"AC Seater",    op:"UP SRTC"},
+  {from:"Lucknow",  to:"Varanasi",   dur:"5h",    dep:"07:00",arr:"12:00",price:380,  type:"AC Seater",    op:"UP SRTC"},
 ];
 
 // ─── HOTEL DESTINATIONS ───────────────────────────────────────────────────────
@@ -705,8 +746,7 @@ function SearchPage(){
   const [flights,       setFlights]       = useState([]);
   const [buses,         setBuses]         = useState([]);
   const [filtered,      setFiltered]      = useState([]);
-  const [showSeats,     setShowSeats]     = useState(false);
-  const [pendingLink,   setPendingLink]   = useState("");
+
   const [filterTime,    setFilterTime]    = useState("any");
   const [filterMaxPrice,setFilterMaxPrice]= useState(20000);
   const [sortBy,        setSortBy]        = useState("price");
@@ -759,16 +799,7 @@ function SearchPage(){
 
   const handleFlightDeal = (fromName, toName) => {
     track("view_deal", `${fromName} → ${toName}`, "web");
-    setPendingLink({ fromName, toName });
-    setShowSeats(true);
-  };
-
-  const handleSeatsConfirmed = () => {
-    setShowSeats(false);
-    if (pendingLink) {
-      openFlightLink(pendingLink.fromName, pendingLink.toName, date, passengers);
-      setPendingLink("");
-    }
+    openFlightLink(fromName, toName, date, passengers);
   };
 
   const searchFlights = async () => {
@@ -904,7 +935,7 @@ function SearchPage(){
       {showBusFromModal && <BusCityModal title="Bus departure city" onSelect={c=>{setBusFrom(c);setShowBusFromModal(false);}} onClose={()=>setShowBusFromModal(false)} exclude={busTo}/>}
       {showBusToModal   && <BusCityModal title="Bus destination city" onSelect={c=>{setBusTo(c);setShowBusToModal(false);}} onClose={()=>setShowBusToModal(false)} exclude={busFrom}/>}
       {showHotelModal   && <HotelCityModal title="Select hotel city" onSelect={c=>{setHotelCity(c);setShowHotelModal(false);}} onClose={()=>setShowHotelModal(false)}/>}
-      {showSeats && <SeatModal passengers={passengers} onConfirm={handleSeatsConfirmed} onCancel={()=>setShowSeats(false)}/>}
+      {/* Seat modal removed — going direct to partner */}
 
       {/* NAV */}
       <nav style={{position:"sticky",top:0,zIndex:200,height:66,padding:"0 5%",display:"flex",alignItems:"center",justifyContent:"space-between",background:navScrolled?"rgba(250,248,244,0.95)":"rgba(250,248,244,0.82)",backdropFilter:"blur(22px)",borderBottom:"1px solid rgba(201,168,76,0.12)",transition:"all 0.3s"}}>
@@ -1259,7 +1290,7 @@ function SearchPage(){
                         <button onClick={()=>handleFlightDeal(flight.from_city, flight.to_city)}
                           style={{padding:"12px 26px",borderRadius:12,fontSize:14,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:`0 4px 14px rgba(201,168,76,0.44)`,transition:"transform 0.2s"}}
                           onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
-                          onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>View Deal →</button>
+                          onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>View Best Price →</button>
                       </div>
                     </>
                   )}
