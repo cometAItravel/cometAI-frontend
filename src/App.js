@@ -1,4 +1,4 @@
-/* eslint-disable no-useless-escape */
+/* eslint-disable no-useless-escape, no-unused-vars */
 /**
  * ALVRYN — App.js
  * Flights via TravelPayouts/Aviasales (trs=512951, shmarker=714667)
