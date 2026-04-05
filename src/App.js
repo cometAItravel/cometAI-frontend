@@ -1,7 +1,7 @@
 /* eslint-disable no-useless-escape, no-unused-vars */
 /**
  * ALVRYN — App.js
- * Flights via TravelPayouts/Aviasales (trs=512951, shmarker=714667)
+ * Flights via TravelPayouts/Aviasales (marker=714667)
  * Bus via RedBus redirect
  * Hotels via Booking.com redirect
  * All search types use the same fuzzy AI parser
@@ -34,7 +34,6 @@ const GOLD_DARK = "#8B6914";
 const GRAD = "linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)";
 
 // ─── AFFILIATE CONFIG ─────────────────────────────────────────────────────────
-const TP_TRS     = "512951";
 const TP_MARKER  = "714667";
 
 /** Build a TravelPayouts flight search URL */
@@ -46,7 +45,7 @@ function flightLink(fromCode, toCode, dateStr, passengers = 1) {
     if (parts.length === 3) d = parts[2] + parts[1]; // "0304"
   }
   const pax = Math.max(1, passengers);
-  return `https://www.aviasales.com/search/${fromCode}${d}${toCode}${pax}?marker=${TP_MARKER}&trs=${TP_TRS}&sub_id=alvryn_web`;
+  return `https://www.aviasales.com/search/${fromCode}${d}${toCode}${pax}?marker=${TP_MARKER}&sub_id=alvryn_web`;
 }
 
 /** Build a RedBus bus search URL */
