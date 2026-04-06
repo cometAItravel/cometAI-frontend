@@ -80,7 +80,7 @@ function busLink(from, to, dateStr) {
 }
 
 // Hotel link — plain Booking.com URL, Cuelinks auto-converts
-function hotelLinkWithDates(city, checkIn, checkOut) {
+function hotelLink(city, checkIn, checkOut) {
   let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&lang=en-gb`;
   if (checkIn)  url += `&checkin=${checkIn}`;
   if (checkOut) url += `&checkout=${checkOut}`;
