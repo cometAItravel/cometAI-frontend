@@ -99,10 +99,6 @@ function trainLink(from, to, dateStr) {
   return `https://www.irctc.co.in/nget/train-search`;
 }
 
-/** Build a Booking.com hotel search URL */
-function hotelLinkBasic(city) {
-  return `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&lang=en-gb&src=index&utm_campaign=alvryn&utm_source=alvryn`;
-}
 
 // ─── STYLES ───────────────────────────────────────────────────────────────────
 const SHARED_CSS = `
