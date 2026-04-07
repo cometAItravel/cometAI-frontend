@@ -814,10 +814,7 @@ function TrainPanel() {
 
   const search = () => {
     // Extract station code from "BANGALORE (SBC)" → "SBC"
-    const getCode = s => {
-  const match = s.match(/\(([^)]+)\)/);
-  return match ? match[1] : "";
-};
+    const getCode = s => (s.match(/\(([^)]+)\)/) || [,""])[1];
     const fc = getCode(from);
     const tc = getCode(to);
     // IRCTC deep link — Cuelinks auto-converts to affiliate
@@ -1573,6 +1570,7 @@ function App() {
         <Route path="/bookings" element={<MyBookings/>}/>
         <Route path="/profile"  element={<UserProfile/>}/>
         <Route path="/admin"    element={<AdminDashboard/>}/>
+        <Route path="/ai"       element={<AIChatPage/>}/>
       </Routes>
     </Router>
   );
