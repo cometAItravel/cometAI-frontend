@@ -865,9 +865,9 @@ function TripMindMap({tripSummary}){
 
 // ── SHARE TRIP CARD ───────────────────────────────────────────────────────────
 function ShareTripCard({tripSummary}){
+  const [copied,setCopied]=React.useState(false);
   if(!tripSummary)return null;
   const {shareUrl,shareText}=tripSummary;
-  const [copied,setCopied]=React.useState(false);
   return(
     <div style={{background:"linear-gradient(135deg,rgba(201,168,76,0.08),rgba(240,208,128,0.06))",
       borderRadius:13,padding:"13px 14px",border:"1.5px solid rgba(201,168,76,0.28)",
