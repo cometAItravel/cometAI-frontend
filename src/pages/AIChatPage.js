@@ -466,29 +466,38 @@ function EmptyState({onChip}){
     "🏖️ Best time to visit Goa — flights + hotels",
   ];
   return(
-    <div style={{textAlign:"center",paddingTop:"8vh",animation:"fadeUp 0.5s both"}}>
-      <div style={{animation:"float 4s ease-in-out infinite",display:"inline-block",marginBottom:22}}>
-        <Logo size={58}/>
+    <div style={{textAlign:"center",paddingTop:"clamp(16px,4vh,48px)",
+      paddingBottom:"clamp(12px,3vh,32px)",animation:"fadeUp 0.5s both"}}>
+      <div style={{animation:"float 4s ease-in-out infinite",display:"inline-block",marginBottom:16}}>
+        <Logo size={52}/>
       </div>
       <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:300,
-        fontSize:"clamp(28px,5vw,52px)",color:"#fff",marginBottom:12,lineHeight:1.05,
+        fontSize:"clamp(22px,5vw,52px)",color:"#fff",marginBottom:8,lineHeight:1.1,
         background:C.gradGG,backgroundClip:"text",WebkitBackgroundClip:"text",
-        WebkitTextFillColor:"transparent",backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite"}}>
+        WebkitTextFillColor:"transparent",backgroundSize:"200% 200%",
+        animation:"gradShift 4s ease infinite",padding:"0 8px"}}>
         Where do you want to go?
       </h1>
-      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,color:C.textSec,
-        marginBottom:40,lineHeight:1.75,maxWidth:460,margin:"0 auto 40px"}}>
+      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:"clamp(13px,3vw,16px)",
+        color:C.textSec,marginBottom:20,lineHeight:1.65,maxWidth:460,
+        margin:"0 auto 20px",padding:"0 12px"}}>
         Flights · Buses · Hotels · Trains · Trip planning<br/>
-        <span style={{fontSize:13,color:C.textMuted}}>Any language. Any route. Typos? No problem. 😄</span>
+        <span style={{fontSize:"clamp(11px,2.5vw,13px)",color:C.textMuted}}>
+          Any language. Any route. Typos? No problem. 😄
+        </span>
       </p>
-      <div style={{display:"flex",flexWrap:"wrap",gap:9,justifyContent:"center",
-        maxWidth:640,margin:"0 auto"}}>
+      {/* Chips — 2 per row on mobile, wrap on desktop */}
+      <div style={{display:"grid",
+        gridTemplateColumns:"repeat(auto-fit,minmax(clamp(140px,40vw,260px),1fr))",
+        gap:"clamp(7px,2vw,10px)",maxWidth:660,margin:"0 auto",padding:"0 12px"}}>
         {chips.map((s,i)=>(
           <button key={i} className="chip" onClick={()=>onChip(s)}
-            style={{padding:"9px 16px",borderRadius:100,fontSize:13,cursor:"pointer",
+            style={{padding:"clamp(8px,2vw,11px) clamp(10px,3vw,16px)",
+              borderRadius:100,fontSize:"clamp(11px,2.8vw,13px)",cursor:"pointer",
               background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.25)",
-              color:C.textSec,transition:"all 0.18s",fontFamily:"'DM Sans',sans-serif",fontWeight:500,
-              animation:`fadeUp 0.35s ${i*50}ms both`}}>
+              color:C.textSec,transition:"all 0.18s",fontFamily:"'DM Sans',sans-serif",
+              fontWeight:500,textAlign:"center",lineHeight:1.4,
+              animation:`fadeUp 0.35s ${i*45}ms both`,whiteSpace:"normal"}}>
             {s}
           </button>
         ))}
@@ -956,7 +965,7 @@ export default function AIChatPage(){
         </div>
 
         {/* ── Messages ── */}
-        <div style={{flex:1,overflowY:"auto",padding:"clamp(12px,3vw,24px) clamp(10px,3vw,20px)",background:"#f0e8d4"}}>
+        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"clamp(10px,2vw,20px) clamp(8px,2vw,16px)",background:"#f0e8d4",minHeight:0}}>
           <div style={{maxWidth:740,margin:"0 auto"}}>
             {empty&&<EmptyState onChip={send}/>}
             {messages.map(m=>(
