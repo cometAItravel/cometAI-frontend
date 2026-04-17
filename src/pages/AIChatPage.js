@@ -81,11 +81,11 @@ html,body{height:100%;overflow:hidden;background:#f8f4ec;}
 .send-btn:disabled{opacity:0.3;cursor:default;}
 textarea:focus{outline:none;}
 @media(max-width:768px){
-  .sidebar{width:0!important;padding:0!important;overflow:hidden!important;}
-  .sidebar.open{width:85vw!important;max-width:280px!important;position:fixed!important;left:0!important;top:0!important;height:100vh!important;z-index:200!important;display:flex!important;flex-direction:column!important;padding:14px 11px!important;overflow:visible!important;}
+  .sidebar{width:0!important;padding:0!important;overflow:hidden!important;min-width:0!important;}
+  .sidebar.open{width:82vw!important;max-width:270px!important;position:fixed!important;left:0!important;top:0!important;height:100dvh!important;height:100vh!important;z-index:200!important;display:flex!important;flex-direction:column!important;padding:16px 12px!important;overflow-y:auto!important;overflow-x:hidden!important;background:#160f04!important;}
   .overlay{display:block!important;}
 }
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:190;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:190;}
 @media(max-width:480px){
   .travel-card{padding:12px!important;}
   .travel-card .price{font-size:18px!important;}
@@ -515,6 +515,21 @@ function ChatSidebarItem({chat,isActive,onLoad,onRename,onDelete}){
   const [menuOpen,setMenuOpen]=useState(false);
   const [renaming,setRenaming]=useState(false);
   const [renameVal,setRenameVal]=useState(chat.title);
+  const menuRef=useRef(null);
+
+  // Close menu when clicking outside
+  useEffect(()=>{
+    if(!menuOpen) return;
+    const handler=(e)=>{
+      if(menuRef.current&&!menuRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown",handler);
+    document.addEventListener("touchstart",handler);
+    return()=>{
+      document.removeEventListener("mousedown",handler);
+      document.removeEventListener("touchstart",handler);
+    };
+  },[menuOpen]);
 
   return(
     <div style={{position:"relative",marginBottom:2}}>
@@ -538,17 +553,18 @@ function ChatSidebarItem({chat,isActive,onLoad,onRename,onDelete}){
         </div>
         {/* 3-dot button */}
         <button onClick={e=>{e.stopPropagation();setMenuOpen(s=>!s);}}
-          style={{flexShrink:0,width:24,height:24,borderRadius:5,background:"transparent",border:"none",
+          style={{flexShrink:0,width:28,height:28,borderRadius:5,background:"transparent",border:"none",
             cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-            color:"#a0896a",fontSize:14,opacity:isActive?1:0,transition:"opacity 0.15s"}}
+            color:"#a0896a",fontSize:16,opacity:isActive?1:0.4,transition:"opacity 0.15s",
+            WebkitTapHighlightColor:"transparent"}}
           onMouseEnter={e=>{e.currentTarget.style.opacity="1";e.currentTarget.style.background="rgba(201,168,76,0.15)";}}
-          onMouseLeave={e=>{e.currentTarget.style.background="transparent";if(!isActive)e.currentTarget.style.opacity="0";}}>
+          onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.opacity=isActive?"1":"0";}}>
           ⋯
         </button>
       </div>
       {/* Dropdown menu */}
       {menuOpen&&(
-        <div onClick={e=>e.stopPropagation()}
+        <div ref={menuRef} onClick={e=>e.stopPropagation()}
           style={{position:"absolute",right:0,top:34,zIndex:100,
             background:"#fff",borderRadius:10,padding:"4px 0",
             boxShadow:"0 8px 28px rgba(0,0,0,0.15)",border:"1px solid rgba(201,168,76,0.2)",

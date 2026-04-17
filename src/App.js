@@ -894,8 +894,8 @@ function TrainPanel() {
   const [toOpen,setToOpen]     = useState(false);
   const today = new Date().toISOString().split("T")[0];
 
-  const fromFiltered = STATIONS.filter(s=>s.name.toLowerCase().includes(fromQ.toLowerCase())||s.code.toLowerCase().includes(fromQ.toLowerCase())).slice(0,8);
-  const toFiltered   = STATIONS.filter(s=>s.name.toLowerCase().includes(toQ.toLowerCase())||s.code.toLowerCase().includes(toQ.toLowerCase())).slice(0,8);
+  const fromFiltered = fromQ.trim() ? STATIONS.filter(s=>s.name.toLowerCase().includes(fromQ.toLowerCase())||s.code.toLowerCase().includes(fromQ.toLowerCase())).slice(0,8) : STATIONS.slice(0,8);
+  const toFiltered   = toQ.trim() ? STATIONS.filter(s=>s.name.toLowerCase().includes(toQ.toLowerCase())||s.code.toLowerCase().includes(toQ.toLowerCase())).slice(0,8) : STATIONS.slice(0,8);
 
   const selectFrom = (s) => { setFrom(s.name); setFromQ(s.name); setFromOpen(false); };
   const selectTo   = (s) => { setTo(s.name);   setToQ(s.name);   setToOpen(false); };
@@ -954,8 +954,8 @@ function TrainPanel() {
           <div style={{position:"relative"}}>
             <input value={fromQ} placeholder="City or station code..."
               onChange={e=>{setFromQ(e.target.value);setFromOpen(true);}}
-              onFocus={()=>setFromOpen(true)}
-              onBlur={()=>setTimeout(()=>setFromOpen(false),180)}
+              onFocus={e=>{e.target.select();setFromQ("");setFromOpen(true);}}
+              onBlur={()=>setTimeout(()=>{setFromOpen(false);if(!fromQ.trim())setFromQ(from);},200)}
               style={inp2}/>
             {fromOpen&&fromFiltered.length>0&&(
               <div style={dropStyle}>
@@ -989,8 +989,8 @@ function TrainPanel() {
           <div style={{position:"relative"}}>
             <input value={toQ} placeholder="City or station code..."
               onChange={e=>{setToQ(e.target.value);setToOpen(true);}}
-              onFocus={()=>setToOpen(true)}
-              onBlur={()=>setTimeout(()=>setToOpen(false),180)}
+              onFocus={e=>{e.target.select();setToQ("");setToOpen(true);}}
+              onBlur={()=>setTimeout(()=>{setToOpen(false);if(!toQ.trim())setToQ(to);},200)}
               style={inp2}/>
             {toOpen&&toFiltered.length>0&&(
               <div style={dropStyle}>
