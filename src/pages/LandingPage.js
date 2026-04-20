@@ -373,6 +373,7 @@ const THEMES_DARK = [
   { bg:"#0f0c06", accent:GOLD_A, grad:GOLD_G, text:"#f5ead5", sub:"#c9a84c" },
 ];
 // Keep backwards compat
+const THEMES = THEMES_LIGHT;
 
 /* ─── FOOTER MODAL ──────────────────────────────────────────────────────────── */
 const FooterModal = ({ open, onClose, title, children }) => {
