@@ -111,7 +111,7 @@ function Typing(){
       width:"fit-content",backdropFilter:"blur(8px)"}}>
       {[0,1,2].map(i=>(
         <div key={i} style={{width:8,height:8,borderRadius:"50%",
-          background:i===1?C.green:C.gold,
+          background:i===1?C_STATIC.green:C_STATIC.gold,
           animation:`pulse 1.3s ${i*0.22}s ease-in-out infinite`}}/>
       ))}
     </div>
@@ -256,11 +256,11 @@ function CountrySelector({token, onSelect}){
 
 // ── FLIGHT CARD ─────────────────────────────────────────────────────────────────
 function FlightCard({f,i}){
-  const LBL = {"Best Price":[C.greenD,"rgba(22,163,74,0.13)"],"Fastest":["#60a5fa","rgba(96,165,250,0.13)"],"Best Overall":[C.goldD,"rgba(201,168,76,0.2)"]};
-  const [lc,lb] = LBL[f.label]||[C.gold,"rgba(201,168,76,0.1)"];
+  const LBL = {"Best Price":[C_STATIC.greenD,"rgba(22,163,74,0.13)"],"Fastest":["#60a5fa","rgba(96,165,250,0.13)"],"Best Overall":[C_STATIC.goldD,"rgba(201,168,76,0.2)"]};
+  const [lc,lb] = LBL[f.label]||[C_STATIC.gold,"rgba(201,168,76,0.1)"];
   return(
     <div className="travel-card" onClick={()=>window.open(f.link,"_blank","noopener")}
-      style={{background:C.cardBg,borderRadius:16,padding:"16px 18px",
+      style={{background:C_STATIC.cardBg,borderRadius:16,padding:"16px 18px",
         border:"1px solid rgba(201,168,76,0.2)",cursor:"pointer",
         boxShadow:"0 4px 20px rgba(0,0,0,0.2)",marginBottom:10,
         animation:`fadeUp 0.3s ${i*75}ms both`}}>
@@ -271,8 +271,8 @@ function FlightCard({f,i}){
             border:`1px solid rgba(201,168,76,0.2)`,
             display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>✈️</div>
           <div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:C.textPri}}>{f.airline||"Multiple Airlines"}</div>
-            {f.insight&&<div style={{fontSize:11,color:C.textMuted,marginTop:2}}>💡 {f.insight}</div>}
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:C_STATIC.textPri}}>{f.airline||"Multiple Airlines"}</div>
+            {f.insight&&<div style={{fontSize:11,color:C_STATIC.textMuted,marginTop:2}}>💡 {f.insight}</div>}
           </div>
         </div>
         {f.label&&<span style={{padding:"4px 11px",borderRadius:100,fontSize:10,
@@ -281,33 +281,33 @@ function FlightCard({f,i}){
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
         <div style={{textAlign:"center",minWidth:60}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:C.textPri,lineHeight:1}}>{f.departure||"—"}</div>
-          <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:C.textMuted,marginTop:3}}>{f.fromCode}</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:C_STATIC.textPri,lineHeight:1}}>{f.departure||"—"}</div>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:C_STATIC.textMuted,marginTop:3}}>{f.fromCode}</div>
         </div>
         <div style={{flex:1,textAlign:"center",padding:"0 14px"}}>
-          <div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>{f.duration||"Direct"}</div>
-          <div style={{height:1,background:`linear-gradient(90deg,transparent,${C.gold},${C.green},transparent)`,position:"relative"}}>
-            <span style={{position:"absolute",top:-9,left:"50%",transform:"translateX(-50%)",fontSize:14,color:C.gold}}>✈</span>
+          <div style={{fontSize:11,color:C_STATIC.textMuted,marginBottom:4}}>{f.duration||"Direct"}</div>
+          <div style={{height:1,background:`linear-gradient(90deg,transparent,${C_STATIC.gold},${C_STATIC.green},transparent)`,position:"relative"}}>
+            <span style={{position:"absolute",top:-9,left:"50%",transform:"translateX(-50%)",fontSize:14,color:C_STATIC.gold}}>✈</span>
           </div>
-          <div style={{fontSize:10,color:C.greenD,marginTop:4,fontWeight:600}}>DIRECT</div>
+          <div style={{fontSize:10,color:C_STATIC.greenD,marginTop:4,fontWeight:600}}>DIRECT</div>
         </div>
         <div style={{textAlign:"center",minWidth:60}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:C.textPri,lineHeight:1}}>{f.arrival||"—"}</div>
-          <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:C.textMuted,marginTop:3}}>{f.toCode}</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:C_STATIC.textPri,lineHeight:1}}>{f.arrival||"—"}</div>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:C_STATIC.textMuted,marginTop:3}}>{f.toCode}</div>
         </div>
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
         paddingTop:12,borderTop:`1px solid rgba(201,168,76,0.1)`}}>
         <div>
-          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:C.textMuted,marginBottom:3,letterSpacing:"0.1em"}}>APPROX FROM</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:24,color:C.gold,lineHeight:1}}>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:C_STATIC.textMuted,marginBottom:3,letterSpacing:"0.1em"}}>APPROX FROM</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:24,color:C_STATIC.gold,lineHeight:1}}>
             {f.price?`₹${f.price.toLocaleString()}`:"Live rates"}
           </div>
-          {f.price&&<div style={{fontSize:10,color:C.textMuted,marginTop:2}}>–₹{Math.round(f.price*1.22).toLocaleString()} · may vary</div>}
+          {f.price&&<div style={{fontSize:10,color:C_STATIC.textMuted,marginTop:2}}>–₹{Math.round(f.price*1.22).toLocaleString()} · may vary</div>}
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:7,alignItems:"flex-end"}}>
           <div style={{padding:"10px 20px",borderRadius:12,
-            background:C.grad,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",
+            background:C_STATIC.grad,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",
             fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:14,color:"#1a1410",
             letterSpacing:"0.04em",cursor:"pointer",boxShadow:"0 4px 14px rgba(201,168,76,0.28)"}}>
             Compare & Book Best Price →
@@ -325,7 +325,7 @@ function FlightCard({f,i}){
 function BusCard({b,i}){
   return(
     <div className="travel-card" onClick={()=>window.open(b.link,"_blank","noopener")}
-      style={{background:C.cardBg,borderRadius:16,padding:"16px 18px",
+      style={{background:C_STATIC.cardBg,borderRadius:16,padding:"16px 18px",
         border:"1px solid rgba(34,197,94,0.15)",cursor:"pointer",
         boxShadow:"0 4px 20px rgba(0,0,0,0.2)",marginBottom:10,
         animation:`fadeUp 0.3s ${i*75}ms both`}}>
@@ -334,12 +334,12 @@ function BusCard({b,i}){
           <div style={{width:36,height:36,borderRadius:10,background:"rgba(34,197,94,0.12)",
             border:"1px solid rgba(34,197,94,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🚌</div>
           <div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:C.textPri}}>{b.operator}</div>
-            <div style={{fontSize:11,color:C.textMuted,marginTop:2}}>{b.type}</div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:C_STATIC.textPri}}>{b.operator}</div>
+            <div style={{fontSize:11,color:C_STATIC.textMuted,marginTop:2}}>{b.type}</div>
           </div>
         </div>
         {b.label&&<span style={{padding:"4px 11px",borderRadius:100,fontSize:10,
-          fontFamily:"'Space Mono',monospace",fontWeight:700,color:C.greenD,
+          fontFamily:"'Space Mono',monospace",fontWeight:700,color:C_STATIC.greenD,
           background:"rgba(22,163,74,0.13)",border:"1px solid rgba(22,163,74,0.25)"}}>{b.label}</span>}
       </div>
       {b.insight&&<div style={{fontSize:12,color:"rgba(201,168,76,0.75)",marginBottom:10,
@@ -348,30 +348,30 @@ function BusCard({b,i}){
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
         <div style={{textAlign:"center"}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fff"}}>{b.departure}</div>
-          <div style={{fontSize:11,color:C.textMuted,marginTop:2}}>{b.from}</div>
+          <div style={{fontSize:11,color:C_STATIC.textMuted,marginTop:2}}>{b.from}</div>
         </div>
         <div style={{flex:1,textAlign:"center",padding:"0 12px"}}>
-          <div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>{b.duration||"Direct"}</div>
+          <div style={{fontSize:11,color:C_STATIC.textMuted,marginBottom:4}}>{b.duration||"Direct"}</div>
           <div style={{height:1,background:"linear-gradient(90deg,transparent,rgba(34,197,94,0.5),transparent)",position:"relative"}}>
             <span style={{position:"absolute",top:-9,left:"50%",transform:"translateX(-50%)",fontSize:14}}>🚌</span>
           </div>
-          <div style={{fontSize:10,color:C.greenD,marginTop:4,fontWeight:600}}>DIRECT</div>
+          <div style={{fontSize:10,color:C_STATIC.greenD,marginTop:4,fontWeight:600}}>DIRECT</div>
         </div>
         <div style={{textAlign:"center"}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fff"}}>{b.arrival}</div>
-          <div style={{fontSize:11,color:C.textMuted,marginTop:2}}>{b.to}</div>
+          <div style={{fontSize:11,color:C_STATIC.textMuted,marginTop:2}}>{b.to}</div>
         </div>
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
         paddingTop:12,borderTop:"1px solid rgba(34,197,94,0.1)"}}>
         <div>
-          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:C.textMuted,marginBottom:3,letterSpacing:"0.1em"}}>APPROX FROM</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:C.greenD}}>₹{b.price?.toLocaleString()||"—"}</div>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:C_STATIC.textMuted,marginBottom:3,letterSpacing:"0.1em"}}>APPROX FROM</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:C_STATIC.greenD}}>₹{b.price?.toLocaleString()||"—"}</div>
         </div>
         <div style={{padding:"10px 20px",borderRadius:12,
           background:"linear-gradient(135deg,rgba(22,163,74,0.2),rgba(74,222,128,0.15))",
           border:"1px solid rgba(34,197,94,0.3)",
-          fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:13,color:C.greenMid,cursor:"pointer"}}>
+          fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:13,color:C_STATIC.greenMid,cursor:"pointer"}}>
           View on RedBus →
         </div>
       </div>
@@ -383,7 +383,7 @@ function BusCard({b,i}){
 function HotelCard({h,i}){
   return(
     <div className="travel-card" onClick={()=>window.open(h.link,"_blank","noopener")}
-      style={{background:C.cardBg,borderRadius:16,padding:"16px 18px",
+      style={{background:C_STATIC.cardBg,borderRadius:16,padding:"16px 18px",
         border:"1px solid rgba(251,146,60,0.15)",cursor:"pointer",
         boxShadow:"0 4px 20px rgba(0,0,0,0.2)",marginBottom:10,
         animation:`fadeUp 0.3s ${i*75}ms both`}}>
@@ -392,10 +392,10 @@ function HotelCard({h,i}){
           <div style={{width:36,height:36,borderRadius:10,background:"rgba(251,146,60,0.1)",
             border:"1px solid rgba(251,146,60,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🏨</div>
           <div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:C.textPri}}>Hotels in {h.city}</div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:C_STATIC.textPri}}>Hotels in {h.city}</div>
             <div style={{display:"flex",gap:1,marginTop:3,alignItems:"center"}}>
-              {"★★★★".split("").map((_,j)=><span key={j} style={{color:C.gold,fontSize:12}}>★</span>)}
-              <span style={{fontSize:11,color:C.textMuted,marginLeft:5}}>& above</span>
+              {"★★★★".split("").map((_,j)=><span key={j} style={{color:C_STATIC.gold,fontSize:12}}>★</span>)}
+              <span style={{fontSize:11,color:C_STATIC.textMuted,marginLeft:5}}>& above</span>
             </div>
           </div>
         </div>
@@ -408,7 +408,7 @@ function HotelCard({h,i}){
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
         paddingTop:12,borderTop:"1px solid rgba(251,146,60,0.1)"}}>
         <div>
-          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:C.textMuted,marginBottom:3,letterSpacing:"0.1em"}}>APPROX PER NIGHT</div>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:C_STATIC.textMuted,marginBottom:3,letterSpacing:"0.1em"}}>APPROX PER NIGHT</div>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fb923c"}}>₹{h.priceRange}</div>
         </div>
         <div style={{padding:"10px 20px",borderRadius:12,
@@ -425,7 +425,7 @@ function HotelCard({h,i}){
 function TrainCard({t,i}){
   return(
     <div className="travel-card" onClick={()=>window.open(t.link,"_blank","noopener")}
-      style={{background:C.cardBg,borderRadius:16,padding:"16px 18px",
+      style={{background:C_STATIC.cardBg,borderRadius:16,padding:"16px 18px",
         border:"1px solid rgba(139,92,246,0.18)",cursor:"pointer",
         boxShadow:"0 4px 20px rgba(0,0,0,0.2)",marginBottom:10,
         animation:`fadeUp 0.3s ${i*75}ms both`}}>
@@ -434,8 +434,8 @@ function TrainCard({t,i}){
           <div style={{width:36,height:36,borderRadius:10,background:"rgba(139,92,246,0.12)",
             border:"1px solid rgba(139,92,246,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🚂</div>
           <div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:C.textPri}}>{t.from} → {t.to}</div>
-            <div style={{fontSize:11,color:C.textMuted,marginTop:2}}>Indian Railways · IRCTC</div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:C_STATIC.textPri}}>{t.from} → {t.to}</div>
+            <div style={{fontSize:11,color:C_STATIC.textMuted,marginTop:2}}>Indian Railways · IRCTC</div>
           </div>
         </div>
         {t.label&&<span style={{padding:"4px 11px",borderRadius:100,fontSize:10,
@@ -464,7 +464,7 @@ function InfoCard({text,i}){
     <div style={{background:"rgba(201,168,76,0.06)",borderRadius:14,padding:"14px 16px",
       border:"1px solid rgba(201,168,76,0.15)",marginBottom:10,
       animation:`fadeUp 0.3s ${(i||0)*75}ms both`}}>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.textPri,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
+      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C_STATIC.textPri,lineHeight:1.7,whiteSpace:"pre-wrap"}}>
         {text}
       </div>
     </div>
@@ -477,7 +477,7 @@ function AiMsg({m}){
     <div style={{display:"flex",gap:12,marginBottom:24,animation:"fadeUp 0.25s both"}}>
       {/* Avatar */}
       <div style={{flexShrink:0,width:34,height:34,borderRadius:"50%",
-        background:C.grad,
+        background:C_STATIC.grad,
         border:`1.5px solid rgba(201,168,76,0.35)`,
         display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}}>
         <Logo size={22}/>
@@ -497,7 +497,7 @@ function AiMsg({m}){
         )}
         {/* Text */}
         {m.text&&(
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:C.textPri,
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:C_STATIC.textPri,
             lineHeight:1.8,marginBottom:m.cards?.length?16:0,whiteSpace:"pre-wrap"}}>
             {m.text}
           </div>
@@ -509,7 +509,7 @@ function AiMsg({m}){
         {m.cards?.filter(c=>c.type==="train").map((c,i)=><TrainCard key={i} t={c} i={i}/>)}
         {/* Disclaimer */}
         {m.cards?.length>0&&(
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.textMuted,marginTop:6}}>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"rgba(26,20,10,0.42)",marginTop:6}}>
             Prices shown are approximate and may vary. Tap any card to check live availability.
           </div>
         )}
@@ -537,7 +537,7 @@ function UserMsg({m}){
     <div style={{display:"flex",justifyContent:"flex-end",marginBottom:20,animation:"fadeIn 0.2s both"}}>
       <div style={{maxWidth:"70%",padding:"12px 18px",
         borderRadius:"20px 20px 4px 20px",
-        background:CT.userGrad||C.grad,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",
+        background:"linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)",backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",
         fontFamily:"'DM Sans',sans-serif",fontSize:15,color:"#1a1410",
         fontWeight:500,lineHeight:1.65,boxShadow:"0 4px 16px rgba(201,168,76,0.2)"}}>
         {m.content}
@@ -566,16 +566,16 @@ function EmptyState({onChip}){
       </div>
       <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:300,
         fontSize:"clamp(22px,5vw,52px)",color:"#fff",marginBottom:8,lineHeight:1.1,
-        background:C.gradGG,backgroundClip:"text",WebkitBackgroundClip:"text",
+        background:"linear-gradient(135deg,#c9a84c,#f0d080,#4ade80)",backgroundClip:"text",WebkitBackgroundClip:"text",
         WebkitTextFillColor:"transparent",backgroundSize:"200% 200%",
         animation:"gradShift 4s ease infinite",padding:"0 8px"}}>
         Where do you want to go?
       </h1>
       <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:"clamp(13px,3vw,16px)",
-        color:C.textSec,marginBottom:20,lineHeight:1.65,maxWidth:460,
+        color:"rgba(26,20,10,0.75)",marginBottom:20,lineHeight:1.65,maxWidth:460,
         margin:"0 auto 20px",padding:"0 12px"}}>
         Flights · Buses · Hotels · Trains · Trip planning<br/>
-        <span style={{fontSize:"clamp(11px,2.5vw,13px)",color:C.textMuted}}>
+        <span style={{fontSize:"clamp(11px,2.5vw,13px)",color:"rgba(26,20,10,0.42)"}}>
           Any language. Any route. Typos? No problem. 😄 · 🌍 Select your country (top-right) for local prices
         </span>
       </p>
@@ -588,7 +588,7 @@ function EmptyState({onChip}){
             style={{padding:"clamp(8px,2vw,11px) clamp(10px,3vw,16px)",
               borderRadius:100,fontSize:"clamp(11px,2.8vw,13px)",cursor:"pointer",
               background:"rgba(201,168,76,0.08)",border:"1px solid rgba(201,168,76,0.25)",
-              color:C.textSec,transition:"all 0.18s",fontFamily:"'DM Sans',sans-serif",
+              color:"rgba(26,20,10,0.75)",transition:"all 0.18s",fontFamily:"'DM Sans',sans-serif",
               fontWeight:500,textAlign:"center",lineHeight:1.4,
               animation:`fadeUp 0.35s ${i*45}ms both`,whiteSpace:"normal"}}>
             {s}
@@ -757,6 +757,20 @@ const COUNTRY_THEMES = {
   indonesia:   {bg:"#fff5f5",accent:"#dc2626",text:"#0f172a",nav:"rgba(255,245,245,0.97)",msgBg:"#ffeeee",userGrad:"linear-gradient(135deg,#dc2626,#f87171,#dc2626)"},
   china:       {bg:"#fff8f0",accent:"#dc2626",text:"#0f172a",nav:"rgba(255,248,240,0.97)",msgBg:"#ffeeee",userGrad:"linear-gradient(135deg,#dc2626,#fbbf24,#dc2626)"},
   russia:      {bg:"#f0f4ff",accent:"#1d4ed8",text:"#0f172a",nav:"rgba(240,244,255,0.97)",msgBg:"#e8eeff",userGrad:"linear-gradient(135deg,#1d4ed8,#dc2626,#1d4ed8)"},
+};
+
+
+// ── Static brand colors for sub-components (outside main component) ──────────
+// Full dynamic theming happens inside AIChatPage via the C object
+const C_STATIC = {
+  gold:"#c9a84c",   goldD:"#8B6914",  green:"#4ade80",   greenD:"#16a34a",
+  greenMid:"#22c55e",
+  grad:"linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)",
+  gradGG:"linear-gradient(135deg,#c9a84c,#f0d080,#4ade80)",
+  cardBg:"rgba(255,255,255,0.92)",
+  textPri:"#1a1410",  textSec:"rgba(26,20,10,0.75)",
+  textMuted:"rgba(26,20,10,0.42)",
+  border:"rgba(201,168,76,0.2)",
 };
 
 export default function AIChatPage(){

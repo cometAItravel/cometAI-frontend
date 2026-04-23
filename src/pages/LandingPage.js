@@ -398,7 +398,7 @@ const THEMES_DARK = [
 ];
 
 /* ─── FOOTER MODAL ──────────────────────────────────────────────────────────── */
-const FooterModal = ({ open, onClose, title, children }) => {
+const FooterModal = ({ open, onClose, title, children, darkMode=false }) => {
   if (!open) return null;
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:2000, display:"flex", alignItems:"flex-end", justifyContent:"center", backdropFilter:"blur(8px)", padding:"0 0 0 0" }}>
@@ -458,14 +458,14 @@ export default function LandingPage() {
       {!splashDone && <Splash onDone={onSplashDone}/>}
 
       {/* Footer Modals */}
-      <FooterModal open={modal==="about"} onClose={()=>setModal(null)} title="About Alvryn">
+      <FooterModal open={modal==="about"} onClose={()=>setModal(null)} title="About Alvryn" darkMode={darkMode}>
         <p style={{marginBottom:16}}>Alvryn is India's most intelligent travel booking platform, built to make flight and bus booking effortless for every Indian traveller.</p>
         <p style={{marginBottom:16}}>We believe travel should be simple — whether you type in perfect English, Hindi, Tamil, or a mix of everything. Our AI understands you, finds the best fares, and gets you booked in under 60 seconds.</p>
         <p style={{marginBottom:16}}>Alvryn is currently in its early affiliate phase, connecting travellers with the best deals across domestic flights and intercity buses. We are rapidly expanding to international flights, trains, and hotel bookings.</p>
         <p>Our mission is to remove every friction point between you and your next journey.</p>
       </FooterModal>
 
-      <FooterModal open={modal==="terms"} onClose={()=>setModal(null)} title="Terms & Conditions">
+      <FooterModal open={modal==="terms"} onClose={()=>setModal(null)} title="Terms & Conditions" darkMode={darkMode}>
         <p style={{marginBottom:16}}><strong>Last updated:</strong> March 2026</p>
         <p style={{marginBottom:16}}>By using Alvryn, you agree to the following terms. Please read them carefully before using our services.</p>
         <p style={{marginBottom:12}}><strong>1. Use of Service</strong><br/>Alvryn provides a travel booking platform. You must be 18 years or older to book. All bookings are subject to availability.</p>
@@ -476,7 +476,7 @@ export default function LandingPage() {
         <p><strong>6. Changes to Terms</strong><br/>We may update these terms at any time. Continued use of Alvryn constitutes acceptance of the updated terms.</p>
       </FooterModal>
 
-      <FooterModal open={modal==="privacy"} onClose={()=>setModal(null)} title="Privacy Policy">
+      <FooterModal open={modal==="privacy"} onClose={()=>setModal(null)} title="Privacy Policy" darkMode={darkMode}>
         <p style={{marginBottom:16}}><strong>Last updated:</strong> March 2026</p>
         <p style={{marginBottom:16}}>Your privacy is important to us. This policy explains how Alvryn collects, uses, and protects your information.</p>
         <p style={{marginBottom:12}}><strong>1. Information We Collect</strong><br/>We collect your name, email address, phone number, and booking details when you create an account or make a booking.</p>
@@ -487,7 +487,7 @@ export default function LandingPage() {
         <p><strong>6. Your Rights</strong><br/>You may request deletion of your account and data at any time by contacting us at dynamics.studyai@gmail.com.</p>
       </FooterModal>
 
-      <FooterModal open={modal==="contact"} onClose={()=>setModal(null)} title="Contact Us">
+      <FooterModal open={modal==="contact"} onClose={()=>setModal(null)} title="Contact Us" darkMode={darkMode}>
         <p style={{marginBottom:20}}>We'd love to hear from you — whether it's a question, feedback, or a partnership enquiry.</p>
         <div style={{ background:"#f5f3ff", borderRadius:16, padding:"24px", border:"1px solid rgba(108,99,255,0.15)", marginBottom:20 }}>
           <div style={{ fontFamily:"'Space Mono',monospace", fontSize:11, color:"#c9a84c", letterSpacing:"0.12em", marginBottom:8 }}>EMAIL</div>
