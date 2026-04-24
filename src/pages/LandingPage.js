@@ -781,7 +781,7 @@ export default function LandingPage() {
               ].map((s, i) => (
                 <Reveal key={i} delay={i * 140}>
                   <BorderGlowCard accentColor={T.accent} style={{ borderRadius:22 }}>
-                    <TiltCard style={{ padding:"36px 28px", background:T.card||"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:darkMode?"0 20px 60px rgba(0,0,0,0.35),0 0 0 1px rgba(201,168,76,0.15)":"0 20px 60px rgba(0,0,0,0.06)", border:darkMode?"1px solid rgba(201,168,76,0.18)":"1px solid rgba(0,0,0,0.04)", transformStyle:"preserve-3d", cursor:"default" }}>
+                    <TiltCard style={{ padding:"36px 28px", background:"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:darkMode?"0 20px 60px rgba(0,0,0,0.35),0 0 0 1px rgba(201,168,76,0.15)":"0 20px 60px rgba(0,0,0,0.06)", border:darkMode?"1px solid rgba(201,168,76,0.18)":"1px solid rgba(0,0,0,0.04)", transformStyle:"preserve-3d", cursor:"default" }}>
                       <div style={{ fontSize:36, marginBottom:18 }}>{s.icon}</div>
                       <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:28, color:T.accent, marginBottom:10, textShadow:darkMode?"0 0 20px rgba(201,168,76,0.4)":"none" }}>{s.n}</div>
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:18, color:T.text, marginBottom:12 }}>{s.title}</div>
@@ -822,7 +822,7 @@ export default function LandingPage() {
               {features.map((f, i) => (
                 <Reveal key={i} delay={i * 75}>
                   <BorderGlowCard accentColor={f.color} style={{ borderRadius:22 }}>
-                    <TiltCard style={{ padding:"32px 26px", background:T.card||"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:"0 4px 18px rgba(0,0,0,0.04)", border:"1px solid rgba(0,0,0,0.04)", cursor:"default" }}>
+                    <TiltCard style={{ padding:"32px 26px", background:"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:"0 4px 18px rgba(0,0,0,0.04)", border:"1px solid rgba(0,0,0,0.04)", cursor:"default" }}>
                       <div style={{ fontSize:34, marginBottom:16 }}>{f.icon}</div>
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:17, color:T.text||"#0a0a0a", marginBottom:10 }}>{f.title}</div>
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||"#666", lineHeight:1.65 }}>{f.desc}</div>
@@ -1275,7 +1275,7 @@ function SearchMockup({ accent }) {
     { name:"AirFlow",  code:"AF-173", time:"14:20→17:05", price:"₹4,100", tag:"" },
   ];
   return (
-    <div style={{ width:460, background:T.card||"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:"0 32px 80px rgba(0,0,0,0.10)", overflow:"hidden", border:"1px solid rgba(0,0,0,0.05)" }}>
+    <div style={{ width:460, background:"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:"0 32px 80px rgba(0,0,0,0.10)", overflow:"hidden", border:"1px solid rgba(0,0,0,0.05)" }}>
       <div style={{ background:"#f4f4f6", padding:"12px 16px", display:"flex", alignItems:"center", gap:7, borderBottom:"1px solid rgba(0,0,0,0.05)" }}>
         {["#FF5F57","#FFBD2E","#28CA41"].map(c=><div key={c} style={{width:11,height:11,borderRadius:"50%",background:c}}/>)}
         <div style={{ flex:1, background:"#fff", borderRadius:7, padding:"5px 14px", marginLeft:8, fontSize:11, color:"#bbb", fontFamily:"'DM Sans',sans-serif" }}>alvryn.in/search</div>
@@ -1295,7 +1295,7 @@ function SearchMockup({ accent }) {
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
               <div style={{ width:32, height:32, borderRadius:9, background:`${accent}14`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>✈️</div>
               <div>
-                <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:13, color:darkMode?"#f0e0c0":"#111" }}>{f.name} <span style={{ fontWeight:400, color:T.sub||"#ccc", fontSize:11 }}>{f.code}</span></div>
+                <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:13, color:"#111" }}>{f.name} <span style={{ fontWeight:400, color:"#999", fontSize:11 }}>{f.code}</span></div>
                 <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11.5, color:"#999" }}>{f.time}</div>
               </div>
             </div>
