@@ -219,10 +219,11 @@ function CountrySelector({token, onSelect}){
   return(
     <div ref={ref} style={{position:"relative",zIndex:50}}>
       <button onClick={()=>setOpen(o=>!o)}
-        style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:100,
-          background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.25)",
+        style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:100,
+          background:`${C_STATIC.gold}18`,border:`1px solid ${C_STATIC.gold}40`,
           cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,
-          color:"#8B6914",transition:"all 0.15s",WebkitTapHighlightColor:"transparent"}}
+          color:C_STATIC.gold,transition:"all 0.3s ease",WebkitTapHighlightColor:"transparent",
+          boxShadow:`0 2px 8px ${C_STATIC.gold}20`}}
         onMouseEnter={e=>e.currentTarget.style.background="rgba(201,168,76,0.2)"}
         onMouseLeave={e=>e.currentTarget.style.background="rgba(201,168,76,0.1)"}>
         <span style={{fontSize:15}}>{curr.flag}</span>
@@ -1005,15 +1006,32 @@ export default function AIChatPage(){
               onClick={()=>navigate("/")}>
               <div style={{animation:"float 4s ease-in-out infinite"}}><Logo size={28}/></div>
               <div>
-                <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:15,
-                  color:"#fff",letterSpacing:"0.12em"}}>ALVRYN</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:16,
+                  background:C.grad, WebkitBackgroundClip:"text", backgroundClip:"text",
+                  WebkitTextFillColor:"transparent",
+                  letterSpacing:"0.15em",
+                  transition:"all 0.4s ease",
+                  backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite"}}>ALVRYN</div>
                 <div style={{fontFamily:"'Space Mono',monospace",fontSize:7,
-                  color:C.gold,letterSpacing:"0.2em"}}>AI TRAVEL</div>
+                  color:C.gold||"#c9a84c",letterSpacing:"0.2em",fontWeight:700,
+                  transition:"color 0.4s ease"}}>AI TRAVEL</div>
               </div>
             </div>
 
             {/* Country selector */}
-            <CountrySelector token={token} onSelect={(c)=>{ setCountryKey(c.key); }}/>
+            <div>
+              <div style={{fontFamily:"'Space Mono',monospace",fontSize:8,
+                color:C.gold||"#c9a84c",letterSpacing:"0.18em",fontWeight:700,
+                marginBottom:4,paddingLeft:2,transition:"color 0.4s ease"}}>
+                🌍 CHOOSE COUNTRY
+              </div>
+              <CountrySelector token={token} onSelect={(c)=>{ setCountryKey(c.key); }}/>
+              <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,
+                color:C.textMuted||"rgba(26,20,10,0.38)",marginTop:4,paddingLeft:2,
+                lineHeight:1.4,transition:"color 0.4s ease"}}>
+                Better local prices & transport
+              </div>
+            </div>
 
             {/* New Chat */}
             <button onClick={newChat}
@@ -1091,7 +1109,7 @@ export default function AIChatPage(){
         {/* Top bar */}
         <div style={{height:54,padding:"0 16px",display:"flex",alignItems:"center",
           justifyContent:"space-between",borderBottom:"1px solid rgba(201,168,76,0.3)",
-          flexShrink:0,background:C.topBar,backdropFilter:"blur(12px)"}}>
+          flexShrink:0,background:CT.nav||C.topBar,backdropFilter:"blur(12px)",transition:"background 0.5s ease",transition:"background 0.5s ease"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <button onClick={()=>setSbOpen(s=>!s)}
               style={{width:36,height:36,borderRadius:8,background:"rgba(255,255,255,0.04)",
@@ -1129,7 +1147,7 @@ export default function AIChatPage(){
         </div>
 
         {/* ── Messages ── */}
-        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"clamp(10px,2vw,20px) clamp(8px,2vw,16px)",background:CT.msgBg||"#f0e8d4",minHeight:0}}>
+        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"clamp(10px,2vw,20px) clamp(8px,2vw,16px)",background:CT.msgBg||"#f0e8d4",minHeight:0,transition:"background 0.5s ease"}}>
           <div style={{maxWidth:740,margin:"0 auto"}}>
             {empty&&<EmptyState onChip={send}/>}
             {messages.map(m=>(
@@ -1158,7 +1176,7 @@ export default function AIChatPage(){
 
         {/* ── Input ── */}
         <div style={{padding:"12px 16px 18px",borderTop:`1px solid ${C.sbBorder}`,
-          flexShrink:0,background:C.topBar,backdropFilter:"blur(12px)"}}>
+          flexShrink:0,background:CT.nav||C.topBar,backdropFilter:"blur(12px)",transition:"background 0.5s ease",transition:"background 0.5s ease"}}>
           <div style={{maxWidth:740,margin:"0 auto"}}>
             <div style={{display:"flex",alignItems:"flex-end",gap:10,
               background:C.inputBg,borderRadius:16,padding:"10px 14px",
