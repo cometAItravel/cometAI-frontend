@@ -35,7 +35,7 @@ const GOLD_DARK = "#8B6914";
 const GRAD = "linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)";
 
 // ─── AFFILIATE CONFIG ─────────────────────────────────────────────────────────
-const TP_MARKER  = "714667";
+const TP_MARKER  = "714667"; // eslint-disable-line no-unused-vars
 // Short tracking link — survives .com → .in geo-redirect, keeps marker intact
 /** Build Aviasales affiliate link with marker=714667
  *  India routes  → aviasales.in  (INR currency, no geo-redirect)
