@@ -1002,16 +1002,17 @@ export default function AIChatPage(){
 
             {/* Logo */}
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"6px 8px 18px",
-              cursor:"pointer",borderBottom:"1px solid rgba(201,168,76,0.3)",marginBottom:14}}
+              cursor:"pointer",borderBottom:"1px solid rgba(201,168,76,0.3)",marginBottom:14,
+              position:"relative",zIndex:10,
+              borderRadius:8}}
               onClick={()=>navigate("/")}>
               <div style={{animation:"float 4s ease-in-out infinite"}}><Logo size={28}/></div>
               <div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:16,
-                  background:C.grad, WebkitBackgroundClip:"text", backgroundClip:"text",
-                  WebkitTextFillColor:"transparent",
+                  color:"#c9a84c",
                   letterSpacing:"0.15em",
-                  transition:"all 0.4s ease",
-                  backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite"}}>ALVRYN</div>
+                  textShadow:"0 0 20px rgba(201,168,76,0.4)",
+                  transition:"color 0.4s ease"}}>ALVRYN</div>
                 <div style={{fontFamily:"'Space Mono',monospace",fontSize:7,
                   color:C.gold||"#c9a84c",letterSpacing:"0.2em",fontWeight:700,
                   transition:"color 0.4s ease"}}>AI TRAVEL</div>
@@ -1027,7 +1028,7 @@ export default function AIChatPage(){
               </div>
               <CountrySelector token={token} onSelect={(c)=>{ setCountryKey(c.key); }}/>
               <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,
-                color:C.textMuted||"rgba(26,20,10,0.38)",marginTop:4,paddingLeft:2,
+                color:C.gold||"#c9a84c",marginTop:4,paddingLeft:2,fontWeight:500,
                 lineHeight:1.4,transition:"color 0.4s ease"}}>
                 Better local prices & transport
               </div>
