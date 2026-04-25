@@ -1109,7 +1109,7 @@ export default function AIChatPage(){
         {/* Top bar */}
         <div style={{height:54,padding:"0 16px",display:"flex",alignItems:"center",
           justifyContent:"space-between",borderBottom:"1px solid rgba(201,168,76,0.3)",
-          flexShrink:0,background:CT.nav||C.topBar,backdropFilter:"blur(12px)",transition:"background 0.5s ease",transition:"background 0.5s ease"}}>
+          flexShrink:0,background:CT.nav||C.topBar,backdropFilter:"blur(12px)",transition:"background 0.5s ease"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <button onClick={()=>setSbOpen(s=>!s)}
               style={{width:36,height:36,borderRadius:8,background:"rgba(255,255,255,0.04)",
@@ -1176,7 +1176,7 @@ export default function AIChatPage(){
 
         {/* ── Input ── */}
         <div style={{padding:"12px 16px 18px",borderTop:`1px solid ${C.sbBorder}`,
-          flexShrink:0,background:CT.nav||C.topBar,backdropFilter:"blur(12px)",transition:"background 0.5s ease",transition:"background 0.5s ease"}}>
+          flexShrink:0,background:CT.nav||C.topBar,backdropFilter:"blur(12px)",transition:"background 0.5s ease"}}>
           <div style={{maxWidth:740,margin:"0 auto"}}>
             <div style={{display:"flex",alignItems:"flex-end",gap:10,
               background:C.inputBg,borderRadius:16,padding:"10px 14px",
