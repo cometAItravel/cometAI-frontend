@@ -447,10 +447,10 @@ const FooterModal = ({ open, onClose, title, children, darkMode=false }) => {
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:2000, display:"flex", alignItems:"flex-end", justifyContent:"center", backdropFilter:"blur(8px)", padding:"0 0 0 0" }}>
       <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:640, background:darkMode?"#1a1508":"#fff", borderRadius:"24px 24px 0 0", padding:"40px 36px 48px", maxHeight:"80vh", overflowY:"auto", animation:"slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:28 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:26, color:T.text }}>{title}</div>
+          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:26, color:darkMode?"#f0e6d0":"#1a1410" }}>{title}</div>
           <button onClick={onClose} style={{ width:36, height:36, borderRadius:"50%", background:"#f5f5f5", border:"none", cursor:"pointer", fontSize:18, display:"flex", alignItems:"center", justifyContent:"center", color:darkMode?"#c9a84c":"#888" }}>×</button>
         </div>
-        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:T.desc||T.sub||"#555", lineHeight:1.8 }}>{children}</div>
+        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:darkMode?"rgba(230,215,185,0.75)":"#555", lineHeight:1.8 }}>{children}</div>
       </div>
     </div>
   );
@@ -1312,12 +1312,12 @@ function SearchMockup({ accent }) {
     <div style={{ width:460, background:"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:"0 32px 80px rgba(0,0,0,0.10)", overflow:"hidden", border:"1px solid rgba(0,0,0,0.05)" }}>
       <div style={{ background:"#f4f4f6", padding:"12px 16px", display:"flex", alignItems:"center", gap:7, borderBottom:"1px solid rgba(0,0,0,0.05)" }}>
         {["#FF5F57","#FFBD2E","#28CA41"].map(c=><div key={c} style={{width:11,height:11,borderRadius:"50%",background:c}}/>)}
-        <div style={{ flex:1, background:T.card||"var(--bg-card)", borderRadius:7, padding:"5px 14px", marginLeft:8, fontSize:11, color:"#bbb", fontFamily:"'DM Sans',sans-serif" }}>alvryn.in/search</div>
+        <div style={{ flex:1, background:"#f8f4ec", borderRadius:7, padding:"5px 14px", marginLeft:8, fontSize:11, color:"#bbb", fontFamily:"'DM Sans',sans-serif" }}>alvryn.in/search</div>
       </div>
       <div style={{ padding:"18px 18px 8px" }}>
         <div style={{ background:"#f8f8f8", borderRadius:12, padding:"12px 15px", display:"flex", alignItems:"center", gap:10, border:`1.5px solid ${accent}33` }}>
           <span>🔍</span>
-          <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||"#555", flex:1 }}>
+          <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:"#888", flex:1 }}>
             {queries[qi]}<span style={{ animation:"blink 0.9s step-end infinite", color:accent }}>|</span>
           </span>
         </div>
@@ -1329,8 +1329,8 @@ function SearchMockup({ accent }) {
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
               <div style={{ width:32, height:32, borderRadius:9, background:`${accent}14`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>✈️</div>
               <div>
-                <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:13, color:T.text||"#111" }}>{f.name} <span style={{ fontWeight:400, color:T.desc||"#999", fontSize:11 }}>{f.code}</span></div>
-                <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11.5, color:T.desc||"#999" }}>{f.time}</div>
+                <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:13, color:"#1a1410" }}>{f.name} <span style={{ fontWeight:400, color:T.desc||"#999", fontSize:11 }}>{f.code}</span></div>
+                <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11.5, color:"#999" }}>{f.time}</div>
               </div>
             </div>
             <div style={{ textAlign:"right" }}>
