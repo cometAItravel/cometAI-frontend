@@ -1329,7 +1329,7 @@ function SearchMockup({ accent }) {
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
               <div style={{ width:32, height:32, borderRadius:9, background:`${accent}14`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>✈️</div>
               <div>
-                <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:13, color:"#1a1410" }}>{f.name} <span style={{ fontWeight:400, color:T.desc||"#999", fontSize:11 }}>{f.code}</span></div>
+                <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:13, color:"#1a1410" }}>{f.name} <span style={{ fontWeight:400, color:"#999", fontSize:11 }}>{f.code}</span></div>
                 <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11.5, color:"#999" }}>{f.time}</div>
               </div>
             </div>
