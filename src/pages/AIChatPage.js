@@ -232,7 +232,7 @@ function CountrySelector({token, onSelect}){
       </button>
       {open&&(
         <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,
-          background:"#fff",borderRadius:14,boxShadow:"0 8px 32px rgba(0,0,0,0.12)",
+          background:"rgba(255,255,255,0.98)",borderRadius:14,boxShadow:"0 8px 32px rgba(0,0,0,0.2)",
           border:"1px solid rgba(201,168,76,0.2)",padding:"8px 0",minWidth:180,maxHeight:280,
           overflowY:"auto",zIndex:200,animation:"fadeUp 0.2s both"}}>
           {COUNTRIES.map(c=>(
@@ -993,7 +993,7 @@ export default function AIChatPage(){
       {sbOpen&&<div className="overlay" onClick={()=>setSbOpen(false)}/>}
       <div className={`sidebar${sbOpen?" open":""}`}
         style={{width:sbOpen?260:0,flexShrink:0,
-          background:C.sbBg,borderRight:"1px solid rgba(201,168,76,0.2)",
+          background:"#1a1508",borderRight:`1px solid ${C.gold||"#c9a84c"}22`,
           display:"flex",flexDirection:"column",
           overflow:"hidden",transition:"width 0.22s ease",
           boxShadow:sbOpen?"4px 0 24px rgba(0,0,0,0.3)":"none"}}>
@@ -1039,7 +1039,7 @@ export default function AIChatPage(){
               style={{display:"flex",alignItems:"center",gap:9,padding:"10px 14px",
                 borderRadius:11,background:C.grad,backgroundSize:"200% 200%",
                 animation:"gradShift 4s ease infinite",border:"none",cursor:"pointer",
-                color:"#1a1410",fontFamily:"'DM Sans',sans-serif",fontWeight:700,
+                color:"#fff",fontFamily:"'DM Sans',sans-serif",fontWeight:700,
                 fontSize:13,marginBottom:16,width:"100%",
                 boxShadow:"0 4px 18px rgba(201,168,76,0.35)"}}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a1410" strokeWidth="2.5">

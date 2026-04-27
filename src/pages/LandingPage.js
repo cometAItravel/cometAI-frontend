@@ -48,6 +48,40 @@ body{font-family:'DM Sans',sans-serif;background:#fafaf8;color:#0a0a0a;overflow-
 @keyframes splashFade{0%{opacity:1;}100%{opacity:0;}}
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-thumb{background:linear-gradient(#c9a84c,#8B6914);border-radius:2px;}
+
+/* ── CSS custom properties for smooth dark/light mode ─────────────────────── */
+:root {
+  --bg-card: rgba(255,255,255,0.97);
+  --bg-card-soft: rgba(255,255,255,0.88);
+  --text-primary: #1a1410;
+  --text-secondary: #5a4a3a;
+  --text-muted: #888;
+  --border-card: rgba(201,168,76,0.15);
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.07);
+}
+[data-dark="true"] {
+  --bg-card: rgba(30,24,12,0.96);
+  --bg-card-soft: rgba(26,20,10,0.92);
+  --text-primary: #f0e6d0;
+  --text-secondary: #d4a853;
+  --text-muted: rgba(230,215,185,0.6);
+  --border-card: rgba(201,168,76,0.22);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.35);
+}
+
+/* Smooth transitions for ALL elements when dark mode toggles */
+[data-dark], [data-dark] * {
+  transition: background-color 0.5s cubic-bezier(0.4,0,0.2,1),
+              color 0.5s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.4s ease,
+              box-shadow 0.4s ease !important;
+}
+/* BUT keep transform transitions snappy */
+[data-dark] .card3d,[data-dark] .tilt-card {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.4s ease !important;
+}
+.card3d,.tilt-card{transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.4s ease;}
 /* ─── Universal smooth transitions ─────────────────────────────────────────── */
 *{transition-property:background-color,background,border-color,color,fill,stroke,opacity;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:0.4s;}
 *:where(button,a,[class*="card"]){transition-duration:0.4s;}
@@ -413,10 +447,10 @@ const FooterModal = ({ open, onClose, title, children, darkMode=false }) => {
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:2000, display:"flex", alignItems:"flex-end", justifyContent:"center", backdropFilter:"blur(8px)", padding:"0 0 0 0" }}>
       <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:640, background:darkMode?"#1a1508":"#fff", borderRadius:"24px 24px 0 0", padding:"40px 36px 48px", maxHeight:"80vh", overflowY:"auto", animation:"slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:28 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:26, color:darkMode?"#f5ead5":"#0a0a0a" }}>{title}</div>
+          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:26, color:T.text }}>{title}</div>
           <button onClick={onClose} style={{ width:36, height:36, borderRadius:"50%", background:"#f5f5f5", border:"none", cursor:"pointer", fontSize:18, display:"flex", alignItems:"center", justifyContent:"center", color:darkMode?"#c9a84c":"#888" }}>×</button>
         </div>
-        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:darkMode?"#c8b890":"#555", lineHeight:1.8 }}>{children}</div>
+        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:T.desc||T.sub||"#555", lineHeight:1.8 }}>{children}</div>
       </div>
     </div>
   );
@@ -512,7 +546,7 @@ export default function LandingPage() {
       </FooterModal>
 
       {/* PAGE */}
-      <div data-dark={darkMode?"true":"false"}
+      <div data-dark={String(darkMode)}
         style={{ opacity: splashDone ? 1 : 0,
           transition:"opacity 0.6s ease, background 0.6s cubic-bezier(0.4,0,0.2,1), color 0.5s ease",
           transform: splashDone ? "translateY(0)" : "translateY(20px)",
@@ -623,7 +657,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Typewriter sub */}
-                <div style={{ fontSize:"clamp(16px,2vw,21px)", color:darkMode?"rgba(245,234,213,0.65)":"#666", lineHeight:1.6, marginTop:24, marginBottom:48,
+                <div style={{ fontSize:"clamp(16px,2vw,21px)", color:T.desc||T.sub||"#666", lineHeight:1.6, marginTop:24, marginBottom:48,
                   opacity: heroReady ? 1 : 0, transform: heroReady ? "translateY(0)" : "translateY(14px)", transition:"all 0.7s 1.8s ease" }}>
                   Flights, buses and hotels — all in one sentence.
                   <br/>No filters. No confusion. Just tell Alvryn what you want.{" "}
@@ -641,7 +675,7 @@ export default function LandingPage() {
                   </button>
                   <button onClick={goSearch} className="shine-btn"
                     style={{ padding:"15px 38px", borderRadius:14, fontSize:16, fontWeight:500, fontFamily:"'DM Sans',sans-serif", color:T.text||"#0a0a0a",
-                      background:T.card||"#fff", border:`1.5px solid ${T.cardBorder||"rgba(0,0,0,0.1)"}`, boxShadow:"0 4px 18px rgba(0,0,0,0.07)" }}>
+                      background:T.card||"var(--bg-card)", border:`1.5px solid ${T.cardBorder||"rgba(0,0,0,0.1)"}`, boxShadow:"0 4px 18px rgba(0,0,0,0.07)" }}>
                     Book a Bus 🚌
                   </button>
                   <button onClick={() => navigate("/register")}
@@ -822,7 +856,7 @@ export default function LandingPage() {
               {features.map((f, i) => (
                 <Reveal key={i} delay={i * 75}>
                   <BorderGlowCard accentColor={f.color} style={{ borderRadius:22 }}>
-                    <TiltCard style={{ padding:"32px 26px", background:T.card||"rgba(255,255,255,0.97)", backdropFilter:"blur(12px)", borderRadius:22, boxShadow:darkMode?"0 4px 24px rgba(0,0,0,0.35)":"0 4px 18px rgba(0,0,0,0.06)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, cursor:"default", transition:"background 0.5s ease,border-color 0.5s ease" }}>
+                    <TiltCard style={{ padding:"32px 26px", background:T.card||"var(--bg-card)", backdropFilter:"blur(12px)", borderRadius:22, boxShadow:darkMode?"0 4px 24px rgba(0,0,0,0.35)":"0 4px 18px rgba(0,0,0,0.06)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, cursor:"default", transition:"background 0.5s ease,border-color 0.5s ease" }}>
                       <div style={{ fontSize:34, marginBottom:16 }}>{f.icon}</div>
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:17, color:T.text, marginBottom:10, transition:"color 0.4s ease" }}>{f.title}</div>
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||T.sub||"#666", lineHeight:1.65, transition:"color 0.4s ease" }}>{f.desc}</div>
@@ -854,7 +888,7 @@ export default function LandingPage() {
               ].map((s, i) => (
                 <Reveal key={i} delay={i * 90}>
                   <BorderGlowCard accentColor={T.accent} style={{ borderRadius:20 }}>
-                    <TiltCard style={{ padding:"38px 16px", background:T.card||"rgba(255,255,255,0.97)", backdropFilter:"blur(8px)", borderRadius:20, boxShadow:darkMode?"0 4px 24px rgba(0,0,0,0.35)":"0 4px 18px rgba(0,0,0,0.05)", cursor:"default", transition:"background 0.5s ease,box-shadow 0.5s ease,border-color 0.5s ease", border:`1px solid ${T.cardBorder||"rgba(0,0,0,0.06)"}` }}>
+                    <TiltCard style={{ padding:"38px 16px", background:T.card||"var(--bg-card)", backdropFilter:"blur(8px)", borderRadius:20, boxShadow:darkMode?"0 4px 24px rgba(0,0,0,0.35)":"0 4px 18px rgba(0,0,0,0.05)", cursor:"default", transition:"background 0.5s ease,box-shadow 0.5s ease,border-color 0.5s ease", border:`1px solid ${T.cardBorder||"rgba(0,0,0,0.06)"}` }}>
                       <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:48, color:T.accent, lineHeight:1, animation:"counterUp 0.6s both" }}>
                         <Counter end={s.val} suffix={s.suf}/>
                       </div>
@@ -879,7 +913,7 @@ export default function LandingPage() {
                 background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>
                 One chat thread.
               </div>
-              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:darkMode?"rgba(240,230,210,0.8)":"#555", lineHeight:1.7, marginBottom:32 }}>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.desc||T.sub||"#555", lineHeight:1.7, marginBottom:32 }}>
                 Search flights and buses, pick seats, confirm — all inside WhatsApp. No app download required.
               </p>
               <div style={{ marginBottom:32, padding:"14px 20px", borderRadius:12, background:"rgba(0,0,0,0.03)", border:"1px solid rgba(0,0,0,0.07)", display:"inline-block" }}>
@@ -898,7 +932,7 @@ export default function LandingPage() {
               <TiltCard style={{ maxWidth:310, margin:"0 auto", cursor:"default" }}>
                 <div style={{ borderRadius:26, overflow:"hidden", boxShadow:"0 28px 70px rgba(0,0,0,0.13)" }}>
                   <div style={{ background:"#128C7E", padding:"14px 18px", display:"flex", alignItems:"center", gap:12 }}>
-                    <div style={{ width:38, height:38, borderRadius:"50%", background:T.card||"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <div style={{ width:38, height:38, borderRadius:"50%", background:T.card||"var(--bg-card)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                       <AlvrynIcon size={26}/>
                     </div>
                     <div>
@@ -915,7 +949,7 @@ export default function LandingPage() {
                     ].map((m, i) => (
                       <div key={i} style={{ display:"flex", justifyContent:m.me?"flex-end":"flex-start" }}>
                         <div style={{ maxWidth:"86%", padding:"9px 13px", borderRadius:m.me?"18px 18px 4px 18px":"18px 18px 18px 4px",
-                          background:m.me?"#DCF8C6":"#fff", fontSize:12, lineHeight:1.55, whiteSpace:"pre-line",
+                          background:m.me?(darkMode?"rgba(37,211,102,0.18)":"#DCF8C6"):(darkMode?"rgba(42,36,20,0.9)":"#fff"), fontSize:12, lineHeight:1.55, whiteSpace:"pre-line",
                           fontFamily:"'DM Sans',sans-serif", color:"#1a1a1a", boxShadow:"0 1px 3px rgba(0,0,0,0.08)" }}>
                           {m.msg}
                         </div>
@@ -933,9 +967,9 @@ export default function LandingPage() {
           <div style={{ position:"relative", zIndex:2, maxWidth:900, margin:"0 auto" }}>
             <Reveal style={{ textAlign:"center", marginBottom:60 }}>
               <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>THE PROCESS</div>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:darkMode?"#f5ead5":"#1a1410", lineHeight:1.05, marginBottom:10 }}>How Alvryn works</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:T.text, lineHeight:1.05, marginBottom:10 }}>How Alvryn works</div>
               <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", lineHeight:1.05, background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>in three simple steps.</div>
-              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:darkMode?"rgba(240,230,210,0.8)":"#555", lineHeight:1.7, maxWidth:600, margin:"20px auto 0" }}>Alvryn is an AI-powered travel search engine. We find the best fares from our trusted partners and redirect you to book securely — no hidden fees, no markup.</p>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.desc||T.sub||"#555", lineHeight:1.7, maxWidth:600, margin:"20px auto 0" }}>Alvryn is an AI-powered travel search engine. We find the best fares from our trusted partners and redirect you to book securely — no hidden fees, no markup.</p>
             </Reveal>
             <div className="how-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:28 }}>
               {[
@@ -944,13 +978,13 @@ export default function LandingPage() {
                 { n:"03", icon:"🔒", title:"Book securely on partner site", desc:"We redirect you to the official partner booking page in a new tab. Your payment is processed directly by the partner. You always pay the price you see — no extra charges from Alvryn.", sub:["Opens official partner site","256-bit SSL on all partner pages","Ticket directly from the operator"] },
               ].map((s,i)=>(
                 <Reveal key={i} delay={i*140}>
-                  <div style={{ padding:"36px 28px", background:T.card||"rgba(255,255,255,0.88)", backdropFilter:"blur(12px)", borderRadius:22, boxShadow:darkMode?"0 8px 28px rgba(0,0,0,0.4)":"0 4px 20px rgba(0,0,0,0.06)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.18)"}`, height:"100%", transition:"background 0.5s ease,border-color 0.5s ease" }}>
+                  <div style={{ padding:"36px 28px", background:T.card||"var(--bg-card-soft)", backdropFilter:"blur(12px)", borderRadius:22, boxShadow:darkMode?"0 8px 28px rgba(0,0,0,0.4)":"0 4px 20px rgba(0,0,0,0.06)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.18)"}`, height:"100%", transition:"background 0.5s ease,border-color 0.5s ease" }}>
                     <div style={{ fontSize:36, marginBottom:16 }}>{s.icon}</div>
                     <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:30, color:"#c9a84c", marginBottom:12 }}>{s.n}</div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:darkMode?"#f5ead5":"#1a1410", marginBottom:12, lineHeight:1.3 }}>{s.title}</div>
-                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:darkMode?"rgba(245,234,213,0.7)":"#555", lineHeight:1.7, marginBottom:18 }}>{s.desc}</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text, marginBottom:12, lineHeight:1.3 }}>{s.title}</div>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||T.sub||"#555", lineHeight:1.7, marginBottom:18 }}>{s.desc}</div>
                     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                      {s.sub.map((point,j)=>(<div key={j} style={{ display:"flex", alignItems:"center", gap:10 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#c9a84c", flexShrink:0 }}/><span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:darkMode?"rgba(245,234,213,0.65)":"#666" }}>{point}</span></div>))}
+                      {s.sub.map((point,j)=>(<div key={j} style={{ display:"flex", alignItems:"center", gap:10 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#c9a84c", flexShrink:0 }}/><span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||T.sub||"#666" }}>{point}</span></div>))}
                     </div>
                   </div>
                 </Reveal>
@@ -960,8 +994,8 @@ export default function LandingPage() {
               <div style={{ marginTop:40, padding:"20px 28px", background:darkMode?"rgba(201,168,76,0.06)":"rgba(201,168,76,0.07)", backdropFilter:"blur(8px)", borderRadius:16, border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.2)"}`, transition:"background 0.5s ease", display:"flex", gap:16, alignItems:"flex-start", flexWrap:"wrap" }}>
                 <span style={{ fontSize:24, flexShrink:0 }}>💡</span>
                 <div>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:17, color:darkMode?"#f5ead5":"#1a1410", marginBottom:6 }}>Why does Alvryn redirect to partner sites?</div>
-                  <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:darkMode?"rgba(245,234,213,0.7)":"#555", lineHeight:1.7 }}>Alvryn is a travel search and discovery platform. We work with trusted partners — trusted travel partners — who process all payments securely. This means you always get the official ticket directly from the source, backed by the partner's customer support and cancellation policies. Alvryn earns a small referral commission when you book, which keeps our service completely free for you.</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:17, color:T.text, marginBottom:6 }}>Why does Alvryn redirect to partner sites?</div>
+                  <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||T.sub||"#555", lineHeight:1.7 }}>Alvryn is a travel search and discovery platform. We work with trusted partners — trusted travel partners — who process all payments securely. This means you always get the official ticket directly from the source, backed by the partner's customer support and cancellation policies. Alvryn earns a small referral commission when you book, which keeps our service completely free for you.</div>
                 </div>
               </div>
             </Reveal>
@@ -976,7 +1010,7 @@ export default function LandingPage() {
               <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>AI INTELLIGENCE</div>
               <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:T.text, lineHeight:1.05, marginBottom:10 }}>Not just search.</div>
               <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", lineHeight:1.05, background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>Smart travel decisions.</div>
-              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:darkMode?"rgba(240,230,210,0.8)":"#555", lineHeight:1.7, maxWidth:580, margin:"20px auto 0" }}>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.desc||T.sub||"#555", lineHeight:1.7, maxWidth:580, margin:"20px auto 0" }}>
                 Alvryn doesn't just show options — it tells you which one to pick and why. Like having a travel expert in your pocket.
               </p>
             </Reveal>
@@ -984,10 +1018,10 @@ export default function LandingPage() {
             {/* Sample AI response UI */}
             <div className="wa-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:48, alignItems:"center" }}>
               <Reveal>
-                <div style={{ background:T.card||"rgba(255,255,255,0.95)", backdropFilter:"blur(10px)", borderRadius:22, overflow:"hidden", boxShadow:"0 20px 60px rgba(0,0,0,0.08)", border:"1px solid rgba(201,168,76,0.2)" }}>
+                <div style={{ background:T.card||"var(--bg-card)", backdropFilter:"blur(10px)", borderRadius:22, overflow:"hidden", boxShadow:"0 20px 60px rgba(0,0,0,0.08)", border:"1px solid rgba(201,168,76,0.2)" }}>
                   <div style={{ background:"linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)", backgroundSize:"200% 200%", padding:"14px 20px", display:"flex", alignItems:"center", gap:10 }}>
                     <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(255,255,255,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>✈️</div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, color:darkMode?"#f5ead5":"#1a1410", fontSize:15 }}>Alvryn AI Response</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, color:T.text, fontSize:15 }}>Alvryn AI Response</div>
                   </div>
                   <div style={{ padding:"20px" }}>
                     <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||"#555", marginBottom:14, lineHeight:1.6 }}>
@@ -995,7 +1029,7 @@ export default function LandingPage() {
                     </div>
                     <div style={{ background:"rgba(201,168,76,0.08)", borderRadius:12, padding:"12px 14px", marginBottom:10, border:"1px solid rgba(201,168,76,0.2)" }}>
                       <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:"#8B6914", marginBottom:6 }}>💡 AI INSIGHT</div>
-                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:darkMode?"#f5ead5":"#1a1410" }}>Morning flights are typically 18% cheaper for this route. Booking now usually saves ₹400–₹800 vs last-minute.</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.text }}>Morning flights are typically 18% cheaper for this route. Booking now usually saves ₹400–₹800 vs last-minute.</div>
                     </div>
                     {[
                       { label:"🏷️ Likely cheapest", range:"₹3,200–₹3,800", tag:"CHEAPEST", why:"Early morning departure, no frills" },
@@ -1004,7 +1038,7 @@ export default function LandingPage() {
                     ].map((opt,i)=>(
                       <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 12px", borderRadius:10, background:i===2?"rgba(201,168,76,0.08)":"transparent", border:i===2?"1px solid rgba(201,168,76,0.25)":"1px solid transparent", marginBottom:6 }}>
                         <div>
-                          <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:darkMode?"#f5ead5":"#1a1410", fontWeight:600 }}>{opt.label}</div>
+                          <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.text, fontWeight:600 }}>{opt.label}</div>
                           <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:T.desc||"#888", marginTop:2 }}>{opt.why}</div>
                         </div>
                         <div style={{ textAlign:"right" }}>
@@ -1016,7 +1050,7 @@ export default function LandingPage() {
                     <div style={{ fontSize:11, color:"#bbb", fontFamily:"'DM Sans',sans-serif", marginTop:8, marginBottom:14 }}>
                       Prices may vary. Live availability shown on partner site.
                     </div>
-                    <button style={{ width:"100%", padding:"11px", borderRadius:11, fontSize:14, fontWeight:700, fontFamily:"'Cormorant Garamond',serif", letterSpacing:"0.06em", color:darkMode?"#f5ead5":"#1a1410", border:"none", cursor:"pointer", background:"linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)", backgroundSize:"200% 200%" }}>
+                    <button style={{ width:"100%", padding:"11px", borderRadius:11, fontSize:14, fontWeight:700, fontFamily:"'Cormorant Garamond',serif", letterSpacing:"0.06em", color:T.text, border:"none", cursor:"pointer", background:"linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)", backgroundSize:"200% 200%" }}>
                       Check Live Prices →
                     </button>
                   </div>
@@ -1031,11 +1065,11 @@ export default function LandingPage() {
                     { icon:"⚡", label:"Fastest",  desc:"Prioritise direct routes and early arrivals. No long layovers." },
                     { icon:"😌", label:"Best comfort", desc:"Highest-rated option balancing price, timing and airline quality." },
                   ].map((item,i)=>(
-                    <div key={i} style={{ display:"flex", gap:16, padding:"18px 20px", background:T.card||"rgba(255,255,255,0.88)", backdropFilter:"blur(10px)", borderRadius:16, border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, boxShadow:darkMode?"0 4px 20px rgba(0,0,0,0.35)":"0 4px 14px rgba(0,0,0,0.04)", transition:"background 0.5s ease" }}>
+                    <div key={i} style={{ display:"flex", gap:16, padding:"18px 20px", background:T.card||"var(--bg-card-soft)", backdropFilter:"blur(10px)", borderRadius:16, border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, boxShadow:darkMode?"0 4px 20px rgba(0,0,0,0.35)":"0 4px 14px rgba(0,0,0,0.04)", transition:"background 0.5s ease" }}>
                       <div style={{ fontSize:28, flexShrink:0 }}>{item.icon}</div>
                       <div>
-                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:darkMode?"#f5ead5":"#1a1410", marginBottom:5 }}>{item.label}</div>
-                        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:darkMode?"rgba(245,234,213,0.65)":"#666", lineHeight:1.6 }}>{item.desc}</div>
+                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text, marginBottom:5 }}>{item.label}</div>
+                        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||T.sub||"#666", lineHeight:1.6 }}>{item.desc}</div>
                       </div>
                     </div>
                   ))}
@@ -1052,21 +1086,21 @@ export default function LandingPage() {
               <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>PLAN MY TRIP</div>
               <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:T.text, lineHeight:1.05, marginBottom:10 }}>Not sure where to go?</div>
               <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", lineHeight:1.05, background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>Let Alvryn plan it for you.</div>
-              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:darkMode?"rgba(240,230,210,0.8)":"#555", lineHeight:1.7, maxWidth:520, margin:"20px auto 0" }}>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.desc||T.sub||"#555", lineHeight:1.7, maxWidth:520, margin:"20px auto 0" }}>
                 Just tell Alvryn your budget and days. Get a full trip plan — flight, bus, hotel and estimated costs — instantly.
               </p>
             </Reveal>
             <div className="wa-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:40, alignItems:"flex-start" }}>
               <Reveal>
-                <div style={{ background:T.card||"rgba(255,255,255,0.95)", backdropFilter:"blur(10px)", borderRadius:20, padding:"28px 24px", boxShadow:darkMode?"0 8px 30px rgba(0,0,0,0.4)":"0 8px 30px rgba(0,0,0,0.07)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.18)"}`, transition:"background 0.5s ease" }}>
+                <div style={{ background:T.card||"var(--bg-card)", backdropFilter:"blur(10px)", borderRadius:20, padding:"28px 24px", boxShadow:darkMode?"0 8px 30px rgba(0,0,0,0.4)":"0 8px 30px rgba(0,0,0,0.07)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.18)"}`, transition:"background 0.5s ease" }}>
                   <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.desc||"#888", letterSpacing:"0.15em", marginBottom:12 }}>YOU TYPE</div>
-                  <div style={{ background:"rgba(201,168,76,0.07)", borderRadius:12, padding:"14px 16px", fontFamily:"'DM Sans',sans-serif", fontSize:14, color:darkMode?"#f5ead5":"#1a1410", lineHeight:1.6, border:"1px solid rgba(201,168,76,0.2)", marginBottom:20 }}>
+                  <div style={{ background:"rgba(201,168,76,0.07)", borderRadius:12, padding:"14px 16px", fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.text, lineHeight:1.6, border:"1px solid rgba(201,168,76,0.2)", marginBottom:20 }}>
                     "I have ₹5000 and 2 days — suggest a trip from Bangalore"
                   </div>
                   <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.desc||"#888", letterSpacing:"0.15em", marginBottom:12 }}>ALVRYN SUGGESTS</div>
                   <div style={{ borderRadius:14, overflow:"hidden", border:"1px solid rgba(201,168,76,0.2)" }}>
                     <div style={{ background:"linear-gradient(135deg,#c9a84c,#f0d080)", padding:"12px 16px" }}>
-                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:darkMode?"#f5ead5":"#1a1410" }}>🌴 Destination: Goa</div>
+                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text }}>🌴 Destination: Goa</div>
                     </div>
                     <div style={{ padding:"16px", background:"rgba(255,255,255,0.95)" }}>
                       {[
@@ -1077,7 +1111,7 @@ export default function LandingPage() {
                       ].map(([k,v])=>(
                         <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"8px 0", borderBottom:"1px solid rgba(201,168,76,0.08)", fontFamily:"'DM Sans',sans-serif", fontSize:13 }}>
                           <span style={{ color:T.desc||"#555" }}>{k}</span>
-                          <span style={{ color:darkMode?"#f5ead5":"#1a1410", fontWeight:600 }}>{v}</span>
+                          <span style={{ color:T.text, fontWeight:600 }}>{v}</span>
                         </div>
                       ))}
                       <div style={{ fontSize:11, color:"#bbb", marginTop:10, fontFamily:"'DM Sans',sans-serif" }}>Prices are estimates. Live prices shown on partner site.</div>
@@ -1093,9 +1127,9 @@ export default function LandingPage() {
                     { dest:"🏔️ Ooty",   budget:"₹2,000–₹3,500", days:"1–2 days", why:"Hill station, tea gardens, cool weather" },
                     { dest:"🌊 Pondicherry", budget:"₹3,000–₹5,000", days:"2 days", why:"French architecture, beaches, great food" },
                   ].map((d,i)=>(
-                    <div key={i} style={{ padding:"18px 20px", background:T.card||"rgba(255,255,255,0.88)", backdropFilter:"blur(10px)", borderRadius:16, border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, boxShadow:darkMode?"0 4px 20px rgba(0,0,0,0.35)":"0 4px 14px rgba(0,0,0,0.04)", transition:"background 0.5s ease" }}>
+                    <div key={i} style={{ padding:"18px 20px", background:T.card||"var(--bg-card-soft)", backdropFilter:"blur(10px)", borderRadius:16, border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, boxShadow:darkMode?"0 4px 20px rgba(0,0,0,0.35)":"0 4px 14px rgba(0,0,0,0.04)", transition:"background 0.5s ease" }}>
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
-                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:darkMode?"#f5ead5":"#1a1410" }}>{d.dest}</div>
+                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text }}>{d.dest}</div>
                         <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:"#8B6914" }}>{d.budget}</div>
                       </div>
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:T.desc||"#888", marginBottom:4 }}>{d.days}</div>
@@ -1116,8 +1150,8 @@ export default function LandingPage() {
           <div style={{ position:"relative", zIndex:2, maxWidth:860, margin:"0 auto", textAlign:"center" }}>
             <Reveal>
               <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>OUR PARTNERS</div>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(22px,3.5vw,44px)", color:darkMode?"#f5ead5":"#1a1410", marginBottom:10 }}>Book with trusted platforms.</div>
-              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:darkMode?"rgba(240,230,210,0.8)":"#555", lineHeight:1.7, maxWidth:520, margin:"0 auto 40px" }}>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(22px,3.5vw,44px)", color:T.text, marginBottom:10 }}>Book with trusted platforms.</div>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:T.desc||T.sub||"#555", lineHeight:1.7, maxWidth:520, margin:"0 auto 40px" }}>
                 Alvryn helps you find the best options — bookings are completed securely on leading travel platforms.
               </p>
               <div style={{ display:"flex", gap:20, justifyContent:"center", flexWrap:"wrap", marginBottom:28 }}>
@@ -1128,8 +1162,8 @@ export default function LandingPage() {
                 ].map(p=>(
                   <div key={p.name} style={{ padding:"20px 28px", background:p.color, borderRadius:16, border:"1px solid rgba(0,0,0,0.06)", minWidth:160, flex:1, maxWidth:220 }}>
                     <div style={{ fontSize:28, marginBottom:8 }}>{p.icon}</div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:darkMode?"#f5ead5":"#1a1410", marginBottom:4 }}>{p.name}</div>
-                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:darkMode?"rgba(245,234,213,0.65)":"#666" }}>{p.desc}</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text, marginBottom:4 }}>{p.name}</div>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:T.desc||T.sub||"#666" }}>{p.desc}</div>
                   </div>
                 ))}
               </div>
@@ -1145,7 +1179,7 @@ export default function LandingPage() {
           <div style={{ position:"relative", zIndex:2, maxWidth:960, margin:"0 auto" }}>
             <Reveal style={{ marginBottom:56 }}>
               <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>TRAVEL GUIDE</div>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:darkMode?"#f5ead5":"#1a1410", lineHeight:1.05, marginBottom:10 }}>Tips, guides and</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:T.text, lineHeight:1.05, marginBottom:10 }}>Tips, guides and</div>
               <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", lineHeight:1.05, background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>smarter travel.</div>
             </Reveal>
             <div className="feat-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:22 }}>
@@ -1161,7 +1195,7 @@ export default function LandingPage() {
                 { cat:"SEASON GUIDE", icon:"🌤️", color:"#EA580C", title:"Best time to book Goa flights — season guide", summary:"Peak season November to February offers perfect beach weather but fares are 40 to 60 percent higher — book 6 to 8 weeks ahead. Shoulder season October and March gives good weather at 20 to 30 percent lower fares. Off-season monsoon months offer the cheapest hotel rates if you can manage the rain.", tags:["Goa","Season","Beach Travel"] },
               ].map((post,i)=>(
                 <Reveal key={i} delay={i*60}>
-                  <div style={{ background:T.card||"rgba(255,255,255,0.95)", backdropFilter:"blur(10px)", borderRadius:20, overflow:"hidden", boxShadow:"0 4px 18px rgba(0,0,0,0.06)", border:"1px solid rgba(201,168,76,0.12)", display:"flex", flexDirection:"column", transition:"transform 0.2s,box-shadow 0.2s" }}
+                  <div style={{ background:T.card||"var(--bg-card)", backdropFilter:"blur(10px)", borderRadius:20, overflow:"hidden", boxShadow:"0 4px 18px rgba(0,0,0,0.06)", border:"1px solid rgba(201,168,76,0.12)", display:"flex", flexDirection:"column", transition:"transform 0.2s,box-shadow 0.2s" }}
                     onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.boxShadow="0 12px 40px rgba(0,0,0,0.1)";}}
                     onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="0 4px 18px rgba(0,0,0,0.06)";}}>
                     <div style={{ background:`${post.color}12`, borderBottom:`2px solid ${post.color}22`, padding:"10px 18px", display:"flex", alignItems:"center", gap:8 }}>
@@ -1169,8 +1203,8 @@ export default function LandingPage() {
                       <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:post.color, fontWeight:700, letterSpacing:"0.12em" }}>{post.cat}</span>
                     </div>
                     <div style={{ padding:"20px 20px 22px", flex:1, display:"flex", flexDirection:"column" }}>
-                      <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:17, color:darkMode?"#f5ead5":"#1a1410", marginBottom:12, lineHeight:1.35 }}>{post.title}</h3>
-                      <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:darkMode?"rgba(245,234,213,0.7)":"#555", lineHeight:1.7, flex:1 }}>{post.summary}</p>
+                      <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:17, color:T.text, marginBottom:12, lineHeight:1.35 }}>{post.title}</h3>
+                      <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||T.sub||"#555", lineHeight:1.7, flex:1 }}>{post.summary}</p>
                       <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginTop:16 }}>
                         {post.tags.map(tag=>(<span key={tag} style={{ padding:"3px 10px", borderRadius:100, fontSize:11, background:`${post.color}10`, border:`1px solid ${post.color}25`, color:post.color, fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>{tag}</span>))}
                       </div>
@@ -1191,8 +1225,8 @@ export default function LandingPage() {
               <div style={{ animation:"floatY 4s ease-in-out infinite", marginBottom:30 }}>
                 <AlvrynIcon size={72} animate/>
               </div>
-              <BlurText text="Start planning your next trip." style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(32px,5vw,66px)", color:darkMode?"#f5ead5":"#1a1410", lineHeight:1.05, display:"block", marginBottom:24 }}/>
-              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:17, color:darkMode?"rgba(240,230,210,0.8)":"#555", lineHeight:1.7, marginBottom:52 }}>
+              <BlurText text="Start planning your next trip." style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(32px,5vw,66px)", color:T.text, lineHeight:1.05, display:"block", marginBottom:24 }}/>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:17, color:T.desc||T.sub||"#555", lineHeight:1.7, marginBottom:52 }}>
                 India's most intelligent travel booking platform. Best fares on flights and buses, instantly.
               </p>
               <div className="cta-row" style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
@@ -1204,7 +1238,7 @@ export default function LandingPage() {
                 </button>
                 <button onClick={() => navigate("/login")}
                   style={{ padding:"16px 36px", borderRadius:14, fontSize:16, fontWeight:500, fontFamily:"'DM Sans',sans-serif", color:T.text||"#0a0a0a",
-                    background:T.card||"#fff", border:`1.5px solid ${T.cardBorder||"rgba(0,0,0,0.1)"}`, boxShadow:"0 4px 18px rgba(0,0,0,0.06)", cursor:"pointer" }}>
+                    background:T.card||"var(--bg-card)", border:`1.5px solid ${T.cardBorder||"rgba(0,0,0,0.1)"}`, boxShadow:"0 4px 18px rgba(0,0,0,0.06)", cursor:"pointer" }}>
                   Sign In →
                 </button>
               </div>
@@ -1278,7 +1312,7 @@ function SearchMockup({ accent }) {
     <div style={{ width:460, background:"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:"0 32px 80px rgba(0,0,0,0.10)", overflow:"hidden", border:"1px solid rgba(0,0,0,0.05)" }}>
       <div style={{ background:"#f4f4f6", padding:"12px 16px", display:"flex", alignItems:"center", gap:7, borderBottom:"1px solid rgba(0,0,0,0.05)" }}>
         {["#FF5F57","#FFBD2E","#28CA41"].map(c=><div key={c} style={{width:11,height:11,borderRadius:"50%",background:c}}/>)}
-        <div style={{ flex:1, background:T.card||"#fff", borderRadius:7, padding:"5px 14px", marginLeft:8, fontSize:11, color:"#bbb", fontFamily:"'DM Sans',sans-serif" }}>alvryn.in/search</div>
+        <div style={{ flex:1, background:T.card||"var(--bg-card)", borderRadius:7, padding:"5px 14px", marginLeft:8, fontSize:11, color:"#bbb", fontFamily:"'DM Sans',sans-serif" }}>alvryn.in/search</div>
       </div>
       <div style={{ padding:"18px 18px 8px" }}>
         <div style={{ background:"#f8f8f8", borderRadius:12, padding:"12px 15px", display:"flex", alignItems:"center", gap:10, border:`1.5px solid ${accent}33` }}>
