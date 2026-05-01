@@ -1,254 +1,233 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+/* eslint-disable no-unused-vars */
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const API = "https://cometai-backend.onrender.com";
-const GOLD = "#c9a84c";
-const GRAD = "linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)";
+const BACKEND = "https://cometai-backend.onrender.com";
 
-export default function Register() {
+export default function Register({ setUser, darkMode, toggleDarkMode }) {
   const navigate = useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        if (payload.exp && payload.exp * 1000 > Date.now()) { navigate("/search"); return; }
-      } catch {}
-    }
-  }, [navigate]);
-  const [form, setForm]         = useState({ name:"", email:"", password:"", confirm:"" });
-  const [showPass, setShowPass]   = useState(false);
-  const [showConf, setShowConf]   = useState(false);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState("");
-  const [passStrength, setPassStr] = useState(0);
+  const [form, setForm]       = useState({ name:"", email:"", password:"", ref:"" });
+  const [error, setError]     = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass]  = useState(false);
+  const [showRef, setShowRef]    = useState(false);
 
-  const handle = e => {
-    setForm(p=>({...p,[e.target.name]:e.target.value}));
-    if (e.target.name==="password") {
-      const v = e.target.value;
-      let s = 0;
-      if (v.length>=6) s++;
-      if (v.length>=10) s++;
-      if (/[A-Z]/.test(v)) s++;
-      if (/[0-9]/.test(v)) s++;
-      if (/[^A-Za-z0-9]/.test(v)) s++;
-      setPassStr(s);
-    }
-  };
+  const gold   = "#c9a84c";
+  const bg     = darkMode ? "#0e0c09"  : "#faf8f4";
+  const card   = darkMode ? "#1c1810"  : "#ffffff";
+  const cardBd = darkMode ? "rgba(201,168,76,0.25)" : "rgba(201,168,76,0.2)";
+  const txt    = darkMode ? "#f5f0e8"  : "#1a1410";
+  const txtSub = darkMode ? "#b8a882"  : "#6b5e45";
+  const txtMut = darkMode ? "#7a6e5a"  : "#9e8f78";
+  const inputBg= darkMode ? "rgba(255,255,255,0.06)" : "#ffffff";
+  const inputBd= darkMode ? "rgba(201,168,76,0.3)"   : "rgba(201,168,76,0.25)";
 
-  const strengthLabel = ["","Weak","Fair","Good","Strong","Very Strong"][passStrength];
-  const strengthColor = ["","#ef4444","#f59e0b","#eab308","#22c55e","#16a34a"][passStrength];
+  const set = (k) => (e) => setForm(f=>({...f,[k]:e.target.value}));
 
-  const submit = async e => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (!form.name||!form.email||!form.password) { setError("Please fill all fields."); return; }
-    if (form.password !== form.confirm) { setError("Passwords don't match."); return; }
-    if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
-    setLoading(true); setError("");
+    setError(""); setSuccess(""); setLoading(true);
+    if (form.password.length < 6) { setError("Password must be at least 6 characters."); setLoading(false); return; }
     try {
-      const res  = await fetch(`${API}/register`, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({name:form.name.trim(),email:form.email.trim(),password:form.password}),
+      const r = await fetch(`${BACKEND}/register`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ name:form.name, email:form.email, password:form.password, ref:form.ref||undefined }),
       });
-      const data = await res.json();
-      if (!res.ok) { setError(data.message||"Registration failed. Please try again."); setLoading(false); return; }
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user||{name:form.name,email:form.email}));
-        navigate("/search");
-      } else {
-        navigate("/login");
-      }
-    } catch {
-      setError("Connection error. Please check your internet and try again.");
-    }
+      const d = await r.json();
+      if (!r.ok) { setError(d.message || "Registration failed"); setLoading(false); return; }
+      setSuccess("🎉 Account created! Your referral code: " + d.refCode);
+      setTimeout(() => navigate("/login"), 2200);
+    } catch { setError("Connection error. Please try again."); }
     setLoading(false);
   };
 
-  const inp = {
-    width:"100%", padding:"13px 16px", borderRadius:12,
-    fontFamily:"'DM Sans',sans-serif", fontSize:15, color:"#1a1410",
-    border:"1.5px solid rgba(201,168,76,0.25)", outline:"none",
-    background:"rgba(255,255,255,0.92)", transition:"border-color 0.2s",
+  const inputStyle = {
+    width:"100%",padding:"13px 16px",borderRadius:10,fontSize:15,
+    border:`1.5px solid ${inputBd}`,background:inputBg,color:txt,
+    transition:"all 0.2s",boxSizing:"border-box",fontFamily:"sans-serif",
+  };
+  const labelStyle = {
+    fontSize:11,fontWeight:700,letterSpacing:"0.14em",color:txtSub,
+    fontFamily:"sans-serif",display:"block",marginBottom:8,
   };
 
-  const EyeIcon = ({show}) => show
-    ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
-        <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
-        <line x1="1" y1="1" x2="23" y2="23"/>
-      </svg>
-    : <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </svg>;
+  const perks = [
+    { e:"✈️", t:"Search flights with AI" },
+    { e:"🚌", t:"Instant bus booking links" },
+    { e:"🏨", t:"Hotel search across India" },
+    { e:"💰", t:"Earn ₹150 per referral" },
+  ];
 
   return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",
-      background:"linear-gradient(135deg,#1c1205 0%,#2d1e08 35%,#1c1205 100%)",
-      fontFamily:"'DM Sans',sans-serif",padding:"20px"}}>
-
+    <div style={{
+      minHeight:"100vh",background:bg,display:"flex",
+      alignItems:"flex-start",justifyContent:"center",
+      padding:"24px",fontFamily:"'Georgia','Times New Roman',serif",
+      transition:"background 0.4s",position:"relative",overflow:"hidden",
+    }}>
+      {/* Background orbs */}
+      <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
+        <div style={{
+          position:"absolute",width:550,height:550,borderRadius:"50%",
+          background:darkMode?"radial-gradient(circle,rgba(201,168,76,0.05) 0%,transparent 70%)":"radial-gradient(circle,rgba(201,168,76,0.09) 0%,transparent 70%)",
+          top:"-200px",right:"-100px",
+          animation:"rgOrb1 13s ease-in-out infinite",
+        }}/>
+        <div style={{
+          position:"absolute",width:300,height:300,borderRadius:"50%",
+          background:darkMode?"radial-gradient(circle,rgba(201,168,76,0.04) 0%,transparent 70%)":"radial-gradient(circle,rgba(201,168,76,0.06) 0%,transparent 70%)",
+          bottom:"-60px",left:"-60px",
+          animation:"rgOrb2 16s ease-in-out infinite",
+        }}/>
+      </div>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;600;700&family=DM+Sans:wght@400;500;600&display=swap');
-        @keyframes gradShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
-        @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
-        @keyframes spin{to{transform:rotate(360deg);}}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-        *{box-sizing:border-box;}input:-webkit-autofill{-webkit-box-shadow:0 0 0 100px rgba(255,255,255,0.95) inset!important;-webkit-text-fill-color:#1a1410!important;}
-        .inp:focus{border-color:rgba(201,168,76,0.6)!important;box-shadow:0 0 0 3px rgba(201,168,76,0.1)!important;}
-        .eye-btn:hover{color:${GOLD}!important;}
-        .sub-btn:hover{opacity:0.9;transform:translateY(-1px);}
+        @keyframes rgOrb1{0%,100%{transform:translate(0,0)}50%{transform:translate(-25px,25px)}}
+        @keyframes rgOrb2{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)}}
+        .rgInput:focus{border-color:#c9a84c!important;box-shadow:0 0 0 3px rgba(201,168,76,0.15)!important;outline:none!important}
+        .rgBtn:hover{transform:translateY(-2px)!important;box-shadow:0 8px 28px rgba(201,168,76,0.4)!important}
+        .rgLink:hover{color:#c9a84c!important}
       `}</style>
 
-      <div style={{width:"100%",maxWidth:440,animation:"fadeUp 0.45s both"}}>
-        {/* Logo */}
-        <div style={{textAlign:"center",marginBottom:28}}>
-          <div style={{animation:"float 4s ease-in-out infinite",display:"inline-block",marginBottom:12}}>
-            <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
-              <defs><linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#c9a84c"/><stop offset="55%" stopColor="#f0d080"/>
-                <stop offset="100%" stopColor="#4ade80"/>
-              </linearGradient></defs>
-              <circle cx="32" cy="32" r="30" stroke="url(#lg2)" strokeWidth="1.5" fill="none"/>
-              <path d="M20 46L28 18L36 46" stroke="url(#lg2)" strokeWidth="2.4" strokeLinecap="round" fill="none"/>
-              <path d="M23 37L34 37" stroke="url(#lg2)" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,
-            color:"#fff",letterSpacing:"0.12em"}}>ALVRYN</div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:3}}>Start your journey</div>
+      <div style={{width:"100%",maxWidth:480,zIndex:1,position:"relative",paddingTop:16}}>
+        {/* Top bar */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
+          <button onClick={()=>navigate("/")} style={{background:"transparent",border:"none",color:txtSub,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",gap:6,padding:0}}>← Back</button>
+          <button onClick={toggleDarkMode} style={{background:"transparent",border:`1px solid ${cardBd}`,color:txt,cursor:"pointer",fontSize:13,padding:"6px 14px",borderRadius:8}}>
+            {darkMode?"☀️ Light":"🌙 Dark"}
+          </button>
         </div>
 
         {/* Card */}
-        <div style={{background:"rgba(255,255,255,0.97)",borderRadius:22,padding:"32px 30px",
-          boxShadow:"0 24px 64px rgba(0,0,0,0.35),0 0 0 1px rgba(201,168,76,0.15)"}}>
-          <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:24,
-            color:"#1a1410",marginBottom:4}}>Create your account</h2>
-          <p style={{fontSize:13,color:"#888",marginBottom:24}}>Free forever · No credit card needed</p>
+        <div style={{
+          background:card,border:`1px solid ${cardBd}`,borderRadius:24,
+          padding:"36px 36px 32px",
+          boxShadow:darkMode?"0 20px 60px rgba(0,0,0,0.5)":"0 20px 60px rgba(201,168,76,0.1)",
+          backdropFilter:"blur(12px)",
+        }}>
+          {/* Logo */}
+          <div style={{textAlign:"center",marginBottom:28}}>
+            <div style={{
+              width:50,height:50,borderRadius:"50%",border:`2px solid ${gold}`,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              color:gold,fontSize:17,fontWeight:700,margin:"0 auto 12px",
+              background:darkMode?"rgba(201,168,76,0.08)":"rgba(201,168,76,0.06)",
+            }}>A</div>
+            <h1 style={{fontSize:20,fontWeight:700,color:txt,letterSpacing:"0.12em",marginBottom:3}}>ALVRYN</h1>
+            <p style={{fontSize:11,color:txtMut,letterSpacing:"0.22em",fontFamily:"sans-serif"}}>TRAVEL BEYOND</p>
+          </div>
+
+          <h2 style={{fontSize:19,fontWeight:400,color:txt,marginBottom:5,textAlign:"center"}}>Create your account</h2>
+          <p style={{fontSize:13,color:txtSub,textAlign:"center",marginBottom:24,fontFamily:"sans-serif"}}>Free forever · No credit card needed</p>
+
+          {/* Perks */}
+          <div style={{
+            display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,
+            marginBottom:24,
+          }}>
+            {perks.map(p=>(
+              <div key={p.t} style={{
+                background:darkMode?"rgba(201,168,76,0.07)":"rgba(201,168,76,0.06)",
+                border:`1px solid ${darkMode?"rgba(201,168,76,0.18)":"rgba(201,168,76,0.15)"}`,
+                borderRadius:10,padding:"10px 12px",
+                display:"flex",alignItems:"center",gap:8,
+              }}>
+                <span style={{fontSize:16}}>{p.e}</span>
+                <span style={{fontSize:12,color:txtSub,fontFamily:"sans-serif",lineHeight:1.4}}>{p.t}</span>
+              </div>
+            ))}
+          </div>
 
           {error && (
-            <div style={{background:"#fff0f0",border:"1px solid rgba(200,50,50,0.25)",
-              borderRadius:10,padding:"11px 14px",marginBottom:16,
-              fontSize:13,color:"#cc2222",fontWeight:500}}>
-              ⚠️ {error}
+            <div style={{background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:10,padding:"12px 16px",marginBottom:18,fontSize:13,color:"#ef4444",textAlign:"center",fontFamily:"sans-serif"}}>
+              {error}
+            </div>
+          )}
+          {success && (
+            <div style={{background:"rgba(74,222,128,0.12)",border:"1px solid rgba(74,222,128,0.3)",borderRadius:10,padding:"12px 16px",marginBottom:18,fontSize:13,color:"#4ade80",textAlign:"center",fontFamily:"sans-serif"}}>
+              {success}
             </div>
           )}
 
-          <form onSubmit={submit}>
+          <form onSubmit={handleRegister}>
             {/* Name */}
-            <div style={{marginBottom:14}}>
-              <label style={{display:"block",fontSize:11,fontWeight:600,
-                color:"#5a4a3a",marginBottom:6,letterSpacing:"0.07em"}}>FULL NAME</label>
-              <input className="inp" name="name" type="text" value={form.name}
-                onChange={handle} placeholder="Your name" required style={inp}/>
+            <div style={{marginBottom:16}}>
+              <label style={labelStyle}>YOUR NAME</label>
+              <input className="rgInput" type="text" placeholder="Vishaal" value={form.name} onChange={set("name")} required style={inputStyle}/>
             </div>
 
             {/* Email */}
-            <div style={{marginBottom:14}}>
-              <label style={{display:"block",fontSize:11,fontWeight:600,
-                color:"#5a4a3a",marginBottom:6,letterSpacing:"0.07em"}}>EMAIL</label>
-              <input className="inp" name="email" type="email" value={form.email}
-                onChange={handle} placeholder="you@example.com" required style={inp}/>
+            <div style={{marginBottom:16}}>
+              <label style={labelStyle}>EMAIL ADDRESS</label>
+              <input className="rgInput" type="email" placeholder="you@example.com" value={form.email} onChange={set("email")} required style={inputStyle}/>
             </div>
 
             {/* Password */}
-            <div style={{marginBottom:8}}>
-              <label style={{display:"block",fontSize:11,fontWeight:600,
-                color:"#5a4a3a",marginBottom:6,letterSpacing:"0.07em"}}>PASSWORD</label>
-              <div style={{position:"relative"}}>
-                <input className="inp" name="password"
-                  type={showPass?"text":"password"}
-                  value={form.password} onChange={handle}
-                  placeholder="Min. 6 characters" required
-                  style={{...inp,paddingRight:48}}/>
-                <button type="button" className="eye-btn"
-                  onClick={()=>setShowPass(s=>!s)}
-                  style={{position:"absolute",right:11,top:"50%",transform:"translateY(-50%)",
-                    background:"none",border:"none",cursor:"pointer",
-                    color:"#bbb",padding:2,display:"flex",alignItems:"center",transition:"color 0.15s",lineHeight:0}}>
-                  <EyeIcon show={showPass}/>
+            <div style={{marginBottom:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <label style={{...labelStyle,marginBottom:0}}>PASSWORD</label>
+                <button type="button" onClick={()=>setShowPass(s=>!s)} style={{background:"transparent",border:"none",color:gold,fontSize:12,cursor:"pointer",padding:0,fontFamily:"sans-serif"}}>
+                  {showPass?"Hide":"Show"}
                 </button>
               </div>
-              {/* Strength bar */}
-              {form.password.length>0&&(
-                <div style={{marginTop:7}}>
-                  <div style={{display:"flex",gap:3,marginBottom:3}}>
-                    {[1,2,3,4,5].map(n=>(
-                      <div key={n} style={{flex:1,height:3,borderRadius:3,
-                        background:passStrength>=n?strengthColor:"rgba(0,0,0,0.1)",
-                        transition:"background 0.2s"}}/>
-                    ))}
-                  </div>
-                  <div style={{fontSize:11,color:strengthColor,fontWeight:600}}>{strengthLabel}</div>
-                </div>
-              )}
+              <input className="rgInput" type={showPass?"text":"password"} placeholder="Min. 6 characters" value={form.password} onChange={set("password")} required minLength={6} style={inputStyle}/>
             </div>
 
-            {/* Confirm */}
+            {/* Referral code */}
             <div style={{marginBottom:24}}>
-              <label style={{display:"block",fontSize:11,fontWeight:600,
-                color:"#5a4a3a",marginBottom:6,letterSpacing:"0.07em"}}>CONFIRM PASSWORD</label>
-              <div style={{position:"relative"}}>
-                <input className="inp" name="confirm"
-                  type={showConf?"text":"password"}
-                  value={form.confirm} onChange={handle}
-                  placeholder="Re-enter password" required
-                  style={{...inp,paddingRight:48,
-                    borderColor:form.confirm&&form.confirm!==form.password?"rgba(239,68,68,0.5)":undefined}}/>
-                <button type="button" className="eye-btn"
-                  onClick={()=>setShowConf(s=>!s)}
-                  style={{position:"absolute",right:11,top:"50%",transform:"translateY(-50%)",
-                    background:"none",border:"none",cursor:"pointer",
-                    color:"#bbb",padding:2,display:"flex",alignItems:"center",transition:"color 0.15s",lineHeight:0}}>
-                  <EyeIcon show={showConf}/>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <label style={{...labelStyle,marginBottom:0}}>REFERRAL CODE <span style={{color:txtMut,fontWeight:400}}>(optional)</span></label>
+                <button type="button" onClick={()=>setShowRef(s=>!s)} style={{background:"transparent",border:"none",color:txtMut,fontSize:11,cursor:"pointer",padding:0,fontFamily:"sans-serif"}}>
+                  {showRef?"Hide":"Show"}
                 </button>
               </div>
-              {form.confirm&&form.confirm!==form.password&&(
-                <div style={{fontSize:11,color:"#ef4444",marginTop:5,fontWeight:500}}>
-                  ✗ Passwords don't match
-                </div>
+              {showRef && (
+                <input className="rgInput" type="text" placeholder="Friend's referral code" value={form.ref} onChange={set("ref")} style={{...inputStyle,textTransform:"uppercase"}}/>
               )}
-              {form.confirm&&form.confirm===form.password&&form.confirm.length>0&&(
-                <div style={{fontSize:11,color:"#16a34a",marginTop:5,fontWeight:500}}>
-                  ✓ Passwords match
+              {!showRef && (
+                <div style={{fontSize:12,color:txtMut,fontFamily:"sans-serif"}}>
+                  Have a referral code? <button type="button" onClick={()=>setShowRef(true)} style={{background:"transparent",border:"none",color:gold,cursor:"pointer",fontSize:12,padding:0}}>Enter it →</button>
                 </div>
               )}
             </div>
 
-            <button type="submit" className="sub-btn"
-              disabled={loading||(form.confirm&&form.confirm!==form.password)}
-              style={{width:"100%",padding:"14px",borderRadius:13,fontSize:15,
-                fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",
-                color:"#1a1410",border:"none",
-                cursor:(loading||(form.confirm&&form.confirm!==form.password))?"not-allowed":"pointer",
-                background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",
-                boxShadow:"0 6px 20px rgba(201,168,76,0.35)",transition:"all 0.18s",
-                opacity:(loading||(form.confirm&&form.confirm!==form.password))?0.7:1}}>
-              {loading
-                ? <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                    <span style={{width:14,height:14,border:"2px solid rgba(26,20,16,0.3)",
-                      borderTopColor:"#1a1410",borderRadius:"50%",
-                      animation:"spin 0.8s linear infinite",display:"inline-block"}}/>
-                    Creating account…
-                  </span>
-                : "Create Account →"
-              }
+            <button type="submit" className="rgBtn" disabled={loading} style={{
+              width:"100%",padding:"14px",borderRadius:12,
+              background:`linear-gradient(135deg,${gold},#f0d080,${gold})`,
+              border:"none",color:"#1a1410",fontWeight:700,fontSize:15,
+              cursor:loading?"not-allowed":"pointer",
+              transition:"all 0.3s",letterSpacing:"0.03em",opacity:loading?0.7:1,
+            }}>
+              {loading?"Creating account…":"Create Free Account →"}
             </button>
           </form>
 
-          <div style={{textAlign:"center",marginTop:20,fontSize:14,color:"#888"}}>
-            Already have an account?{" "}
-            <Link to="/login" style={{color:GOLD,fontWeight:600,textDecoration:"none"}}>
-              Sign in →
-            </Link>
+          <div style={{textAlign:"center",marginTop:20}}>
+            <p style={{fontSize:13,color:txtSub,fontFamily:"sans-serif"}}>
+              Already have an account?{" "}
+              <button className="rgLink" onClick={()=>navigate("/login")} style={{background:"transparent",border:"none",color:gold,fontWeight:700,cursor:"pointer",fontSize:13,padding:0,transition:"color 0.2s"}}>
+                Sign in →
+              </button>
+            </p>
+          </div>
+
+          <div style={{
+            marginTop:24,padding:"14px 16px",borderRadius:12,
+            background:darkMode?"rgba(201,168,76,0.07)":"rgba(201,168,76,0.06)",
+            border:`1px solid ${darkMode?"rgba(201,168,76,0.2)":"rgba(201,168,76,0.15)"}`,
+            textAlign:"center",
+          }}>
+            <p style={{fontSize:12,color:txtSub,fontFamily:"sans-serif",lineHeight:1.7,margin:0}}>
+              💎 Refer a friend · Earn <strong style={{color:gold}}>₹150</strong> when they book above ₹5,000<br/>
+              🔒 Your data is secure and never sold
+            </p>
           </div>
         </div>
 
-        <div style={{textAlign:"center",marginTop:18,fontSize:12,color:"rgba(255,255,255,0.22)"}}>
-          By creating an account you agree to Alvryn's Terms of Service
-        </div>
+        <p style={{textAlign:"center",marginTop:20,fontSize:11,color:txtMut,fontFamily:"sans-serif"}}>
+          By creating an account you agree to our Terms & Privacy Policy.<br/>
+          © 2026 Alvryn · alvryn.in
+        </p>
       </div>
     </div>
   );
