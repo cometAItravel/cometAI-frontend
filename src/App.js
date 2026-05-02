@@ -1,4 +1,4 @@
-/* eslint-disable no-useless-escape, no-unused-vars */
+/* eslint-disable no-useless-escape */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
@@ -7,307 +7,14 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
 import AdminDashboard from "./pages/AdminDashboard";
-import AIChatPage from "./pages/AIChatPage";
 import UserProfile from "./pages/UserProfile";
 
 const API = "https://cometai-backend.onrender.com";
-
-function track(eventType, details = "", source = "web") {
-  const token = localStorage.getItem("token");
-  fetch(`${API}/track`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    body: JSON.stringify({ event_type: eventType, details: String(details), source }),
-  }).catch(() => {});
-}
-
 const GOLD = "#c9a84c";
 const GOLD_DARK = "#8B6914";
 const GRAD = "linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)";
+const TRAVELPAYOUTS_MARKER = "714667";
 
-// ─── TAB THEMES — each tab gets its own animated world ────────────────────────
-const TAB_THEMES = {
-  flight: {
-    name: "flight",
-    bgFrom: "#0a1628",
-    bgTo: "#0d2744",
-    accent: "#38bdf8",
-    accentSoft: "rgba(56,189,248,0.15)",
-    grad: "linear-gradient(135deg,#0a1628 0%,#0d2744 40%,#1e3a5f 70%,#0a1628 100%)",
-    tabGrad: "linear-gradient(135deg,#0a1628,#1e3a8a,#0284c7)",
-    orbs: [
-      { color: "#38bdf8", x: "15%", y: "20%", size: 420, opacity: 0.06 },
-      { color: "#0ea5e9", x: "75%", y: "60%", size: 360, opacity: 0.05 },
-      { color: "#7dd3fc", x: "50%", y: "85%", size: 280, opacity: 0.04 },
-      { color: "#bae6fd", x: "88%", y: "15%", size: 200, opacity: 0.04 },
-    ],
-    particles: "✈",
-    particleColor: "rgba(56,189,248,0.3)",
-    gridColor: "rgba(56,189,248,0.04)",
-    labelColor: "#38bdf8",
-    btnBg: "linear-gradient(135deg,#0284c7,#38bdf8,#0284c7)",
-    cardBorder: "rgba(56,189,248,0.2)",
-    inputBorder: "rgba(56,189,248,0.3)",
-    icon: "✈️",
-    tagline: "Find Cheapest Flights",
-  },
-  bus: {
-    name: "bus",
-    bgFrom: "#042308",
-    bgTo: "#063d0e",
-    accent: "#4ade80",
-    accentSoft: "rgba(74,222,128,0.15)",
-    grad: "linear-gradient(135deg,#042308 0%,#063d0e 40%,#0f5c1a 70%,#042308 100%)",
-    tabGrad: "linear-gradient(135deg,#042308,#166534,#16a34a)",
-    orbs: [
-      { color: "#4ade80", x: "20%", y: "25%", size: 400, opacity: 0.07 },
-      { color: "#22c55e", x: "70%", y: "55%", size: 350, opacity: 0.05 },
-      { color: "#86efac", x: "45%", y: "80%", size: 260, opacity: 0.05 },
-      { color: "#bbf7d0", x: "85%", y: "20%", size: 180, opacity: 0.04 },
-    ],
-    particles: "🚌",
-    particleColor: "rgba(74,222,128,0.25)",
-    gridColor: "rgba(74,222,128,0.04)",
-    labelColor: "#4ade80",
-    btnBg: "linear-gradient(135deg,#16a34a,#4ade80,#16a34a)",
-    cardBorder: "rgba(74,222,128,0.2)",
-    inputBorder: "rgba(74,222,128,0.3)",
-    icon: "🚌",
-    tagline: "Search All Buses",
-  },
-  hotel: {
-    name: "hotel",
-    bgFrom: "#1a0a00",
-    bgTo: "#2d1500",
-    accent: "#fb923c",
-    accentSoft: "rgba(251,146,60,0.15)",
-    grad: "linear-gradient(135deg,#1a0a00 0%,#2d1500 40%,#4a2000 70%,#1a0a00 100%)",
-    tabGrad: "linear-gradient(135deg,#1a0a00,#9a3412,#ea580c)",
-    orbs: [
-      { color: "#fb923c", x: "25%", y: "30%", size: 380, opacity: 0.07 },
-      { color: "#f97316", x: "72%", y: "50%", size: 340, opacity: 0.06 },
-      { color: "#fdba74", x: "48%", y: "78%", size: 270, opacity: 0.05 },
-      { color: "#fed7aa", x: "82%", y: "18%", size: 190, opacity: 0.04 },
-    ],
-    particles: "🏨",
-    particleColor: "rgba(251,146,60,0.25)",
-    gridColor: "rgba(251,146,60,0.04)",
-    labelColor: "#fb923c",
-    btnBg: "linear-gradient(135deg,#ea580c,#fb923c,#ea580c)",
-    cardBorder: "rgba(251,146,60,0.2)",
-    inputBorder: "rgba(251,146,60,0.3)",
-    icon: "🏨",
-    tagline: "Discover Hotels",
-  },
-  train: {
-    name: "train",
-    bgFrom: "#0f0520",
-    bgTo: "#1a0a35",
-    accent: "#a78bfa",
-    accentSoft: "rgba(167,139,250,0.15)",
-    grad: "linear-gradient(135deg,#0f0520 0%,#1a0a35 40%,#2d1260 70%,#0f0520 100%)",
-    tabGrad: "linear-gradient(135deg,#0f0520,#4c1d95,#7c3aed)",
-    orbs: [
-      { color: "#a78bfa", x: "18%", y: "22%", size: 400, opacity: 0.07 },
-      { color: "#8b5cf6", x: "74%", y: "58%", size: 360, opacity: 0.06 },
-      { color: "#c4b5fd", x: "44%", y: "82%", size: 270, opacity: 0.05 },
-      { color: "#ddd6fe", x: "86%", y: "16%", size: 190, opacity: 0.04 },
-    ],
-    particles: "🚂",
-    particleColor: "rgba(167,139,250,0.25)",
-    gridColor: "rgba(167,139,250,0.04)",
-    labelColor: "#a78bfa",
-    btnBg: "linear-gradient(135deg,#7c3aed,#a78bfa,#7c3aed)",
-    cardBorder: "rgba(167,139,250,0.2)",
-    inputBorder: "rgba(167,139,250,0.3)",
-    icon: "🚂",
-    tagline: "Book Train Tickets",
-  },
-  cab: {
-    name: "cab",
-    bgFrom: "#1a0e00",
-    bgTo: "#2d1e00",
-    accent: "#fbbf24",
-    accentSoft: "rgba(251,191,36,0.15)",
-    grad: "linear-gradient(135deg,#1a0e00 0%,#2d1e00 40%,#4a3200 70%,#1a0e00 100%)",
-    tabGrad: "linear-gradient(135deg,#1a0e00,#78350f,#c9a84c)",
-    orbs: [
-      { color: "#fbbf24", x: "22%", y: "28%", size: 380, opacity: 0.07 },
-      { color: "#f59e0b", x: "71%", y: "54%", size: 340, opacity: 0.06 },
-      { color: "#fcd34d", x: "46%", y: "80%", size: 260, opacity: 0.05 },
-      { color: "#fef3c7", x: "84%", y: "19%", size: 185, opacity: 0.04 },
-    ],
-    particles: "🚗",
-    particleColor: "rgba(251,191,36,0.25)",
-    gridColor: "rgba(251,191,36,0.04)",
-    labelColor: "#fbbf24",
-    btnBg: "linear-gradient(135deg,#c9a84c,#fbbf24,#c9a84c)",
-    cardBorder: "rgba(251,191,36,0.2)",
-    inputBorder: "rgba(251,191,36,0.3)",
-    icon: "🚗",
-    tagline: "Book Cabs",
-  },
-};
-
-function flightLink(fromCode, toCode, dateStr, passengers = 1, subId = "alvryn_web") {
-  let d = "";
-  if (dateStr) {
-    const parts = dateStr.split("-");
-    if (parts.length === 3) d = parts[2] + parts[1];
-  }
-  const pax = Math.max(1, passengers);
-  const INDIA_CODES = new Set([
-    "BLR","BOM","DEL","MAA","HYD","CCU","GOI","PNQ","COK","AMD","JAI",
-    "LKO","VNS","PAT","IXC","GAU","BBI","CBE","IXM","IXE","MYQ","TRV",
-    "VTZ","VGA","IXR","BHO","SXR","IXJ","HBX","IXG","TIR","IXL","IXZ",
-    "NAG","IDR","RPR","DED","SLV","ATQ","UDR","JDH","AGR","STV",
-  ]);
-  const isIndia = INDIA_CODES.has(fromCode) && INDIA_CODES.has(toCode);
-  const base = isIndia ? "https://www.aviasales.in" : "https://www.aviasales.com";
-  return `${base}/search/${fromCode}${d}${toCode}${pax}?marker=714667&sub_id=${subId}`;
-}
-
-function busLink(from, to, dateStr) {
-  const f = from.toLowerCase().replace(/\s+/g, "-");
-  const t = to.toLowerCase().replace(/\s+/g, "-");
-  if (dateStr) {
-    try {
-      const d = new Date(dateStr);
-      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-      const formatted = d.getDate().toString().padStart(2,"0") + "-" + months[d.getMonth()] + "-" + d.getFullYear();
-      return `https://www.redbus.in/bus-tickets/${f}-to-${t}?doj=${formatted}`;
-    } catch {}
-  }
-  return `https://www.redbus.in/bus-tickets/${f}-to-${t}`;
-}
-
-function hotelLink(city, checkIn, checkOut) {
-  let url = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&lang=en-gb`;
-  if (checkIn) url += `&checkin=${checkIn}`;
-  if (checkOut) url += `&checkout=${checkOut}`;
-  return url;
-}
-
-function trainLink(from, to, dateStr) {
-  const f = (from||"").toUpperCase().slice(0,5);
-  const t = (to||"").toUpperCase().slice(0,5);
-  if (dateStr) {
-    const d = dateStr.replace(/-/g,"");
-    return `https://www.irctc.co.in/nget/train-search?fromStation=${f}&toStation=${t}&jdate=${d}`;
-  }
-  return `https://www.irctc.co.in/nget/train-search`;
-}
-
-// ─── DYNAMIC ANIMATED BACKGROUND ─────────────────────────────────────────────
-function DynamicBackground({ theme, transitioning }) {
-  const canvasRef = useRef(null);
-  const animRef = useRef(null);
-  const particlesRef = useRef([]);
-  const themeRef = useRef(theme);
-
-  useEffect(() => {
-    themeRef.current = theme;
-  }, [theme]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    // Init floating orb particles
-    particlesRef.current = Array.from({ length: 18 }, (_, i) => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      r: 120 + Math.random() * 200,
-      alpha: 0.03 + Math.random() * 0.05,
-      colorIdx: i % 4,
-      phase: Math.random() * Math.PI * 2,
-    }));
-
-    let frame = 0;
-    const draw = () => {
-      const t = themeRef.current;
-      const W = canvas.width, H = canvas.height;
-      frame++;
-
-      ctx.clearRect(0, 0, W, H);
-
-      // Base gradient
-      const grad = ctx.createLinearGradient(0, 0, W, H);
-      grad.addColorStop(0, t.bgFrom);
-      grad.addColorStop(0.5, t.bgTo);
-      grad.addColorStop(1, t.bgFrom);
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, H);
-
-      // Subtle grid lines
-      ctx.strokeStyle = t.gridColor;
-      ctx.lineWidth = 0.5;
-      for (let x = 0; x < W; x += 60) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-      }
-      for (let y = 0; y < H; y += 60) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-      }
-
-      // Animated orbs
-      t.orbs.forEach((orb, i) => {
-        const p = particlesRef.current[i] || {};
-        const ox = parseFloat(orb.x) / 100 * W + Math.sin(frame * 0.005 + i) * 40;
-        const oy = parseFloat(orb.y) / 100 * H + Math.cos(frame * 0.004 + i) * 30;
-        const radial = ctx.createRadialGradient(ox, oy, 0, ox, oy, orb.size);
-        radial.addColorStop(0, orb.color + Math.round(orb.opacity * 255).toString(16).padStart(2,"0"));
-        radial.addColorStop(1, "transparent");
-        ctx.fillStyle = radial;
-        ctx.beginPath();
-        ctx.arc(ox, oy, orb.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // Vignette
-      const vignette = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H) * 0.75);
-      vignette.addColorStop(0, "transparent");
-      vignette.addColorStop(1, "rgba(0,0,0,0.4)");
-      ctx.fillStyle = vignette;
-      ctx.fillRect(0, 0, W, H);
-
-      animRef.current = requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => {
-      cancelAnimationFrame(animRef.current);
-      window.removeEventListener("resize", resize);
-    };
-  }, [theme.name]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "fixed",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: 0,
-        pointerEvents: "none",
-        opacity: transitioning ? 0 : 1,
-        transition: "opacity 0.6s ease",
-      }}
-    />
-  );
-}
-
-// ─── SHARED CSS ───────────────────────────────────────────────────────────────
 const SHARED_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600&family=Space+Mono:wght@400;700&display=swap');
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -316,56 +23,136 @@ const SHARED_CSS = `
   @keyframes floatUD{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
   @keyframes gradShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
   @keyframes spinSlow{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-  @keyframes tabSlide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
-  @keyframes bgMorph{0%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%;}50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%;}100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%;}}
-  @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 transparent;}50%{box-shadow:0 0 30px 4px rgba(201,168,76,0.2);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
   ::-webkit-scrollbar{width:2px;}
   ::-webkit-scrollbar-thumb{background:linear-gradient(#c9a84c,#8B6914);border-radius:2px;}
   @media(max-width:768px){
     .search-city-grid{grid-template-columns:1fr!important;}
     .search-date-grid{grid-template-columns:1fr 1fr!important;}
     .results-card-bottom{flex-direction:column!important;gap:12px!important;}
-    .nav-right-btns{gap:4px!important;}
-    .nav-right-btns button{padding:6px 10px!important;font-size:11px!important;}
-  }
-  @media(max-width:480px){
-    .nav-right-btns .hide-mobile{display:none!important;}
   }
 `;
 
-function AlvrynIcon({ size = 40, accent = "#c9a84c" }) {
-  const uid = `app_${size}_${accent.replace(/[^a-z0-9]/gi,"")}`;
+// ─── ICON ─────────────────────────────────────────────────────────────────────
+function AlvrynIcon({ size = 40 }) {
+  const uid = "app_" + size;
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" style={{flexShrink:0}}>
       <defs>
-        <linearGradient id={`${uid}g`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#c9a84c"/>
-          <stop offset="50%" stopColor="#f0d080"/>
-          <stop offset="100%" stopColor={accent}/>
+        <linearGradient id={uid+"g"} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#c9a84c"/><stop offset="50%" stopColor="#f0d080"/><stop offset="100%" stopColor="#8B6914"/>
         </linearGradient>
       </defs>
-      <circle cx="32" cy="32" r="30" stroke={`url(#${uid}g)`} strokeWidth="1.2" fill="none"/>
-      <circle cx="32" cy="32" r="26" stroke={`url(#${uid}g)`} strokeWidth="0.5" fill="none" opacity="0.4"/>
-      <path d="M20 46 L28 18 L36 46" stroke={`url(#${uid}g)`} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      <path d="M22.5 36 L33.5 36" stroke={`url(#${uid}g)`} strokeWidth="1.8" strokeLinecap="round"/>
-      <path d="M26 46 L34 18 L42 46" stroke={`url(#${uid}g)`} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.45"/>
-      <path d="M28 36 L40 36" stroke={`url(#${uid}g)`} strokeWidth="1" strokeLinecap="round" opacity="0.45"/>
-      <circle cx="32" cy="9" r="1.5" fill={`url(#${uid}g)`}/>
+      <circle cx="32" cy="32" r="30" stroke={"url(#"+uid+"g)"} strokeWidth="1.2" fill="none"/>
+      <circle cx="32" cy="32" r="26" stroke={"url(#"+uid+"g)"} strokeWidth="0.5" fill="none" opacity="0.4"/>
+      <path d="M20 46 L28 18 L36 46" stroke={"url(#"+uid+"g)"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <path d="M22.5 36 L33.5 36" stroke={"url(#"+uid+"g)"} strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M26 46 L34 18 L42 46" stroke={"url(#"+uid+"g)"} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.45"/>
+      <path d="M28 36 L40 36" stroke={"url(#"+uid+"g)"} strokeWidth="1" strokeLinecap="round" opacity="0.45"/>
+      <circle cx="32" cy="9" r="1.5" fill={"url(#"+uid+"g)"}/>
+      <path d="M29 9 L32 6 L35 9" stroke={"url(#"+uid+"g)"} strokeWidth="0.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
-// ─── CITY ALIASES & IATA ──────────────────────────────────────────────────────
-const CITY_ALIASES = {
+// ─── AURORA BG ────────────────────────────────────────────────────────────────
+function AuroraBackground() {
+  const ref=useRef(null);const raf=useRef(null);
+  useEffect(()=>{
+    const c=ref.current;if(!c)return;const ctx=c.getContext("2d");
+    let W=c.offsetWidth,H=c.offsetHeight;c.width=W;c.height=H;
+    const cols=["#c9a84c","#f0d080","#8B6914","#d4b868"];
+    const blobs=Array.from({length:5},(_,i)=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*0.45,vy:(Math.random()-0.5)*0.45,r:200+Math.random()*180,ci:i%cols.length}));
+    const resize=()=>{W=c.offsetWidth;H=c.offsetHeight;c.width=W;c.height=H;};
+    window.addEventListener("resize",resize);
+    const draw=()=>{ctx.clearRect(0,0,W,H);blobs.forEach(b=>{b.x+=b.vx;b.y+=b.vy;if(b.x<-b.r||b.x>W+b.r)b.vx*=-1;if(b.y<-b.r||b.y>H+b.r)b.vy*=-1;const g=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);g.addColorStop(0,cols[b.ci]+"18");g.addColorStop(1,"transparent");ctx.fillStyle=g;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();});raf.current=requestAnimationFrame(draw);};
+    draw();
+    return()=>{cancelAnimationFrame(raf.current);window.removeEventListener("resize",resize);};
+  },[]);
+  return <canvas ref={ref} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0}}/>;
+}
+
+// ─── BUS DATA ─────────────────────────────────────────────────────────────────
+const BUS_ROUTES=[
+  {from:"Bangalore",to:"Chennai",    dur:"5h 30m",dep:"06:00",arr:"11:30",price:650, seats:40,type:"AC Sleeper",   op:"VRL Travels"},
+  {from:"Bangalore",to:"Chennai",    dur:"5h 30m",dep:"21:00",arr:"02:30",price:550, seats:35,type:"Semi-Sleeper", op:"KSRTC"},
+  {from:"Bangalore",to:"Chennai",    dur:"5h 30m",dep:"14:00",arr:"19:30",price:720, seats:28,type:"AC Sleeper",   op:"SRS Travels"},
+  {from:"Bangalore",to:"Hyderabad",  dur:"8h",    dep:"20:00",arr:"04:00",price:800, seats:30,type:"AC Sleeper",   op:"SRS Travels"},
+  {from:"Bangalore",to:"Hyderabad",  dur:"8h",    dep:"10:00",arr:"18:00",price:750, seats:35,type:"Semi-Sleeper", op:"Orange Travels"},
+  {from:"Bangalore",to:"Goa",        dur:"9h",    dep:"21:30",arr:"06:30",price:900, seats:28,type:"AC Sleeper",   op:"Neeta Tours"},
+  {from:"Bangalore",to:"Goa",        dur:"9h",    dep:"08:00",arr:"17:00",price:850, seats:32,type:"AC Sleeper",   op:"Paulo Travels"},
+  {from:"Bangalore",to:"Mumbai",     dur:"16h",   dep:"17:00",arr:"09:00",price:1400,seats:22,type:"AC Sleeper",   op:"VRL Travels"},
+  {from:"Bangalore",to:"Pune",       dur:"14h",   dep:"18:00",arr:"08:00",price:1200,seats:25,type:"AC Sleeper",   op:"Paulo Travels"},
+  {from:"Bangalore",to:"Coimbatore", dur:"4h",    dep:"07:00",arr:"11:00",price:400, seats:45,type:"AC Seater",    op:"KSRTC"},
+  {from:"Bangalore",to:"Coimbatore", dur:"4h",    dep:"15:00",arr:"19:00",price:380, seats:50,type:"AC Seater",    op:"SRM Travels"},
+  {from:"Bangalore",to:"Mangalore",  dur:"7h",    dep:"22:00",arr:"05:00",price:700, seats:32,type:"AC Sleeper",   op:"VRL Travels"},
+  {from:"Bangalore",to:"Mysore",     dur:"3h",    dep:"07:00",arr:"10:00",price:250, seats:55,type:"AC Seater",    op:"KSRTC"},
+  {from:"Bangalore",to:"Mysore",     dur:"3h",    dep:"13:00",arr:"16:00",price:280, seats:50,type:"AC Seater",    op:"SRS Travels"},
+  {from:"Bangalore",to:"Kochi",      dur:"10h",   dep:"21:00",arr:"07:00",price:950, seats:28,type:"AC Sleeper",   op:"KSRTC"},
+  {from:"Bangalore",to:"Madurai",    dur:"8h",    dep:"21:00",arr:"05:00",price:750, seats:30,type:"AC Sleeper",   op:"Parveen Travels"},
+  {from:"Chennai",  to:"Bangalore",  dur:"5h 30m",dep:"07:00",arr:"12:30",price:630, seats:40,type:"AC Sleeper",   op:"VRL Travels"},
+  {from:"Chennai",  to:"Bangalore",  dur:"5h 30m",dep:"21:30",arr:"03:00",price:580, seats:35,type:"Semi-Sleeper", op:"KSRTC"},
+  {from:"Chennai",  to:"Hyderabad",  dur:"7h",    dep:"21:00",arr:"04:00",price:750, seats:35,type:"AC Sleeper",   op:"TSRTC"},
+  {from:"Chennai",  to:"Coimbatore", dur:"4h 30m",dep:"08:00",arr:"12:30",price:350, seats:50,type:"AC Seater",    op:"TNSTC"},
+  {from:"Chennai",  to:"Madurai",    dur:"5h",    dep:"22:00",arr:"03:00",price:450, seats:40,type:"AC Sleeper",   op:"Parveen Travels"},
+  {from:"Chennai",  to:"Kochi",      dur:"8h",    dep:"20:00",arr:"04:00",price:800, seats:32,type:"AC Sleeper",   op:"TNSTC"},
+  {from:"Hyderabad",to:"Bangalore",  dur:"8h",    dep:"21:00",arr:"05:00",price:800, seats:30,type:"AC Sleeper",   op:"Orange Travels"},
+  {from:"Hyderabad",to:"Mumbai",     dur:"12h",   dep:"18:00",arr:"06:00",price:1100,seats:25,type:"AC Sleeper",   op:"VRL Travels"},
+  {from:"Hyderabad",to:"Chennai",    dur:"7h",    dep:"20:30",arr:"03:30",price:700, seats:35,type:"AC Sleeper",   op:"APSRTC"},
+  {from:"Hyderabad",to:"Pune",       dur:"10h",   dep:"19:00",arr:"05:00",price:950, seats:28,type:"AC Sleeper",   op:"SRS Travels"},
+  {from:"Mumbai",   to:"Pune",       dur:"3h",    dep:"07:00",arr:"10:00",price:300, seats:55,type:"AC Seater",    op:"MSRTC"},
+  {from:"Mumbai",   to:"Goa",        dur:"10h",   dep:"22:00",arr:"08:00",price:950, seats:28,type:"AC Sleeper",   op:"Paulo Travels"},
+  {from:"Mumbai",   to:"Ahmedabad",  dur:"8h",    dep:"21:00",arr:"05:00",price:800, seats:32,type:"AC Sleeper",   op:"Patel Travels"},
+  {from:"Pune",     to:"Goa",        dur:"8h",    dep:"22:30",arr:"06:30",price:850, seats:30,type:"AC Sleeper",   op:"Neeta Tours"},
+  {from:"Pune",     to:"Hyderabad",  dur:"10h",   dep:"20:00",arr:"06:00",price:950, seats:28,type:"AC Sleeper",   op:"SRS Travels"},
+  {from:"Delhi",    to:"Jaipur",     dur:"5h",    dep:"06:00",arr:"11:00",price:500, seats:45,type:"AC Seater",    op:"RSRTC"},
+  {from:"Delhi",    to:"Agra",       dur:"4h",    dep:"07:00",arr:"11:00",price:400, seats:50,type:"AC Seater",    op:"UP Roadways"},
+  {from:"Delhi",    to:"Chandigarh", dur:"4h",    dep:"08:00",arr:"12:00",price:450, seats:48,type:"AC Seater",    op:"HRTC"},
+  {from:"Delhi",    to:"Lucknow",    dur:"7h",    dep:"22:00",arr:"05:00",price:700, seats:35,type:"AC Sleeper",   op:"UP SRTC"},
+  {from:"Delhi",    to:"Amritsar",   dur:"7h",    dep:"21:30",arr:"04:30",price:750, seats:32,type:"AC Sleeper",   op:"PRTC"},
+  {from:"Kolkata",  to:"Bhubaneswar",dur:"6h",    dep:"21:00",arr:"03:00",price:600, seats:38,type:"AC Sleeper",   op:"OSRTC"},
+  {from:"Kolkata",  to:"Patna",      dur:"9h",    dep:"20:00",arr:"05:00",price:750, seats:30,type:"AC Sleeper",   op:"BSRTC"},
+];
+
+// ─── CITY IATA MAP ────────────────────────────────────────────────────────────
+const CITY_IATA = {
+  "bangalore":"BLR","mumbai":"BOM","delhi":"DEL","chennai":"MAA","hyderabad":"HYD",
+  "kolkata":"CCU","goa":"GOI","pune":"PNQ","kochi":"COK","ahmedabad":"AMD","jaipur":"JAI",
+  "lucknow":"LKO","varanasi":"VNS","patna":"PAT","chandigarh":"IXC","guwahati":"GAU",
+  "bhubaneswar":"BBI","coimbatore":"CBE","madurai":"IXM","mangalore":"IXE","mysore":"MYQ",
+  "trivandrum":"TRV","visakhapatnam":"VTZ","srinagar":"SXR","jammu":"IXJ",
+  "udaipur":"UDR","amritsar":"ATQ","indore":"IDR","ranchi":"IXR","bhopal":"BHO",
+  "dubai":"DXB","singapore":"SIN","bangkok":"BKK","london":"LHR","new york":"JFK",
+  "kuala lumpur":"KUL","colombo":"CMB","paris":"CDG","tokyo":"NRT","sydney":"SYD",
+};
+
+function getAviasalesLink(fromCity, toCity, dateStr, passengers) {
+  const fromCode = CITY_IATA[fromCity.toLowerCase()] || fromCity.slice(0,3).toUpperCase();
+  const toCode   = CITY_IATA[toCity.toLowerCase()]   || toCity.slice(0,3).toUpperCase();
+  const pax = passengers || 1;
+  return "https://www.aviasales.in/search/" + fromCode + (dateStr||"") + toCode + pax
+    + "?marker=" + TRAVELPAYOUTS_MARKER + "&sub_id=alvryn_web";
+}
+
+function getRedbusLink(fromCity, toCity) {
+  return "https://www.redbus.in/bus-tickets/"
+    + fromCity.toLowerCase().replace(/\s+/g,"-")
+    + "-to-"
+    + toCity.toLowerCase().replace(/\s+/g,"-");
+}
+
+function getHotelLink(city) {
+  return "https://www.booking.com/searchresults.html?ss=" + encodeURIComponent(city) + "&affiliate_id=2431710";
+}
+
+// ─── AI PARSER ────────────────────────────────────────────────────────────────
+const CITY_ALIASES={
   "bangalore":"bangalore","bengaluru":"bangalore","bengalore":"bangalore","bangaluru":"bangalore",
-  "blr":"bangalore","bang":"bangalore","banglore":"bangalore","bangalor":"bangalore",
-  "bengalure":"bangalore","banglaore":"bangalore","b'lore":"bangalore","blore":"bangalore",
-  "mumbai":"mumbai","bombay":"mumbai","bom":"mumbai","mum":"mumbai","mumbi":"mumbai",
-  "mombai":"mumbai","mumbay":"mumbai","bombai":"mumbai",
-  "delhi":"delhi","new delhi":"delhi","del":"delhi","dilli":"delhi","nai dilli":"delhi",
-  "dilhi":"delhi","deli":"delhi","ncr":"delhi",
-  "chennai":"chennai","madras":"chennai","maa":"chennai","chenai":"chennai","chinnai":"chennai",
-  "hyderabad":"hyderabad","hyd":"hyderabad","hydrabad":"hyderabad","secunderabad":"hyderabad",
+  "blr":"bangalore","bang":"bangalore","banglore":"bangalore","bangalor":"bangalore","blore":"bangalore",
+  "mumbai":"mumbai","bombay":"mumbai","bom":"mumbai","mum":"mumbai","mumbi":"mumbai","mumbay":"mumbai",
+  "delhi":"delhi","new delhi":"delhi","del":"delhi","dilli":"delhi","nai dilli":"delhi","dilhi":"delhi",
+  "chennai":"chennai","madras":"chennai","maa":"chennai","chenai":"chennai","chinnai":"chennai","chenni":"chennai",
+  "hyderabad":"hyderabad","hyd":"hyderabad","hydrabad":"hyderabad","secunderabad":"hyderabad","hyderbad":"hyderabad",
   "kolkata":"kolkata","calcutta":"kolkata","ccu":"kolkata","kolkatta":"kolkata",
   "goa":"goa","goi":"goa","north goa":"goa","south goa":"goa","panaji":"goa",
   "pune":"pune","pnq":"pune","poona":"pune","puna":"pune",
@@ -374,247 +161,212 @@ const CITY_ALIASES = {
   "jaipur":"jaipur","jai":"jaipur","pink city":"jaipur",
   "lucknow":"lucknow","lko":"lucknow","lakhnau":"lucknow",
   "varanasi":"varanasi","vns":"varanasi","banaras":"varanasi","kashi":"varanasi",
-  "trivandrum":"trivandrum","thiruvananthapuram":"trivandrum","trv":"trivandrum","trivandram":"trivandrum",
-  "coimbatore":"coimbatore","cbe":"coimbatore","kovai":"coimbatore",
-  "madurai":"madurai","mdu":"madurai","temple city":"madurai",
+  "patna":"patna","chandigarh":"chandigarh","ixc":"chandigarh",
+  "guwahati":"guwahati","gauhati":"guwahati","gau":"guwahati",
+  "bhubaneswar":"bhubaneswar","bbi":"bhubaneswar","bbsr":"bhubaneswar",
+  "coimbatore":"coimbatore","cbe":"coimbatore","kovai":"coimbatore","koimbatore":"coimbatore",
+  "madurai":"madurai","mdu":"madurai","maduri":"madurai",
   "mangalore":"mangalore","mangaluru":"mangalore","ixe":"mangalore",
   "mysore":"mysore","mysuru":"mysore",
-  "dubai":"dubai","dxb":"dubai","dubi":"dubai",
+  "trivandrum":"trivandrum","thiruvananthapuram":"trivandrum","trv":"trivandrum",
+  "visakhapatnam":"visakhapatnam","vizag":"visakhapatnam","vtz":"visakhapatnam",
+  "surat":"surat","haridwar":"haridwar","jodhpur":"jodhpur","udaipur":"udaipur",
+  "amritsar":"amritsar","atq":"amritsar","agra":"agra","indore":"indore","raipur":"raipur",
+  "nashik":"nashik","nagpur":"nagpur","shimla":"shimla","dehradun":"dehradun",
+  "ranchi":"ranchi","bhopal":"bhopal","srinagar":"srinagar","jammu":"jammu",
+  "hubli":"hubli","belgaum":"belgaum","tirupati":"tirupati","leh":"leh",
+  "dubai":"dubai","dxb":"dubai","dubi":"dubai","dubay":"dubai",
   "singapore":"singapore","sin":"singapore","singapur":"singapore",
-  "bangkok":"bangkok","bkk":"bangkok",
-  "london":"london","lhr":"london",
-  "new york":"new york","jfk":"new york","nyc":"new york",
+  "bangkok":"bangkok","bkk":"bangkok","bangkock":"bangkok",
+  "london":"london","lhr":"london","landan":"london",
+  "new york":"new york","jfk":"new york","nyc":"new york","newyork":"new york",
   "kuala lumpur":"kuala lumpur","kul":"kuala lumpur","kl":"kuala lumpur",
   "colombo":"colombo","cmb":"colombo",
-  "paris":"paris","cdg":"paris",
-  "tokyo":"tokyo","nrt":"tokyo",
+  "paris":"paris","cdg":"paris","tokyo":"tokyo","nrt":"tokyo",
   "sydney":"sydney","syd":"sydney",
-  "bali":"bali","dps":"bali",
-  "maldives":"male","male":"male",
-  "doha":"doha","doh":"doha",
-  "abu dhabi":"abu dhabi","auh":"abu dhabi",
-  "istanbul":"istanbul","ist":"istanbul",
-  "patna":"patna","chandigarh":"chandigarh","guwahati":"guwahati",
-  "bhubaneswar":"bhubaneswar","nagpur":"nagpur","indore":"indore",
-  "shimla":"shimla","dehradun":"dehradun","leh":"leh","ladakh":"leh",
-  "amritsar":"amritsar","udaipur":"udaipur","jodhpur":"jodhpur","agra":"agra",
-  "visakhapatnam":"visakhapatnam","vizag":"visakhapatnam",
-  "ranchi":"ranchi","bhopal":"bhopal","srinagar":"srinagar",
-  "kathmandu":"kathmandu","ktm":"kathmandu",
 };
-
-const CITY_TO_IATA = {
-  "bangalore":"BLR","mumbai":"BOM","delhi":"DEL","chennai":"MAA","hyderabad":"HYD",
-  "kolkata":"CCU","goa":"GOI","pune":"PNQ","kochi":"COK","ahmedabad":"AMD","jaipur":"JAI",
-  "lucknow":"LKO","varanasi":"VNS","patna":"PAT","chandigarh":"IXC","guwahati":"GAU",
-  "bhubaneswar":"BBI","coimbatore":"CBE","madurai":"IXM","mangalore":"IXE","mysore":"MYQ",
-  "trivandrum":"TRV","visakhapatnam":"VTZ","ranchi":"IXR","bhopal":"BHO",
-  "srinagar":"SXR","amritsar":"ATQ","udaipur":"UDR","jodhpur":"JDH","agra":"AGR",
-  "indore":"IDR","shimla":"SLV","dehradun":"DED","leh":"IXL","nagpur":"NAG",
-  "dubai":"DXB","singapore":"SIN","bangkok":"BKK","london":"LHR","new york":"JFK",
-  "kuala lumpur":"KUL","colombo":"CMB","paris":"CDG","tokyo":"NRT","sydney":"SYD",
-  "doha":"DOH","abu dhabi":"AUH","istanbul":"IST","bali":"DPS","maldives":"MLE","male":"MLE",
-  "kathmandu":"KTM",
-};
-
-const CITIES = [
-  {code:"BLR",name:"Bangalore",full:"Kempegowda International",country:"India",popular:true},
-  {code:"BOM",name:"Mumbai",full:"Chhatrapati Shivaji Intl",country:"India",popular:true},
-  {code:"DEL",name:"Delhi",full:"Indira Gandhi International",country:"India",popular:true},
-  {code:"MAA",name:"Chennai",full:"Chennai International",country:"India",popular:true},
-  {code:"HYD",name:"Hyderabad",full:"Rajiv Gandhi International",country:"India",popular:true},
-  {code:"CCU",name:"Kolkata",full:"Netaji Subhas Chandra Bose Intl",country:"India",popular:true},
-  {code:"GOI",name:"Goa",full:"Dabolim / Mopa Airport",country:"India",popular:true},
-  {code:"PNQ",name:"Pune",full:"Pune Airport",country:"India",popular:true},
-  {code:"COK",name:"Kochi",full:"Cochin International",country:"India",popular:true},
-  {code:"AMD",name:"Ahmedabad",full:"Sardar Vallabhbhai Patel Intl",country:"India",popular:true},
-  {code:"JAI",name:"Jaipur",full:"Jaipur International",country:"India",popular:true},
-  {code:"TRV",name:"Trivandrum",full:"Trivandrum International",country:"India",popular:false},
-  {code:"LKO",name:"Lucknow",full:"Chaudhary Charan Singh Intl",country:"India",popular:false},
-  {code:"VNS",name:"Varanasi",full:"Lal Bahadur Shastri Airport",country:"India",popular:false},
-  {code:"PAT",name:"Patna",full:"Jay Prakash Narayan Airport",country:"India",popular:false},
-  {code:"BHO",name:"Bhopal",full:"Raja Bhoj Airport",country:"India",popular:false},
-  {code:"NAG",name:"Nagpur",full:"Dr. Babasaheb Ambedkar Intl",country:"India",popular:false},
-  {code:"SXR",name:"Srinagar",full:"Sheikh ul-Alam Airport",country:"India",popular:false},
-  {code:"IXC",name:"Chandigarh",full:"Chandigarh Airport",country:"India",popular:false},
-  {code:"GAU",name:"Guwahati",full:"Lokpriya Gopinath Bordoloi Intl",country:"India",popular:false},
-  {code:"BBI",name:"Bhubaneswar",full:"Biju Patnaik International",country:"India",popular:false},
-  {code:"UDR",name:"Udaipur",full:"Maharana Pratap Airport",country:"India",popular:false},
-  {code:"ATQ",name:"Amritsar",full:"Sri Guru Ram Dass Jee Intl",country:"India",popular:false},
-  {code:"IDR",name:"Indore",full:"Devi Ahilyabai Holkar Airport",country:"India",popular:false},
-  {code:"VTZ",name:"Visakhapatnam",full:"Visakhapatnam Airport",country:"India",popular:false},
-  {code:"IXR",name:"Ranchi",full:"Birsa Munda Airport",country:"India",popular:false},
-  {code:"CBE",name:"Coimbatore",full:"Coimbatore International",country:"India",popular:false},
-  {code:"IXE",name:"Mangalore",full:"Mangalore International",country:"India",popular:false},
-  {code:"MYQ",name:"Mysore",full:"Mysore Airport",country:"India",popular:false},
-  {code:"DED",name:"Dehradun",full:"Jolly Grant Airport",country:"India",popular:false},
-  {code:"SLV",name:"Shimla",full:"Jubarhatti Airport",country:"India",popular:false},
-  {code:"IXL",name:"Leh",full:"Kushok Bakula Rimpochee Airport",country:"India",popular:false},
-  {code:"TIR",name:"Tirupati",full:"Tirupati Airport",country:"India",popular:false},
-  {code:"MDU",name:"Madurai",full:"Madurai Airport",country:"India",popular:false},
-  {code:"IXM",name:"Madurai",full:"Madurai Airport",country:"India",popular:false},
-  {code:"DXB",name:"Dubai",full:"Dubai International",country:"UAE",popular:true},
-  {code:"SIN",name:"Singapore",full:"Changi Airport",country:"Singapore",popular:true},
-  {code:"BKK",name:"Bangkok",full:"Suvarnabhumi Airport",country:"Thailand",popular:true},
-  {code:"LHR",name:"London",full:"Heathrow Airport",country:"UK",popular:true},
-  {code:"JFK",name:"New York",full:"JFK International",country:"USA",popular:true},
-  {code:"KUL",name:"Kuala Lumpur",full:"KLIA Airport",country:"Malaysia",popular:true},
-  {code:"CMB",name:"Colombo",full:"Bandaranaike International",country:"Sri Lanka",popular:true},
-  {code:"CDG",name:"Paris",full:"Charles de Gaulle",country:"France",popular:false},
-  {code:"NRT",name:"Tokyo",full:"Narita International",country:"Japan",popular:false},
-  {code:"SYD",name:"Sydney",full:"Kingsford Smith",country:"Australia",popular:false},
-  {code:"DOH",name:"Doha",full:"Hamad International",country:"Qatar",popular:false},
-  {code:"AUH",name:"Abu Dhabi",full:"Zayed International",country:"UAE",popular:false},
-  {code:"IST",name:"Istanbul",full:"Istanbul Airport",country:"Turkey",popular:false},
-  {code:"DPS",name:"Bali",full:"Ngurah Rai International",country:"Indonesia",popular:false},
-  {code:"MLE",name:"Maldives",full:"Velana International",country:"Maldives",popular:false},
-  {code:"KTM",name:"Kathmandu",full:"Tribhuvan International",country:"Nepal",popular:false},
-];
-
-const BUS_ROUTES = [
-  {from:"Bangalore",to:"Chennai",dur:"5h 30m",dep:"06:00",arr:"11:30",price:650,type:"AC Sleeper",op:"VRL Travels"},
-  {from:"Bangalore",to:"Chennai",dur:"5h 30m",dep:"21:00",arr:"02:30",price:550,type:"Semi-Sleeper",op:"KSRTC"},
-  {from:"Bangalore",to:"Chennai",dur:"5h 30m",dep:"14:00",arr:"19:30",price:720,type:"AC Sleeper",op:"SRS Travels"},
-  {from:"Bangalore",to:"Hyderabad",dur:"8h",dep:"20:00",arr:"04:00",price:800,type:"AC Sleeper",op:"SRS Travels"},
-  {from:"Bangalore",to:"Hyderabad",dur:"8h",dep:"10:00",arr:"18:00",price:750,type:"Semi-Sleeper",op:"Orange Travels"},
-  {from:"Bangalore",to:"Goa",dur:"9h",dep:"21:30",arr:"06:30",price:900,type:"AC Sleeper",op:"Neeta Tours"},
-  {from:"Bangalore",to:"Goa",dur:"9h",dep:"08:00",arr:"17:00",price:850,type:"AC Sleeper",op:"Paulo Travels"},
-  {from:"Bangalore",to:"Mumbai",dur:"16h",dep:"17:00",arr:"09:00",price:1400,type:"AC Sleeper",op:"VRL Travels"},
-  {from:"Bangalore",to:"Pune",dur:"14h",dep:"18:00",arr:"08:00",price:1200,type:"AC Sleeper",op:"Paulo Travels"},
-  {from:"Bangalore",to:"Coimbatore",dur:"4h",dep:"07:00",arr:"11:00",price:400,type:"AC Seater",op:"KSRTC"},
-  {from:"Bangalore",to:"Mangalore",dur:"7h",dep:"22:00",arr:"05:00",price:700,type:"AC Sleeper",op:"VRL Travels"},
-  {from:"Bangalore",to:"Mysore",dur:"3h",dep:"07:00",arr:"10:00",price:250,type:"AC Seater",op:"KSRTC"},
-  {from:"Bangalore",to:"Kochi",dur:"10h",dep:"21:00",arr:"07:00",price:950,type:"AC Sleeper",op:"KSRTC"},
-  {from:"Bangalore",to:"Madurai",dur:"8h",dep:"21:00",arr:"05:00",price:750,type:"AC Sleeper",op:"Parveen Travels"},
-  {from:"Bangalore",to:"Tirupati",dur:"5h",dep:"05:30",arr:"10:30",price:450,type:"AC Seater",op:"APSRTC"},
-  {from:"Chennai",to:"Hyderabad",dur:"7h",dep:"21:00",arr:"04:00",price:750,type:"AC Sleeper",op:"TSRTC"},
-  {from:"Chennai",to:"Bangalore",dur:"5h 30m",dep:"07:00",arr:"12:30",price:630,type:"AC Sleeper",op:"VRL Travels"},
-  {from:"Chennai",to:"Coimbatore",dur:"4h 30m",dep:"08:00",arr:"12:30",price:350,type:"AC Seater",op:"TNSTC"},
-  {from:"Chennai",to:"Madurai",dur:"5h",dep:"22:00",arr:"03:00",price:450,type:"AC Sleeper",op:"Parveen Travels"},
-  {from:"Hyderabad",to:"Bangalore",dur:"8h",dep:"21:00",arr:"05:00",price:800,type:"AC Sleeper",op:"Orange Travels"},
-  {from:"Hyderabad",to:"Mumbai",dur:"12h",dep:"18:00",arr:"06:00",price:1100,type:"AC Sleeper",op:"VRL Travels"},
-  {from:"Mumbai",to:"Pune",dur:"3h",dep:"07:00",arr:"10:00",price:300,type:"AC Seater",op:"MSRTC"},
-  {from:"Mumbai",to:"Goa",dur:"10h",dep:"22:00",arr:"08:00",price:950,type:"AC Sleeper",op:"Paulo Travels"},
-  {from:"Delhi",to:"Jaipur",dur:"5h",dep:"06:00",arr:"11:00",price:500,type:"AC Seater",op:"RSRTC"},
-  {from:"Delhi",to:"Agra",dur:"4h",dep:"07:00",arr:"11:00",price:400,type:"AC Seater",op:"UP Roadways"},
-  {from:"Delhi",to:"Chandigarh",dur:"4h",dep:"08:00",arr:"12:00",price:450,type:"AC Seater",op:"HRTC"},
-  {from:"Delhi",to:"Lucknow",dur:"7h",dep:"22:00",arr:"05:00",price:700,type:"AC Sleeper",op:"UP SRTC"},
-  {from:"Delhi",to:"Amritsar",dur:"7h",dep:"21:30",arr:"04:30",price:750,type:"AC Sleeper",op:"PRTC"},
-  {from:"Delhi",to:"Shimla",dur:"8h",dep:"05:30",arr:"13:30",price:650,type:"AC Seater",op:"HRTC"},
-  {from:"Kolkata",to:"Bhubaneswar",dur:"6h",dep:"21:00",arr:"03:00",price:600,type:"AC Sleeper",op:"OSRTC"},
-  {from:"Kolkata",to:"Patna",dur:"9h",dep:"20:00",arr:"05:00",price:750,type:"AC Sleeper",op:"BSRTC"},
-  {from:"Pune",to:"Goa",dur:"8h",dep:"22:30",arr:"06:30",price:850,type:"AC Sleeper",op:"Neeta Tours"},
-  {from:"Pune",to:"Hyderabad",dur:"10h",dep:"20:00",arr:"06:00",price:950,type:"AC Sleeper",op:"SRS Travels"},
-  {from:"Bangalore",to:"Ooty",dur:"5h",dep:"07:30",arr:"12:30",price:380,type:"AC Seater",op:"KSRTC"},
-  {from:"Bangalore",to:"Pondicherry",dur:"5h",dep:"07:00",arr:"12:00",price:450,type:"AC Seater",op:"TNSTC"},
-  {from:"Bangalore",to:"Salem",dur:"3h 30m",dep:"07:30",arr:"11:00",price:320,type:"AC Seater",op:"KSRTC"},
-  {from:"Bangalore",to:"Vellore",dur:"3h",dep:"06:30",arr:"09:30",price:280,type:"AC Seater",op:"TNSTC"},
-  {from:"Coimbatore",to:"Chennai",dur:"7h",dep:"21:00",arr:"04:00",price:600,type:"AC Sleeper",op:"TNSTC"},
-  {from:"Coimbatore",to:"Bangalore",dur:"4h",dep:"07:00",arr:"11:00",price:380,type:"AC Seater",op:"KSRTC"},
-  {from:"Madurai",to:"Chennai",dur:"8h",dep:"21:00",arr:"05:00",price:580,type:"AC Sleeper",op:"TNSTC"},
-  {from:"Kochi",to:"Trivandrum",dur:"4h",dep:"07:30",arr:"11:30",price:350,type:"AC Seater",op:"KSRTC"},
-  {from:"Kochi",to:"Bangalore",dur:"10h",dep:"22:00",arr:"08:00",price:950,type:"AC Sleeper",op:"KSRTC"},
-  {from:"Trivandrum",to:"Kochi",dur:"4h",dep:"07:00",arr:"11:00",price:350,type:"AC Seater",op:"KSRTC"},
-  {from:"Jaipur",to:"Udaipur",dur:"6h",dep:"07:00",arr:"13:00",price:550,type:"AC Seater",op:"RSRTC"},
-  {from:"Jaipur",to:"Delhi",dur:"5h",dep:"06:00",arr:"11:00",price:490,type:"AC Seater",op:"RSRTC"},
-];
-
-const HOTEL_CITIES = [
-  "Bangalore","Mumbai","Delhi","Chennai","Hyderabad","Kolkata","Goa","Pune","Kochi",
-  "Ahmedabad","Jaipur","Agra","Varanasi","Udaipur","Mysore","Shimla","Manali","Ooty",
-  "Coorg","Munnar","Rishikesh","Haridwar","Amritsar","Chandigarh","Lucknow",
-  "Bhubaneswar","Visakhapatnam","Tirupati","Madurai","Coimbatore","Mangalore",
-  "Srinagar","Leh","Port Blair","Darjeeling","Guwahati",
-  "Dubai","Singapore","Bangkok","London","New York","Paris","Tokyo","Sydney",
-  "Kuala Lumpur","Colombo","Bali","Phuket","Hong Kong","Istanbul","Rome","Barcelona",
-  "Amsterdam","Maldives","Kathmandu","Doha","Abu Dhabi","Muscat","Cairo","Nairobi",
-];
-
-const BUS_CITIES = [...new Set([...BUS_ROUTES.map(r=>r.from),...BUS_ROUTES.map(r=>r.to)])].sort();
-const CLASSES = ["Economy","Premium Economy","Business","First Class"];
-const BUS_TYPES = ["Any","AC Sleeper","Semi-Sleeper","AC Seater"];
-
-function fmtTime(dt){if(!dt)return"--:--";return new Date(dt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:false});}
-function fmtDate(dt){if(!dt)return"";return new Date(dt).toLocaleDateString("en-IN",{day:"numeric",month:"short"});}
-function calcDur(dep,arr){if(!dep||!arr)return"";const d=(new Date(arr)-new Date(dep))/60000;return`${Math.floor(d/60)}h${d%60>0?" "+d%60+"m":""}`.trim();}
 
 function parseQuery(text) {
   let t = text.toLowerCase()
-    .replace(/[^\w\s₹]/g," ")
-    .replace(/\b(mujhe|muje|chahiye|show|please|kya|hai|se|ko|ka|ek|ticket|find|search|want|need|bata|dikha|enakku|vendum|naaku|kavali)\b/gi," ")
+    .replace(/[^\w\s]/g," ")
+    .replace(/\b(flights?|flight|buses?|bus|book|mujhe|muje|chahiye|chaiye|show|me|please|kya|hai|hain|aur|ka|ke|ki|se|ko|tak|liye|ek|ticket|find|search|bata|dikha|looking|want|need)\b/gi," ")
     .replace(/\s+/g," ").trim();
 
-  let found = [];
-  const multiWord = Object.keys(CITY_ALIASES).filter(k=>k.includes(" ")).sort((a,b)=>b.length-a.length);
-  let remaining = t;
-  for (const key of multiWord) {
-    if (remaining.includes(key) && found.length < 2) { found.push(CITY_ALIASES[key]); remaining = remaining.replace(key," "); }
+  let found=[];
+  const multiWord=Object.keys(CITY_ALIASES).filter(k=>k.includes(" ")).sort((a,b)=>b.length-a.length);
+  let remaining=t;
+  for(const key of multiWord){
+    if(remaining.includes(key)&&found.length<2){found.push(CITY_ALIASES[key]);remaining=remaining.replace(key," ");}
   }
-  const words = remaining.split(/[\s,\-\/→➡to]+/);
-  for (const word of words) {
-    const clean = word.replace(/[^a-z]/g,"");
-    if (clean.length >= 2 && CITY_ALIASES[clean] && found.length < 2 && !found.includes(CITY_ALIASES[clean])) found.push(CITY_ALIASES[clean]);
+  const words=remaining.split(/[\s,\-\/]+/);
+  for(const word of words){
+    const clean=word.replace(/[^a-z]/g,"");
+    if(clean.length>=2&&CITY_ALIASES[clean]&&found.length<2&&!found.includes(CITY_ALIASES[clean]))found.push(CITY_ALIASES[clean]);
   }
-  if (found.length < 2) {
-    const allKeys = Object.keys(CITY_ALIASES);
-    for (const w of remaining.split(/\s+/)) {
-      if (w.length < 3) continue;
-      for (const key of allKeys) {
-        if (key.length >= 3 && w.slice(0,3) === key.slice(0,3) && !found.includes(CITY_ALIASES[key])) {
-          found.push(CITY_ALIASES[key]); if (found.length === 2) break;
+  if(found.length<2){
+    const allKeys=Object.keys(CITY_ALIASES);
+    for(const w of remaining.split(/\s+/)){
+      if(w.length<3)continue;
+      for(const key of allKeys){
+        if(key.length>=3&&w.slice(0,3)===key.slice(0,3)&&!found.includes(CITY_ALIASES[key])){
+          found.push(CITY_ALIASES[key]);if(found.length===2)break;
         }
       }
-      if (found.length === 2) break;
+      if(found.length===2)break;
     }
   }
 
-  const now = new Date(); let date = null;
-  const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
+  const now=new Date();let date=null;
+  const months={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
     january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
-  for (const [mon,idx] of Object.entries(months)) {
-    const m = t.match(new RegExp(`(\\d{1,2})\\s*${mon}|${mon}\\s*(\\d{1,2})`));
-    if (m) { const day=parseInt(m[1]||m[2]); const d=new Date(now.getFullYear(),idx,day); if(d<now)d.setFullYear(d.getFullYear()+1); date=d; break; }
+  for(const[mon,idx]of Object.entries(months)){
+    const m=t.match(new RegExp("(\\d{1,2})\\s*"+mon+"|"+mon+"\\s*(\\d{1,2})"));
+    if(m){const day=parseInt(m[1]||m[2]);const d=new Date(now.getFullYear(),idx,day);if(d<now)d.setFullYear(d.getFullYear()+1);date=d;break;}
   }
-  if (!date) {
-    if(/today|aaj/.test(t)) date=new Date(now);
-    else if(/day after tomorrow|parso/.test(t)){date=new Date(now);date.setDate(date.getDate()+2);}
-    else if(/tomorrow|kal|tmrw|nale|repu/.test(t)){date=new Date(now);date.setDate(date.getDate()+1);}
-    else if(/weekend/.test(t)){date=new Date(now);const diff=(6-now.getDay()+7)%7||7;date.setDate(now.getDate()+diff);}
+  const todayW=["today","aaj","indru","ee roju"];
+  const tomW=["tomorrow","kal","tmrw","tommorow","nale","repu","naale"];
+  const dayAfW=["day after tomorrow","parso"];
+  const wkW=["this weekend","weekend","saturday"];
+  if(todayW.some(w=>t.includes(w)))date=new Date(now);
+  else if(dayAfW.some(w=>t.includes(w))){date=new Date(now);date.setDate(date.getDate()+2);}
+  else if(tomW.some(w=>t.includes(w))){date=new Date(now);date.setDate(date.getDate()+1);}
+  else if(wkW.some(w=>t.includes(w))){date=new Date(now);const diff=(6-now.getDay()+7)%7||7;date.setDate(now.getDate()+diff);}
+  const dayMap={sun:0,sunday:0,mon:1,monday:1,tue:2,tuesday:2,wed:3,wednesday:3,thu:4,thursday:4,fri:5,friday:5,sat:6,saturday:6,ravivar:0,somvar:1,mangalvar:2,budhvar:3,guruvar:4,shukravar:5,shanivar:6};
+  for(const[day,idx]of Object.entries(dayMap)){
+    if(t.includes(day)){const d=new Date(now);let diff=idx-now.getDay();if(/next|agla|agle/.test(t)){if(diff<=0)diff+=7;if(diff<7)diff+=7;}else{if(diff<=0)diff+=7;}d.setDate(now.getDate()+diff);date=d;break;}
   }
-  if (date && date < new Date(new Date(now).setHours(0,0,0,0))) return{from:found[0]||null,to:found[1]||null,date:null,pastDate:true,budget:null,singleCity:found[0]||null};
-
-  let budget = null;
-  const bP = [/under\s*[₹rs.]*\s*(\d+)k?/,/below\s*[₹rs.]*\s*(\d+)k?/,/less\s*than\s*[₹rs.]*\s*(\d+)k?/,/max\s*[₹rs.]*\s*(\d+)k?/];
-  for (const p of bP) { const m=t.match(p); if(m){let v=parseInt(m[1]);if(t.match(/\d+k/))v*=1000;budget=v;break;} }
-
-  return{from:found[0]||null,to:found[1]||null,date,pastDate:false,budget,singleCity:found[0]||null};
+  const inDays=t.match(/in\s*(\d+)\s*(din|days?)/);
+  if(inDays){date=new Date(now);date.setDate(now.getDate()+parseInt(inDays[1]));}
+  if(date&&date<new Date(new Date(now).setHours(0,0,0,0)))return{from:found[0]||null,to:found[1]||null,date:null,pastDate:true,budget:null};
+  let budget=null;
+  const bP=[/under\s*[₹rs.]*\s*(\d+)k?/,/below\s*[₹rs.]*\s*(\d+)k?/,/less\s*than\s*[₹rs.]*\s*(\d+)k?/,/max\s*[₹rs.]*\s*(\d+)k?/,/[₹rs.]*\s*(\d+)k?\s*(se\s*)?kam/,/(\d+)k?\s*tak/];
+  for(const p of bP){const m=t.match(p);if(m){let v=parseInt(m[1]||m[2]);if(t.match(/\d+k/))v*=1000;budget=v;break;}}
+  return{from:found[0]||null,to:found[1]||null,date,pastDate:false,budget};
 }
 
-// ─── CITY MODAL ───────────────────────────────────────────────────────────────
-function CityModal({title,onSelect,onClose,exclude,theme}){
-  const [s,setS]=useState("");
+// ─── SMART LABELS ─────────────────────────────────────────────────────────────
+function getFlightLabels(flight, allFlights, index) {
+  const labels = [];
+  const prices = allFlights.map(f=>f.price);
+  const minPrice = Math.min(...prices);
+  const deps = allFlights.map(f=>new Date(f.departure_time).getTime());
+  const earliest = Math.min(...deps);
+
+  if(flight.price === minPrice) labels.push({text:"Best Price",color:"#16a34a",bg:"rgba(22,163,74,0.1)"});
+  else if(index === 0 && flight.price <= minPrice*1.05) labels.push({text:"Recommended",color:GOLD_DARK,bg:"rgba(201,168,76,0.12)"});
+  if(new Date(flight.departure_time).getTime()===earliest) labels.push({text:"Earliest",color:"#2563eb",bg:"rgba(37,99,235,0.1)"});
+  if(index===1&&labels.length===0) labels.push({text:"Popular Choice",color:"#7c3aed",bg:"rgba(124,58,237,0.1)"});
+  return labels;
+}
+
+function getFlightInsight(flight, allFlights) {
+  const hour = new Date(flight.departure_time).getHours();
+  const prices = allFlights.map(f=>f.price);
+  const minP = Math.min(...prices);
+  const maxP = Math.max(...prices);
+  const savings = maxP - flight.price;
+
+  if(hour>=5&&hour<9) return "Morning flights are typically 15–20% cheaper on this route.";
+  if(hour>=22||hour<5) return "Late night flights often have better availability and lower fares.";
+  if(flight.price===minP&&savings>500) return "You're saving ₹" + savings.toLocaleString() + " compared to other options on this route.";
+  if(flight.price<=minP*1.1) return "You're getting a competitive price for this route.";
+  return "Prices may vary across platforms — this is one of the best available.";
+}
+
+function getBusLabels(bus, allBuses, index) {
+  const labels = [];
+  const prices = allBuses.map(b=>b.price);
+  const minPrice = Math.min(...prices);
+  if(bus.price===minPrice) labels.push({text:"Best Price",color:"#16a34a",bg:"rgba(22,163,74,0.1)"});
+  if(bus.type==="AC Sleeper"&&index===0) labels.push({text:"Most Popular",color:"#7c3aed",bg:"rgba(124,58,237,0.1)"});
+  if(parseInt(bus.dep.split(":")[0])>=5&&parseInt(bus.dep.split(":")[0])<12) labels.push({text:"Morning",color:"#2563eb",bg:"rgba(37,99,235,0.1)"});
+  return labels;
+}
+
+function getBusInsight(bus, allBuses) {
+  const hour = parseInt(bus.dep.split(":")[0]);
+  const prices = allBuses.map(b=>b.price);
+  const minP = Math.min(...prices);
+  const savings = Math.max(...prices) - bus.price;
+  if(hour>=20||hour<5) return "Night buses save you hotel costs — arrive fresh in the morning.";
+  if(bus.price===minP&&savings>200) return "You save ₹" + savings.toLocaleString() + " choosing this over other options.";
+  if(bus.type==="AC Sleeper") return "AC Sleeper is the most comfortable option for this distance.";
+  return "Prices may vary slightly based on provider. Multiple operators serve this route.";
+}
+
+// ─── CITIES ───────────────────────────────────────────────────────────────────
+const CITIES=[
+  {code:"BLR",name:"Bangalore",    full:"Kempegowda International",       country:"India",popular:true},
+  {code:"BOM",name:"Mumbai",       full:"Chhatrapati Shivaji Intl",        country:"India",popular:true},
+  {code:"DEL",name:"Delhi",        full:"Indira Gandhi International",     country:"India",popular:true},
+  {code:"MAA",name:"Chennai",      full:"Chennai International",           country:"India",popular:true},
+  {code:"HYD",name:"Hyderabad",    full:"Rajiv Gandhi International",      country:"India",popular:true},
+  {code:"CCU",name:"Kolkata",      full:"Netaji Subhas Chandra Bose Intl", country:"India",popular:true},
+  {code:"GOI",name:"Goa",          full:"Dabolim / Mopa Airport",          country:"India",popular:true},
+  {code:"PNQ",name:"Pune",         full:"Pune Airport",                    country:"India",popular:true},
+  {code:"COK",name:"Kochi",        full:"Cochin International",            country:"India",popular:true},
+  {code:"AMD",name:"Ahmedabad",    full:"Sardar Vallabhbhai Patel Intl",   country:"India",popular:true},
+  {code:"JAI",name:"Jaipur",       full:"Jaipur International",            country:"India",popular:true},
+  {code:"LKO",name:"Lucknow",      full:"Chaudhary Charan Singh Intl",     country:"India",popular:false},
+  {code:"VNS",name:"Varanasi",     full:"Lal Bahadur Shastri Airport",     country:"India",popular:false},
+  {code:"PAT",name:"Patna",        full:"Jay Prakash Narayan Airport",     country:"India",popular:false},
+  {code:"BHO",name:"Bhopal",       full:"Raja Bhoj Airport",               country:"India",popular:false},
+  {code:"NAG",name:"Nagpur",       full:"Dr. Babasaheb Ambedkar Intl",     country:"India",popular:false},
+  {code:"IXC",name:"Chandigarh",   full:"Chandigarh Airport",              country:"India",popular:false},
+  {code:"GAU",name:"Guwahati",     full:"Lokpriya Gopinath Bordoloi Intl", country:"India",popular:false},
+  {code:"BBI",name:"Bhubaneswar",  full:"Biju Patnaik International",      country:"India",popular:false},
+  {code:"TRV",name:"Trivandrum",   full:"Trivandrum International",        country:"India",popular:false},
+  {code:"UDR",name:"Udaipur",      full:"Maharana Pratap Airport",         country:"India",popular:false},
+  {code:"ATQ",name:"Amritsar",     full:"Sri Guru Ram Dass Jee Intl",      country:"India",popular:false},
+  {code:"IDR",name:"Indore",       full:"Devi Ahilyabai Holkar Airport",   country:"India",popular:false},
+  {code:"VTZ",name:"Visakhapatnam",full:"Visakhapatnam Airport",           country:"India",popular:false},
+  {code:"IXR",name:"Ranchi",       full:"Birsa Munda Airport",             country:"India",popular:false},
+  {code:"SXR",name:"Srinagar",     full:"Sheikh ul-Alam Airport",          country:"India",popular:false},
+  {code:"IXE",name:"Mangalore",    full:"Mangalore International",         country:"India",popular:false},
+  {code:"CBE",name:"Coimbatore",   full:"Coimbatore International",        country:"India",popular:false},
+  {code:"IXM",name:"Madurai",      full:"Madurai Airport",                 country:"India",popular:false},
+  {code:"DXB",name:"Dubai",        full:"Dubai International",             country:"UAE",       popular:true},
+  {code:"SIN",name:"Singapore",    full:"Changi Airport",                  country:"Singapore", popular:true},
+  {code:"BKK",name:"Bangkok",      full:"Suvarnabhumi Airport",            country:"Thailand",  popular:true},
+  {code:"LHR",name:"London",       full:"Heathrow Airport",                country:"UK",        popular:true},
+  {code:"JFK",name:"New York",     full:"JFK International",               country:"USA",       popular:true},
+  {code:"KUL",name:"Kuala Lumpur", full:"KLIA Airport",                    country:"Malaysia",  popular:true},
+  {code:"CMB",name:"Colombo",      full:"Bandaranaike International",      country:"Sri Lanka", popular:false},
+];
+const BUS_CITIES=[...new Set([...BUS_ROUTES.map(r=>r.from),...BUS_ROUTES.map(r=>r.to)])].sort();
+const CLASSES=["Economy","Premium Economy","Business","First Class"];
+const BUS_TYPES=["Any","AC Sleeper","Semi-Sleeper","AC Seater"];
+
+function fmtTime(dt){if(!dt)return"--:--";return new Date(dt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:false});}
+function fmtDate(dt){if(!dt)return"";return new Date(dt).toLocaleDateString("en-IN",{day:"numeric",month:"short"});}
+function fmtDateStr(dt){if(!dt)return"";const d=new Date(dt);const mm=String(d.getMonth()+1).padStart(2,"0");const dd=String(d.getDate()).padStart(2,"0");return dd+mm;}
+function calcDur(dep,arr){if(!dep||!arr)return"";const d=(new Date(arr)-new Date(dep))/60000;return Math.floor(d/60)+"h"+(d%60>0?" "+d%60+"m":"");}
+
+// ─── MODALS ───────────────────────────────────────────────────────────────────
+function CityModal({title,onSelect,onClose,exclude}){
+  const[s,setS]=useState("");
   const shown=CITIES.filter(c=>c.code!==exclude&&(c.name.toLowerCase().includes(s.toLowerCase())||c.code.toLowerCase().includes(s.toLowerCase())||c.country.toLowerCase().includes(s.toLowerCase())));
-  const T = theme || TAB_THEMES.flight;
   return(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)",padding:20}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,background:"rgba(10,10,20,0.95)",borderRadius:22,padding:28,boxShadow:`0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px ${T.accent}33`,border:`1px solid ${T.accent}33`,maxHeight:"80vh",display:"flex",flexDirection:"column"}}>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#fff",marginBottom:14}}>{title}</div>
-        <input autoFocus value={s} onChange={e=>setS(e.target.value)} placeholder="Search city, code or country…"
-          style={{width:"100%",padding:"11px 16px",borderRadius:12,fontSize:14,fontFamily:"'DM Sans',sans-serif",border:`1.5px solid ${T.accent}55`,outline:"none",marginBottom:12,color:"#fff",background:"rgba(255,255,255,0.06)"}}/>
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(8px)",padding:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,background:"rgba(250,248,244,0.98)",borderRadius:22,padding:28,boxShadow:"0 24px 80px rgba(0,0,0,0.15)",border:"1px solid rgba(201,168,76,0.2)",maxHeight:"80vh",display:"flex",flexDirection:"column"}}>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#1a1410",marginBottom:14}}>{title}</div>
+        <input autoFocus value={s} onChange={e=>setS(e.target.value)} placeholder="Search city or code…"
+          style={{width:"100%",padding:"11px 16px",borderRadius:12,fontSize:14,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.3)",outline:"none",marginBottom:12,color:"#1a1410",background:"#fafaf8"}}
+          onFocus={e=>e.target.style.borderColor=GOLD} onBlur={e=>e.target.style.borderColor="rgba(201,168,76,0.3)"}/>
+        {!s&&<div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:"#999",letterSpacing:"0.15em",marginBottom:8}}>POPULAR CITIES</div>}
         <div style={{display:"flex",flexDirection:"column",gap:5,overflowY:"auto",flex:1}}>
           {shown.map(city=>(
-            <div key={city.code} onClick={()=>onSelect(city)}
-              style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",borderRadius:11,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid ${T.accent}22`,transition:"all 0.15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background=T.accentSoft;e.currentTarget.style.borderColor=T.accent+"55";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)";e.currentTarget.style.borderColor=T.accent+"22";}}>
+            <div key={city.code} onClick={()=>onSelect(city)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",borderRadius:11,cursor:"pointer",background:"rgba(255,255,255,0.7)",border:"1px solid rgba(201,168,76,0.1)",transition:"all 0.15s"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(201,168,76,0.1)";e.currentTarget.style.borderColor="rgba(201,168,76,0.3)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.7)";e.currentTarget.style.borderColor="rgba(201,168,76,0.1)";}}>
               <div>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:"#fff"}}>{city.name}</span>
-                  {city.popular&&<span style={{fontSize:8,background:T.accentSoft,color:T.accent,padding:"2px 6px",borderRadius:6,fontFamily:"'Space Mono',monospace"}}>TOP</span>}
+                  <span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:600,fontSize:14,color:"#1a1410"}}>{city.name}</span>
+                  {city.popular&&<span style={{fontSize:8,background:"rgba(201,168,76,0.15)",color:GOLD_DARK,padding:"2px 6px",borderRadius:6,fontFamily:"'Space Mono',monospace"}}>TOP</span>}
                 </div>
-                <div style={{fontSize:12,color:"rgba(255,255,255,0.45)",marginTop:2}}>{city.full} · {city.country}</div>
+                <div style={{fontSize:12,color:"#777",marginTop:2}}>{city.full} · {city.country}</div>
               </div>
-              <div style={{fontFamily:"'Space Mono',monospace",fontWeight:700,fontSize:14,color:T.accent}}>{city.code}</div>
+              <div style={{fontFamily:"'Space Mono',monospace",fontWeight:700,fontSize:14,color:GOLD_DARK}}>{city.code}</div>
             </div>
           ))}
         </div>
@@ -623,22 +375,21 @@ function CityModal({title,onSelect,onClose,exclude,theme}){
   );
 }
 
-function BusCityModal({title,onSelect,onClose,exclude,theme}){
-  const [s,setS]=useState("");
+function BusCityModal({title,onSelect,onClose,exclude}){
+  const[s,setS]=useState("");
   const shown=BUS_CITIES.filter(c=>c.toLowerCase().includes(s.toLowerCase())&&c!==exclude);
-  const T = theme || TAB_THEMES.bus;
   return(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)",padding:20}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:440,background:"rgba(4,35,8,0.97)",borderRadius:22,padding:28,boxShadow:`0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px ${T.accent}33`,border:`1px solid ${T.accent}33`,maxHeight:"75vh",display:"flex",flexDirection:"column"}}>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#fff",marginBottom:14}}>{title}</div>
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(8px)",padding:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:440,background:"rgba(250,248,244,0.98)",borderRadius:22,padding:28,boxShadow:"0 24px 80px rgba(0,0,0,0.15)",border:"1px solid rgba(201,168,76,0.2)",maxHeight:"75vh",display:"flex",flexDirection:"column"}}>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#1a1410",marginBottom:14}}>{title}</div>
         <input autoFocus value={s} onChange={e=>setS(e.target.value)} placeholder="Search city…"
-          style={{width:"100%",padding:"11px 16px",borderRadius:12,fontSize:14,fontFamily:"'DM Sans',sans-serif",border:`1.5px solid ${T.accent}55`,outline:"none",marginBottom:12,color:"#fff",background:"rgba(255,255,255,0.06)"}}/>
+          style={{width:"100%",padding:"11px 16px",borderRadius:12,fontSize:14,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.3)",outline:"none",marginBottom:12,color:"#1a1410",background:"#fafaf8"}}
+          onFocus={e=>e.target.style.borderColor=GOLD} onBlur={e=>e.target.style.borderColor="rgba(201,168,76,0.3)"}/>
         <div style={{display:"flex",flexDirection:"column",gap:5,overflowY:"auto",flex:1}}>
           {shown.map(city=>(
-            <div key={city} onClick={()=>onSelect(city)}
-              style={{padding:"13px 16px",borderRadius:11,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid ${T.accent}22`,fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#fff",transition:"all 0.15s"}}
-              onMouseEnter={e=>e.currentTarget.style.background=T.accentSoft}
-              onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.04)"}>
+            <div key={city} onClick={()=>onSelect(city)} style={{padding:"13px 16px",borderRadius:11,cursor:"pointer",background:"rgba(255,255,255,0.7)",border:"1px solid rgba(201,168,76,0.1)",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#1a1410",transition:"all 0.15s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(201,168,76,0.1)"}
+              onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.7)"}>
               🚌 {city}
             </div>
           ))}
@@ -648,884 +399,808 @@ function BusCityModal({title,onSelect,onClose,exclude,theme}){
   );
 }
 
-function HotelCityModal({title,onSelect,onClose,theme}){
-  const [s,setS]=useState("");
-  const shown=HOTEL_CITIES.filter(c=>c.toLowerCase().includes(s.toLowerCase()));
-  const T = theme || TAB_THEMES.hotel;
+function SeatModal({type,passengers,onConfirm,onCancel}){
+  const isBus=type==="bus";
+  const COLS=isBus?["A","B","C","D"]:["A","B","C","D","E","F"];
+  const ROWS=Array.from({length:isBus?11:20},(_,i)=>i+1);
+  const[taken]=useState(()=>{const t=new Set();for(let i=0;i<(isBus?8:18);i++)t.add((Math.ceil(Math.random()*(isBus?11:20)))+COLS[Math.floor(Math.random()*COLS.length)]);return t;});
+  const[sel,setSel]=useState([]);
+  const toggle=s=>{if(taken.has(s))return;setSel(p=>p.includes(s)?p.filter(x=>x!==s):p.length<passengers?[...p,s]:p);};
+  const clr=s=>taken.has(s)?"#d1d5db":sel.includes(s)?GOLD:"rgba(201,168,76,0.1)";
   return(
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)",padding:20}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:440,background:"rgba(26,10,0,0.97)",borderRadius:22,padding:28,boxShadow:`0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px ${T.accent}33`,border:`1px solid ${T.accent}33`,maxHeight:"75vh",display:"flex",flexDirection:"column"}}>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#fff",marginBottom:14}}>{title}</div>
-        <input autoFocus value={s} onChange={e=>setS(e.target.value)} placeholder="Search city…"
-          style={{width:"100%",padding:"11px 16px",borderRadius:12,fontSize:14,fontFamily:"'DM Sans',sans-serif",border:`1.5px solid ${T.accent}55`,outline:"none",marginBottom:12,color:"#fff",background:"rgba(255,255,255,0.06)"}}/>
-        <div style={{display:"flex",flexDirection:"column",gap:5,overflowY:"auto",flex:1}}>
-          {shown.map(city=>(
-            <div key={city} onClick={()=>onSelect(city)}
-              style={{padding:"13px 16px",borderRadius:11,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid ${T.accent}22`,fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#fff",transition:"all 0.15s"}}
-              onMouseEnter={e=>e.currentTarget.style.background=T.accentSoft}
-              onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.04)"}>
-              🏨 {city}
+    <div onClick={onCancel} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:700,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",padding:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:480,background:"#faf8f4",borderRadius:24,boxShadow:"0 32px 100px rgba(0,0,0,0.18)",border:"1px solid rgba(201,168,76,0.2)",maxHeight:"90vh",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div style={{background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:"#1a1410",fontSize:17}}>{isBus?"Select Bus Seats":"Select Seats"}</div>
+            <div style={{fontSize:13,color:"rgba(26,20,16,0.75)",marginTop:3}}>Pick {passengers} seat{passengers>1?"s":""}</div>
+          </div>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:14,color:"#1a1410",fontWeight:700}}>{sel.length}/{passengers}</div>
+        </div>
+        <div style={{overflowY:"auto",padding:"16px 20px 12px"}}>
+          <div style={{textAlign:"center",marginBottom:10}}>{isBus?"🚌":"✈️"}</div>
+          <div style={{display:"flex",gap:16,justifyContent:"center",marginBottom:14}}>
+            {[["rgba(201,168,76,0.1)","Available"],["#c9a84c","Selected"],["#d1d5db","Booked"]].map(([bg,label])=>(
+              <div key={label} style={{display:"flex",alignItems:"center",gap:6}}>
+                <div style={{width:14,height:14,borderRadius:3,background:bg,border:"1px solid rgba(0,0,0,0.1)"}}/>
+                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"#555"}}>{label}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"26px repeat("+(COLS.length)+",1fr)",gap:4,marginBottom:8}}>
+            <div/>{COLS.map(c=><div key={c} style={{textAlign:"center",fontFamily:"'Space Mono',monospace",fontSize:10,color:"#777",fontWeight:700}}>{c}</div>)}
+          </div>
+          {ROWS.map(row=>(
+            <div key={row} style={{display:"grid",gridTemplateColumns:"26px repeat("+(COLS.length)+",1fr)",gap:4,marginBottom:4,alignItems:"center"}}>
+              <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:"#666",textAlign:"right",paddingRight:3,fontWeight:600}}>{row}</div>
+              {COLS.map(col=>{const s=row+col;return(
+                <div key={s} onClick={()=>toggle(s)} style={{height:30,borderRadius:6,background:clr(s),border:"1px solid "+(taken.has(s)?"#bbb":sel.includes(s)?"rgba(201,168,76,0.6)":"rgba(201,168,76,0.2)"),cursor:taken.has(s)?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontFamily:"'Space Mono',monospace",color:sel.includes(s)?"#1a1410":"#888",fontWeight:700,transition:"all 0.1s"}}>
+                  {taken.has(s)?"✕":sel.includes(s)?s:""}
+                </div>
+              );})}
             </div>
           ))}
         </div>
+        <div style={{padding:"14px 22px",borderTop:"1px solid rgba(201,168,76,0.15)",display:"flex",gap:10,alignItems:"center"}}>
+          <div style={{flex:1,fontFamily:"'DM Sans',sans-serif",fontSize:13,color:sel.length>0?"#1a1410":"#888"}}>{sel.length>0?"Selected: "+sel.join(", "):"Tap a seat to select"}</div>
+          <button onClick={onCancel} style={{padding:"10px 18px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",background:"transparent",color:"#666",border:"1.5px solid rgba(0,0,0,0.15)",cursor:"pointer"}}>Back</button>
+          <button onClick={()=>sel.length===passengers&&onConfirm(sel)} disabled={sel.length!==passengers}
+            style={{padding:"10px 22px",borderRadius:10,fontSize:13,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:sel.length===passengers?"pointer":"not-allowed",background:sel.length===passengers?GRAD:"#e5e0d8",backgroundSize:"200% 200%",animation:sel.length===passengers?"gradShift 3s ease infinite":"none",boxShadow:sel.length===passengers?"0 4px 14px rgba(201,168,76,0.44)":"none",opacity:sel.length===passengers?1:0.6}}>
+            Confirm →
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── TRAIN PANEL ─────────────────────────────────────────────────────────────
-function TrainPanel({ theme }) {
-  const T = theme || TAB_THEMES.train;
-  const STATIONS = [
-    {name:"Bangalore (SBC)",code:"SBC"},{name:"Mumbai CSMT",code:"CSTM"},
-    {name:"Delhi New Delhi",code:"NDLS"},{name:"Chennai Central",code:"MAS"},
-    {name:"Hyderabad Deccan",code:"HYB"},{name:"Kolkata Howrah",code:"HWH"},
-    {name:"Pune Junction",code:"PUNE"},{name:"Kochi Ernakulam",code:"ERS"},
-    {name:"Jaipur Junction",code:"JP"},{name:"Ahmedabad Junction",code:"ADI"},
-    {name:"Lucknow Charbagh",code:"LKO"},{name:"Varanasi Junction",code:"BSB"},
-    {name:"Patna Junction",code:"PNBE"},{name:"Bhopal Junction",code:"BPL"},
-    {name:"Nagpur Junction",code:"NGP"},{name:"Chandigarh",code:"CDG"},
-    {name:"Guwahati",code:"GHY"},{name:"Coimbatore Junction",code:"CBE"},
-    {name:"Madurai Junction",code:"MDU"},{name:"Trivandrum Central",code:"TVC"},
-    {name:"Visakhapatnam",code:"VSKP"},{name:"Amritsar",code:"ASR"},
-    {name:"Indore Junction",code:"INDB"},{name:"Surat",code:"ST"},
-    {name:"Agra Cantt",code:"AGC"},{name:"Gwalior",code:"GWL"},
-    {name:"Jodhpur",code:"JU"},{name:"Udaipur City",code:"UDZ"},
-    {name:"Ranchi",code:"RNC"},{name:"Ajmer Junction",code:"AII"},
-  ];
-  const [from,setFrom]=useState("Bangalore (SBC)");
-  const [to,setTo]=useState("Chennai Central");
-  const [date,setDate]=useState("");
-  const [fromQ,setFromQ]=useState("Bangalore (SBC)");
-  const [toQ,setToQ]=useState("Chennai Central");
-  const [fromOpen,setFromOpen]=useState(false);
-  const [toOpen,setToOpen]=useState(false);
-  const today=new Date().toISOString().split("T")[0];
-
-  const fromFiltered=fromQ.trim()?STATIONS.filter(s=>s.name.toLowerCase().includes(fromQ.toLowerCase())||s.code.toLowerCase().includes(fromQ.toLowerCase())).slice(0,8):STATIONS.slice(0,8);
-  const toFiltered=toQ.trim()?STATIONS.filter(s=>s.name.toLowerCase().includes(toQ.toLowerCase())||s.code.toLowerCase().includes(toQ.toLowerCase())).slice(0,8):STATIONS.slice(0,8);
-
-  const search=()=>{
-    const fromCode=STATIONS.find(s=>s.name===from)?.code||from.slice(0,4).toUpperCase();
-    const toCode=STATIONS.find(s=>s.name===to)?.code||to.slice(0,4).toUpperCase();
-    let url=`https://www.irctc.co.in/nget/train-search?fromStation=${fromCode}&toStation=${toCode}&isCallFromDpDown=true&quota=GN&class=SL`;
-    if(date){
-      const d=new Date(date);
-      url+=`&journeyDate=${String(d.getDate()).padStart(2,"0")}-${String(d.getMonth()+1).padStart(2,"0")}-${d.getFullYear()}`;
-    }
-    window.open(url,"_blank","noopener,noreferrer");
-  };
-
-  const inp={padding:"12px 14px",borderRadius:12,fontSize:14,fontFamily:"'DM Sans',sans-serif",
-    border:`1.5px solid ${T.accent}44`,outline:"none",color:"#fff",
-    background:"rgba(255,255,255,0.07)",width:"100%",boxSizing:"border-box"};
-  const dropStyle={position:"absolute",top:"100%",left:0,right:0,zIndex:200,
-    background:"rgba(15,5,32,0.98)",borderRadius:10,boxShadow:"0 8px 28px rgba(0,0,0,0.5)",
-    border:`1px solid ${T.accent}33`,maxHeight:220,overflowY:"auto",marginTop:2};
-
+function PassengerModal({item,passengers,type,onConfirm,onCancel}){
+  const[name,setName]=useState("");const[err,setErr]=useState("");
+  const go=()=>{if(!name.trim()||name.trim().length<2){setErr("Please enter your name");return;}onConfirm(name.trim());};
+  const isBus=type==="bus";
   return(
-    <div style={{borderRadius:"0 0 20px 20px",padding:"clamp(18px,4vw,28px) clamp(16px,4vw,26px)",
-      background:"rgba(15,5,32,0.7)",backdropFilter:"blur(20px)",
-      border:`1px solid ${T.accent}33`,borderTop:"none",marginBottom:22,animation:"fadeUp 0.4s both"}}>
-      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fff",marginBottom:4}}>Find Trains</div>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:`${T.accent}99`,marginBottom:18}}>
-        Search trains — route pre-filled on IRCTC when you tap Search.
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:10,alignItems:"center",marginBottom:14}}>
-        <div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:T.accent,marginBottom:6,letterSpacing:"0.08em"}}>FROM</div>
-          <div style={{position:"relative"}}>
-            <input value={fromQ} placeholder="Station or code..." onChange={e=>{setFromQ(e.target.value);setFromOpen(true);}} onFocus={e=>{e.target.select();setFromQ("");setFromOpen(true);}} onBlur={()=>setTimeout(()=>{setFromOpen(false);if(!fromQ.trim())setFromQ(from);},200)} style={inp}/>
-            {fromOpen&&fromFiltered.length>0&&(<div style={dropStyle}>{fromFiltered.map(s=>(
-              <div key={s.code} onMouseDown={()=>{setFrom(s.name);setFromQ(s.name);setFromOpen(false);}}
-                style={{padding:"9px 14px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#fff",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"background 0.1s"}}
-                onMouseEnter={e=>e.currentTarget.style.background=T.accentSoft}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <span>{s.name}</span>
-                <span style={{fontSize:10,color:T.accent,fontFamily:"'Space Mono',monospace",background:T.accentSoft,padding:"2px 6px",borderRadius:4}}>{s.code}</span>
-              </div>
-            ))}</div>)}
-          </div>
+    <div onClick={onCancel} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(8px)",padding:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,background:"rgba(250,248,244,0.98)",borderRadius:24,padding:"40px 36px",boxShadow:"0 24px 80px rgba(0,0,0,0.15)",border:"1px solid rgba(201,168,76,0.2)"}}>
+        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:24,color:"#1a1410",marginBottom:8}}>Passenger Details</h2>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:"#666",marginBottom:24}}>
+          {isBus?item.op+" · "+item.from+" → "+item.to+" · "+item.type:item.airline+" · "+item.from_city+" → "+item.to_city} · {passengers} pax
+        </p>
+        <label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:"#666",display:"block",marginBottom:8,letterSpacing:"0.1em"}}>FULL NAME (as on ID)</label>
+        <input autoFocus value={name} onChange={e=>{setName(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&go()}
+          placeholder="e.g. John Cena"
+          style={{width:"100%",padding:"13px 16px",borderRadius:13,fontSize:15,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid "+(err?"#ef4444":"rgba(201,168,76,0.3)"),outline:"none",color:"#1a1410",background:"#fafaf8",marginBottom:err?8:24}}
+          onFocus={e=>e.target.style.borderColor=GOLD} onBlur={e=>e.target.style.borderColor=err?"#ef4444":"rgba(201,168,76,0.3)"}/>
+        {err&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#ef4444",marginBottom:16}}>{err}</div>}
+        <div style={{display:"flex",gap:12}}>
+          <button onClick={onCancel} style={{padding:"13px 22px",borderRadius:13,fontSize:14,fontWeight:600,fontFamily:"'DM Sans',sans-serif",background:"transparent",color:"#666",border:"1.5px solid rgba(0,0,0,0.15)",cursor:"pointer"}}>Cancel</button>
+          <button onClick={go} style={{flex:1,padding:"13px",borderRadius:13,fontSize:14,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:"0 6px 22px rgba(201,168,76,0.44)"}}>Select Seats →</button>
         </div>
-        <button onClick={()=>{const t=from;setFrom(to);setFromQ(to);setTo(t);setToQ(t);}}
-          style={{width:40,height:40,borderRadius:"50%",background:T.accentSoft,border:`1.5px solid ${T.accent}55`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:T.accent,marginTop:18}}>⇄</button>
-        <div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:T.accent,marginBottom:6,letterSpacing:"0.08em"}}>TO</div>
-          <div style={{position:"relative"}}>
-            <input value={toQ} placeholder="Station or code..." onChange={e=>{setToQ(e.target.value);setToOpen(true);}} onFocus={e=>{e.target.select();setToQ("");setToOpen(true);}} onBlur={()=>setTimeout(()=>{setToOpen(false);if(!toQ.trim())setToQ(to);},200)} style={inp}/>
-            {toOpen&&toFiltered.length>0&&(<div style={dropStyle}>{toFiltered.map(s=>(
-              <div key={s.code} onMouseDown={()=>{setTo(s.name);setToQ(s.name);setToOpen(false);}}
-                style={{padding:"9px 14px",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#fff",display:"flex",justifyContent:"space-between",alignItems:"center",transition:"background 0.1s"}}
-                onMouseEnter={e=>e.currentTarget.style.background=T.accentSoft}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <span>{s.name}</span>
-                <span style={{fontSize:10,color:T.accent,fontFamily:"'Space Mono',monospace",background:T.accentSoft,padding:"2px 6px",borderRadius:4}}>{s.code}</span>
-              </div>
-            ))}</div>)}
-          </div>
-        </div>
-      </div>
-      <div style={{marginBottom:16}}>
-        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:T.accent,marginBottom:6,letterSpacing:"0.08em"}}>JOURNEY DATE</div>
-        <input type="date" value={date} min={today} onChange={e=>setDate(e.target.value)} style={inp}/>
-      </div>
-      <button onClick={search} style={{width:"100%",padding:"14px",borderRadius:13,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#0f0520",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:`0 6px 22px ${T.accent}44`,marginBottom:12}}>
-        Search Trains on IRCTC 🚂
-      </button>
-      <div style={{textAlign:"center",fontFamily:"'DM Sans',sans-serif",fontSize:11,color:`${T.accent}66`}}>
-        ✅ Route & date auto pre-filled on IRCTC
       </div>
     </div>
   );
 }
 
-function getFlightInsight(from, to, flights) {
-  if (!flights || !flights.length) return null;
-  const prices = flights.map(f=>f.price);
-  const min=Math.min(...prices),max=Math.max(...prices);
-  if (min!==max) return `💡 Fares range from ₹${min.toLocaleString()} to ₹${max.toLocaleString()}. Check live availability for latest prices.`;
-  return `💡 Booking early usually gets better fares on this route.`;
+function PaymentModal({item,passengerName,passengers,cabinClass,seats,type,onSuccess,onCancel,token}){
+  const[step,setStep]=useState("payment");const[payMethod,setPayMethod]=useState("card");
+  const[cardNo,setCardNo]=useState("");const[expiry,setExpiry]=useState("");const[cvv,setCvv]=useState("");
+  const[promoCode,setPromoCode]=useState("");const[promoMsg,setPromoMsg]=useState({type:"",text:""});
+  const[discount,setDiscount]=useState(0);const[promoChecking,setPromoChecking]=useState(false);
+  const[bookingId]=useState("ALV"+Date.now().toString(36).toUpperCase().slice(-6));
+  const base=item.price*passengers;const total=Math.max(0,base-discount);
+  const fmtCard=v=>v.replace(/\D/g,"").slice(0,16).replace(/(.{4})/g,"$1 ").trim();
+  const fmtExp=v=>{const d=v.replace(/\D/g,"").slice(0,4);return d.length>=3?d.slice(0,2)+"/"+d.slice(2):d;};
+  const isBus=type==="bus";
+  const applyPromo=async()=>{
+    if(!promoCode.trim())return;setPromoChecking(true);setPromoMsg({type:"",text:""});
+    try{const res=await fetch(API+"/promo/validate",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify({code:promoCode,bookingAmount:base,travelType:type})});const data=await res.json();if(!res.ok){setPromoMsg({type:"error",text:data.message});setDiscount(0);}else{setDiscount(data.discount);setPromoMsg({type:"success",text:"Applied! ₹"+data.discount+" off"});}}catch{setPromoMsg({type:"error",text:"Could not validate"});}
+    setPromoChecking(false);
+  };
+  const handlePay=async()=>{
+    if(payMethod==="card"&&(!cardNo||!expiry||!cvv)){alert("Please fill all card details");return;}
+    setStep("processing");
+    try{if(!isBus){await fetch(API+"/book",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify({flight_id:item.id,passenger_name:passengerName,cabin_class:cabinClass,seats,promo_code:promoCode||null,discount_applied:discount,final_price:total})});}}catch(e){console.error(e);}
+    setTimeout(()=>setStep("success"),1800);
+  };
+  const ov={position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:600,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",padding:20};
+  const crd={width:"100%",maxWidth:460,background:"rgba(250,248,244,0.98)",borderRadius:24,overflow:"hidden",boxShadow:"0 32px 100px rgba(0,0,0,0.15)",border:"1px solid rgba(201,168,76,0.2)",maxHeight:"92vh",overflowY:"auto"};
+  const hdr={background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",padding:"18px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"};
+  if(step==="processing")return(<div style={ov}><div style={crd}><div style={hdr}><div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:"#1a1410",fontSize:17}}>Alvryn Pay</div></div><div style={{padding:"60px 24px",textAlign:"center"}}><div style={{width:52,height:52,border:"3px solid rgba(201,168,76,0.2)",borderTopColor:GOLD,borderRadius:"50%",animation:"spinSlow 1s linear infinite",margin:"0 auto 20px"}}/><div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:GOLD_DARK,fontSize:16}}>Processing…</div></div></div></div>);
+  if(step==="success")return(<div style={ov}><div style={crd}><div style={hdr}><div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:"#1a1410",fontSize:17}}>Alvryn Pay</div></div><div style={{padding:"40px 28px",textAlign:"center"}}><div style={{fontSize:56,marginBottom:16}}>🎉</div><h3 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:"#1a1410",marginBottom:10}}>Booking Confirmed!</h3><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:"#555",lineHeight:1.75,marginBottom:20}}>{isBus?item.op+" · "+item.from+" → "+item.to:item.airline+" · "+item.from_city+" → "+item.to_city}<br/>Passenger: <strong>{passengerName}</strong>{seats&&seats.length>0&&<><br/><span style={{color:GOLD_DARK}}>Seats: {seats.join(", ")}</span></>}</div><div style={{background:"rgba(201,168,76,0.08)",borderRadius:14,padding:"16px",marginBottom:16,border:"1px solid rgba(201,168,76,0.25)"}}><div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:"#777",marginBottom:6,letterSpacing:"0.12em"}}>BOOKING ID</div><div style={{fontFamily:"'Space Mono',monospace",fontWeight:700,fontSize:22,color:GOLD_DARK,letterSpacing:"0.15em"}}>{bookingId}</div></div><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#777",marginBottom:22}}>Confirmation sent to your email 📧</div><button onClick={()=>onSuccess(bookingId)} style={{width:"100%",padding:"14px",borderRadius:13,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#1a1410",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",border:"none",cursor:"pointer",boxShadow:"0 6px 24px rgba(201,168,76,0.44)"}}>View My Bookings</button></div></div></div>);
+  return(
+    <div style={ov} onClick={onCancel}><div style={crd} onClick={e=>e.stopPropagation()}>
+      <div style={hdr}><div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,color:"#1a1410",fontSize:17}}>Alvryn Pay</div><div style={{fontSize:12,color:"rgba(26,20,16,0.75)"}}>256-bit SSL</div></div>
+      <div style={{padding:"24px"}}>
+        <div style={{textAlign:"center",padding:"16px",borderRadius:14,background:"rgba(201,168,76,0.06)",border:"1px solid rgba(201,168,76,0.15)",marginBottom:20}}>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:"#777",marginBottom:4,letterSpacing:"0.12em"}}>TOTAL</div>
+          {discount>0&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#aaa",textDecoration:"line-through"}}>₹{base.toLocaleString()}</div>}
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:34,color:GOLD_DARK}}>₹{total.toLocaleString()}</div>
+          {discount>0&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"#16a34a",fontWeight:600}}>You save ₹{discount.toLocaleString()} 🎉</div>}
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#666",marginTop:4}}>{passengers} pax{seats&&seats.length>0?" · Seats: "+seats.join(", "):""}</div>
+        </div>
+        <div style={{marginBottom:14}}>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:"#666",marginBottom:7,letterSpacing:"0.08em"}}>PROMO CODE</div>
+          <div style={{display:"flex",gap:8}}>
+            <input value={promoCode} onChange={e=>{setPromoCode(e.target.value.toUpperCase());setPromoMsg({type:"",text:""});setDiscount(0);}} placeholder="e.g. ALVRYN100"
+              style={{flex:1,padding:"11px 14px",borderRadius:11,fontSize:14,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.25)",outline:"none",color:"#1a1410",background:"#fafaf8"}}
+              onFocus={e=>e.target.style.borderColor=GOLD} onBlur={e=>e.target.style.borderColor="rgba(201,168,76,0.25)"}/>
+            <button onClick={applyPromo} disabled={promoChecking} style={{padding:"11px 18px",borderRadius:11,fontSize:13,fontWeight:700,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",color:GOLD_DARK,border:"1.5px solid rgba(201,168,76,0.3)",background:"rgba(201,168,76,0.08)"}}>{promoChecking?"…":"Apply"}</button>
+          </div>
+          {promoMsg.text&&<div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:promoMsg.type==="success"?"#16a34a":"#ef4444",marginTop:6}}>{promoMsg.text}</div>}
+        </div>
+        <div style={{display:"flex",gap:7,marginBottom:16}}>
+          {[["card","💳 Card"],["upi","⚡ UPI"],["netbanking","🏦 Net Banking"]].map(([id,label])=>(
+            <button key={id} onClick={()=>setPayMethod(id)} style={{flex:1,padding:"9px 4px",borderRadius:10,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:payMethod===id?"1.5px solid "+GOLD:"1.5px solid rgba(0,0,0,0.12)",background:payMethod===id?"rgba(201,168,76,0.1)":"#fafaf8",color:payMethod===id?GOLD_DARK:"#555"}}>{label}</button>
+          ))}
+        </div>
+        {payMethod==="card"&&<><div style={{marginBottom:12}}><label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:"#666",display:"block",marginBottom:6}}>CARD NUMBER</label><input value={cardNo} onChange={e=>setCardNo(fmtCard(e.target.value))} placeholder="4111 1111 1111 1111" maxLength={19} style={{width:"100%",padding:"12px 14px",borderRadius:11,fontSize:15,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.2)",outline:"none",color:"#1a1410",background:"#fafaf8"}}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}><div><label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:"#666",display:"block",marginBottom:6}}>EXPIRY</label><input value={expiry} onChange={e=>setExpiry(fmtExp(e.target.value))} placeholder="MM/YY" maxLength={5} style={{width:"100%",padding:"12px 14px",borderRadius:11,fontSize:15,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.2)",outline:"none",color:"#1a1410",background:"#fafaf8"}}/></div><div><label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:"#666",display:"block",marginBottom:6}}>CVV</label><input type="password" value={cvv} onChange={e=>setCvv(e.target.value.slice(0,3))} placeholder="···" maxLength={3} style={{width:"100%",padding:"12px 14px",borderRadius:11,fontSize:15,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.2)",outline:"none",color:"#1a1410",background:"#fafaf8"}}/></div></div></>}
+        {payMethod==="upi"&&<div style={{marginBottom:12}}><label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:"#666",display:"block",marginBottom:6}}>UPI ID</label><input placeholder="yourname@upi" style={{width:"100%",padding:"12px 14px",borderRadius:11,fontSize:15,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.2)",outline:"none",color:"#1a1410",background:"#fafaf8"}}/></div>}
+        {payMethod==="netbanking"&&<div style={{marginBottom:12}}><label style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,color:"#666",display:"block",marginBottom:6}}>SELECT BANK</label><select style={{width:"100%",padding:"12px 14px",borderRadius:11,fontSize:15,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.2)",outline:"none",color:"#1a1410",background:"#fafaf8",cursor:"pointer"}}>{["SBI","HDFC Bank","ICICI Bank","Axis Bank","Kotak Bank","Punjab National Bank"].map(b=><option key={b}>{b}</option>)}</select></div>}
+        <button onClick={handlePay} style={{width:"100%",padding:"15px",borderRadius:13,fontSize:16,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:"0 8px 28px rgba(201,168,76,0.44)",marginTop:4}}>Pay ₹{total.toLocaleString()} →</button>
+        <div style={{textAlign:"center",fontSize:12,color:"#888",marginTop:10,fontFamily:"'DM Sans',sans-serif"}}>Demo payment — no real money charged</div>
+      </div>
+    </div></div>
+  );
 }
 
-function getBusInsight(buses) {
-  if (!buses||!buses.length) return null;
-  const night=buses.filter(b=>{const h=parseInt(b.dep.split(":")[0]);return h>=20||h<5;});
-  if (night.length>0) return `💡 ${night.length} overnight option${night.length>1?"s":""} available — save on hotel by travelling overnight.`;
-  return `💡 Multiple operators serve this route. Compare timing before booking.`;
+// ─── HOTEL PANEL ──────────────────────────────────────────────────────────────
+function HotelPanel() {
+  const[city,setCity]=useState("");const[submitted,setSubmitted]=useState(false);
+  const POPULAR_CITIES=["Goa","Mumbai","Delhi","Bangalore","Jaipur","Kochi","Udaipur","Manali"];
+  return(
+    <div style={{background:"rgba(255,255,255,0.88)",backdropFilter:"blur(10px)",borderRadius:"0 0 20px 20px",padding:"32px 26px",boxShadow:"0 4px 20px rgba(0,0,0,0.05)",border:"1px solid rgba(201,168,76,0.15)",borderTop:"none",marginBottom:22,animation:"fadeUp 0.4s both"}}>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#1a1410",marginBottom:6}}>Find Hotels</div>
+      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:"#666",marginBottom:20}}>Best rates via Booking.com — compare and book instantly.</div>
+      <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap"}}>
+        <input value={city} onChange={e=>setCity(e.target.value)} placeholder="Enter city (e.g. Goa, Mumbai)"
+          style={{flex:1,padding:"13px 16px",borderRadius:13,fontSize:15,fontFamily:"'DM Sans',sans-serif",border:"1.5px solid rgba(201,168,76,0.3)",outline:"none",color:"#1a1410",background:"#fafaf8",minWidth:200}}
+          onFocus={e=>e.target.style.borderColor=GOLD} onBlur={e=>e.target.style.borderColor="rgba(201,168,76,0.3)"}
+          onKeyDown={e=>{if(e.key==="Enter"&&city.trim()){window.open(getHotelLink(city.trim()),"_blank");setSubmitted(true);}}}/>
+        <button onClick={()=>{if(city.trim()){window.open(getHotelLink(city.trim()),"_blank");setSubmitted(true);}}} style={{padding:"13px 28px",borderRadius:13,fontSize:14,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:"0 6px 20px rgba(201,168,76,0.4)"}}>Search Hotels 🏨</button>
+      </div>
+      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"#888",marginBottom:12,fontWeight:600}}>POPULAR DESTINATIONS</div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+        {POPULAR_CITIES.map(c=>(
+          <button key={c} onClick={()=>{window.open(getHotelLink(c),"_blank");}} style={{padding:"7px 16px",borderRadius:100,fontSize:13,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.25)",color:GOLD_DARK,fontWeight:500,transition:"all 0.15s"}}
+            onMouseEnter={e=>e.currentTarget.style.background="rgba(201,168,76,0.2)"}
+            onMouseLeave={e=>e.currentTarget.style.background="rgba(201,168,76,0.1)"}>
+            {c}
+          </button>
+        ))}
+      </div>
+      {submitted&&<div style={{marginTop:16,padding:"12px 16px",borderRadius:12,background:"rgba(22,163,74,0.08)",border:"1px solid rgba(22,163,74,0.2)",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#16a34a"}}>✅ Opened Booking.com for <strong>{city}</strong> — best prices guaranteed via our partner.</div>}
+      <div style={{marginTop:16,fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"#bbb"}}>Alvryn may earn a small commission when you book — at no extra cost to you.</div>
+    </div>
+  );
 }
 
 // ═══════════════════════════════════════════════════════
 //  SEARCH PAGE
 // ═══════════════════════════════════════════════════════
-function SearchPage() {
-  const navigate = useNavigate();
-  const [travelType,setTravelType]=useState("flight");
-  const [prevType,setPrevType]=useState("flight");
-  const [transitioning,setTransitioning]=useState(false);
-  const [tripType,setTripType]=useState("oneway");
-  const [fromCity,setFromCity]=useState(CITIES[0]);
-  const [toCity,setToCity]=useState(CITIES[1]);
-  const [busFrom,setBusFrom]=useState("Bangalore");
-  const [busTo,setBusTo]=useState("Chennai");
-  const [hotelCity,setHotelCity]=useState("Bangalore");
-  const [date,setDate]=useState("");
-  const [returnDate,setReturnDate]=useState("");
-  const [checkOut,setCheckOut]=useState("");
-  const [passengers,setPassengers]=useState(1);
-  const [cabinClass,setCabinClass]=useState("Economy");
-  const [busType,setBusType]=useState("Any");
-  const [showFromModal,setShowFromModal]=useState(false);
-  const [showToModal,setShowToModal]=useState(false);
-  const [showBusFromModal,setShowBusFromModal]=useState(false);
-  const [showBusToModal,setShowBusToModal]=useState(false);
-  const [showHotelModal,setShowHotelModal]=useState(false);
-  const [mode,setMode]=useState("structured");
-  const [aiQuery,setAiQuery]=useState("");
-  const [aiError,setAiError]=useState("");
-  const [validErr,setValidErr]=useState("");
-  const [loading,setLoading]=useState(false);
-  const [searched,setSearched]=useState(false);
-  const [flights,setFlights]=useState([]);
-  const [buses,setBuses]=useState([]);
-  const [filtered,setFiltered]=useState([]);
-  const [flightInsight,setFlightInsight]=useState(null);
-  const [busInsight,setBusInsight]=useState(null);
-  const [filterTime,setFilterTime]=useState("any");
-  const [filterMaxPrice,setFilterMaxPrice]=useState(20000);
-  const [sortBy,setSortBy]=useState("price");
-  const [navScrolled,setNavScrolled]=useState(false);
-  const [specialFare,setSpecialFare]=useState("regular");
+function SearchPage(){
+  const navigate=useNavigate();
+  const[travelType,setTravelType]=useState("flight");
+  const[tripType,setTripType]=useState("oneway");
+  const[fromCity,setFromCity]=useState(CITIES[0]);
+  const[toCity,setToCity]=useState(CITIES[1]);
+  const[busFrom,setBusFrom]=useState("Bangalore");
+  const[busTo,setBusTo]=useState("Chennai");
+  const[date,setDate]=useState("");
+  const[returnDate,setReturnDate]=useState("");
+  const[passengers,setPassengers]=useState(1);
+  const[cabinClass,setCabinClass]=useState("Economy");
+  const[busType,setBusType]=useState("Any");
+  const[showFromModal,setShowFromModal]=useState(false);
+  const[showToModal,setShowToModal]=useState(false);
+  const[showBusFromModal,setShowBusFromModal]=useState(false);
+  const[showBusToModal,setShowBusToModal]=useState(false);
+  const[mode,setMode]=useState("structured");
+  // ── FIX: separate AI query per travel type ──
+  const[flightAiQuery,setFlightAiQuery]=useState("");
+  const[busAiQuery,setBusAiQuery]=useState("");
+  const[flights,setFlights]=useState([]);
+  const[buses,setBuses]=useState([]);
+  const[filtered,setFiltered]=useState([]);
+  const[loading,setLoading]=useState(false);
+  const[searched,setSearched]=useState(false);
+  const[aiError,setAiError]=useState("");
+  const[validErr,setValidErr]=useState("");
+  const[bookingItem,setBookingItem]=useState(null);
+  const[passengerName,setPassengerName]=useState("");
+  const[showSeats,setShowSeats]=useState(false);
+  const[selectedSeats,setSelectedSeats]=useState([]);
+  const[showPayment,setShowPayment]=useState(false);
+  const[filterTime,setFilterTime]=useState("any");
+  const[filterMaxPrice,setFilterMaxPrice]=useState(20000);
+  const[sortBy,setSortBy]=useState("price");
+  const[navScrolled,setNavScrolled]=useState(false);
+  const[specialFare,setSpecialFare]=useState("regular");
+  const[lastFlightSearch,setLastFlightSearch]=useState(null);
 
-  const today = new Date().toISOString().split("T")[0];
-  let user={}; try{user=JSON.parse(localStorage.getItem("user")||"{}"); }catch{}
-  const token = localStorage.getItem("token");
-  const T = TAB_THEMES[travelType] || TAB_THEMES.flight;
+  const today=new Date().toISOString().split("T")[0];
+  let user={};try{user=JSON.parse(localStorage.getItem("user")||"{}");}catch{}
+  const token=localStorage.getItem("token");
 
-  useEffect(()=>{ if(!token) navigate("/login"); },[token,navigate]);
-  useEffect(()=>{ fetch(`${API}/test`).catch(()=>{}); const t=setInterval(()=>fetch(`${API}/test`).catch(()=>{}),14*60*1000); return()=>clearInterval(t); },[]);
-  useEffect(()=>{ const fn=()=>setNavScrolled(window.scrollY>30); window.addEventListener("scroll",fn,{passive:true}); return()=>window.removeEventListener("scroll",fn); },[]);
+  useEffect(()=>{if(!token)navigate("/login");},[token,navigate]);
+  useEffect(()=>{fetch(API+"/test").catch(()=>{});const t=setInterval(()=>fetch(API+"/test").catch(()=>{}),14*60*1000);return()=>clearInterval(t);},[]);
+  useEffect(()=>{const fn=()=>setNavScrolled(window.scrollY>30);window.addEventListener("scroll",fn,{passive:true});return()=>window.removeEventListener("scroll",fn);},[]);
 
   useEffect(()=>{
-    const items=travelType==="bus"?buses:flights;
-    let r=[...items];
+    const items=travelType==="bus"?buses:flights;let r=[...items];
     if(travelType==="flight"){
-      if(filterTime==="morning") r=r.filter(f=>{const h=new Date(f.departure_time).getHours();return h>=5&&h<12;});
-      if(filterTime==="afternoon") r=r.filter(f=>{const h=new Date(f.departure_time).getHours();return h>=12&&h<17;});
-      if(filterTime==="evening") r=r.filter(f=>{const h=new Date(f.departure_time).getHours();return h>=17;});
+      if(filterTime==="morning")r=r.filter(f=>{const h=new Date(f.departure_time).getHours();return h>=5&&h<12;});
+      if(filterTime==="afternoon")r=r.filter(f=>{const h=new Date(f.departure_time).getHours();return h>=12&&h<17;});
+      if(filterTime==="evening")r=r.filter(f=>{const h=new Date(f.departure_time).getHours();return h>=17;});
     }
     r=r.filter(f=>f.price<=filterMaxPrice);
-    if(sortBy==="price") r.sort((a,b)=>a.price-b.price);
-    if(sortBy==="price-desc") r.sort((a,b)=>b.price-a.price);
-    if(sortBy==="departure"&&travelType==="flight") r.sort((a,b)=>new Date(a.departure_time)-new Date(b.departure_time));
+    if(sortBy==="price")r.sort((a,b)=>a.price-b.price);
+    if(sortBy==="price-desc")r.sort((a,b)=>b.price-a.price);
+    if(sortBy==="departure"&&travelType==="flight")r.sort((a,b)=>new Date(a.departure_time)-new Date(b.departure_time));
     setFiltered(r);
   },[flights,buses,filterTime,filterMaxPrice,sortBy,travelType]);
-
-  // Smooth tab transition
-  const switchTab = useCallback((newTab) => {
-    if (newTab === travelType) return;
-    setTransitioning(true);
-    setTimeout(() => {
-      setTravelType(newTab);
-      setFlights([]); setBuses([]); setSearched(false); setValidErr(""); setAiError("");
-      setTimeout(() => setTransitioning(false), 50);
-    }, 300);
-  }, [travelType]);
 
   const swapFlight=useCallback(()=>{setFromCity(toCity);setToCity(fromCity);},[fromCity,toCity]);
   const swapBus=useCallback(()=>{setBusFrom(busTo);setBusTo(busFrom);},[busFrom,busTo]);
 
-  const openFlightLink=useCallback((from,to,dt,pax)=>{
-    const fc=CITY_TO_IATA[from.toLowerCase()]||from.toUpperCase().slice(0,3);
-    const tc=CITY_TO_IATA[to.toLowerCase()]||to.toUpperCase().slice(0,3);
-    window.open(flightLink(fc,tc,dt,pax),"_blank","noopener,noreferrer");
-  },[]);
-
-  const openBusLink=useCallback((from,to,dt)=>{
-    track("bus_search",`${from} → ${to}`,"web");
-    window.open(busLink(from,to,dt||date),"_blank","noopener,noreferrer");
-  },[date]);
-
-  const openHotelLink=useCallback((city,ci,co)=>{
-    track("hotel_search",city,"web");
-    window.open(hotelLink(city,ci||date,co||checkOut),"_blank","noopener,noreferrer");
-  },[date,checkOut]);
-
-  const handleFlightDeal=(fromName,toName)=>{
-    track("view_deal",`${fromName} → ${toName}`,"web");
-    openFlightLink(fromName,toName,date,passengers);
+  // ── FIX: switching tabs clears results and resets AI query display ──
+  const switchTab=(newType)=>{
+    setTravelType(newType);
+    setFlights([]);setBuses([]);setSearched(false);setValidErr("");setAiError("");
+    // Don't clear AI queries — just keep them per-tab
   };
 
   const searchFlights=async()=>{
-    setValidErr(""); if(!date){setValidErr("Please select a departure date");return;}
-    setLoading(true); setSearched(true); setFlights([]);
+    setValidErr("");if(!date){setValidErr("Please select a departure date");return;}
+    setLoading(true);setSearched(true);setFlights([]);
     try{
-      const params=new URLSearchParams({from:fromCity.name,to:toCity.name,date});
-      const res=await axios.get(`${API}/flights?${params}`);
+      const params=new URLSearchParams({from:fromCity.name,to:toCity.name});
+      params.append("date",date);
+      const res=await axios.get(API+"/flights?"+params);
       const data=res.data||[];
-      if(!data.length){
-        setFlights([{id:"aff",airline:"Multiple Airlines",from_city:fromCity.name,to_city:toCity.name,departure_time:null,arrival_time:null,price:0,affiliate:true}]);
-      } else {
-        setFlights(data);
-        setFlightInsight(getFlightInsight(fromCity.name,toCity.name,data));
-        setFilterMaxPrice(Math.max(...data.map(f=>f.price))+1000);
-      }
-    }catch{
-      setFlights([{id:"aff",airline:"Multiple Airlines",from_city:fromCity.name,to_city:toCity.name,departure_time:null,arrival_time:null,price:0,affiliate:true}]);
-    }
+      setFlights(data);
+      setLastFlightSearch({from:fromCity.name,to:toCity.name,date,passengers});
+      setFilterMaxPrice(data.length>0?Math.max(...data.map(f=>f.price))+1000:20000);
+    }catch(e){console.error(e);setFlights([]);}
     setLoading(false);
   };
 
   const searchBuses=()=>{
-    track("bus_search",`${busFrom} → ${busTo}`,"web");
-    setValidErr(""); if(!date){setValidErr("Please select a travel date");return;}
-    setLoading(true); setSearched(true); setBuses([]);
+    setValidErr("");if(!date){setValidErr("Please select a travel date");return;}
+    setLoading(true);setSearched(true);setBuses([]);
     setTimeout(()=>{
-      let results=BUS_ROUTES.filter(b=>b.from.toLowerCase()===busFrom.toLowerCase()&&b.to.toLowerCase()===busTo.toLowerCase());
-      if(busType!=="Any") results=results.filter(b=>b.type===busType);
+      // ── FIX: ensure from/to match correctly (Bangalore→Chennai, not reverse) ──
+      let results=BUS_ROUTES.filter(b=>
+        b.from.toLowerCase()===busFrom.toLowerCase()&&
+        b.to.toLowerCase()===busTo.toLowerCase()
+      );
+      if(busType!=="Any")results=results.filter(b=>b.type===busType);
       setBuses(results);
-      setBusInsight(getBusInsight(results));
       setFilterMaxPrice(results.length>0?Math.max(...results.map(b=>b.price))+500:5000);
       setLoading(false);
     },700);
   };
 
   const searchAI=async()=>{
-    if(!aiQuery.trim()) return;
-    setAiError(""); setLoading(true); setSearched(true); setFlights([]); setBuses([]);
+    const aiQuery=travelType==="bus"?busAiQuery:flightAiQuery;
+    if(!aiQuery.trim())return;
+    setAiError("");setLoading(true);setSearched(true);setFlights([]);setBuses([]);
+
     const q=aiQuery.toLowerCase();
-    const busKw=/\b(bus|buses|coach|sleeper|seater|ksrtc|msrtc|redbus)\b/i;
-    const hotelKw=/\b(hotel|hotels|stay|rooms?|accommodation)\b/i;
-    const flightKw=/\b(flight|fly|plane|airways|airlines)\b/i;
-    let intent=travelType;
-    if(busKw.test(q)) intent="bus";
-    else if(hotelKw.test(q)) intent="hotel";
-    else if(flightKw.test(q)) intent="flight";
+    const busKw=/\b(bus|buses|coach|volvo|sleeper|seater|ksrtc|msrtc|tsrtc|rsrtc)\b/i;
+    const flightKw=/\b(flight|flights|fly|plane|airways|airlines|air india|indigo|spicejet)\b/i;
+
+    let isBusSearch=travelType==="bus";
+    if(busKw.test(q))isBusSearch=true;
+    else if(flightKw.test(q))isBusSearch=false;
+
     const parsed=parseQuery(aiQuery);
     if(parsed.pastDate){setAiError("That date is in the past! Please search for today or a future date.");setLoading(false);return;}
-    if(intent==="hotel"){
-      const city=parsed.singleCity||parsed.from||"";
-      if(!city){setAiError("Couldn't detect city. Try: 'hotels in Goa'");setLoading(false);return;}
-      openHotelLink(city.charAt(0).toUpperCase()+city.slice(1));
-      setLoading(false); return;
-    }
-    if(intent==="bus"){
-      if(!parsed.from||!parsed.to){setAiError("Couldn't find cities. Try: 'bus bangalore to chennai kal'");setLoading(false);return;}
-      let results=BUS_ROUTES.filter(b=>b.from.toLowerCase()===parsed.from&&b.to.toLowerCase()===parsed.to);
-      if(parsed.budget) results=results.filter(b=>b.price<=parsed.budget);
-      if(/cheap|sasta|budget|lowest|kam/i.test(q)) results.sort((a,b)=>a.price-b.price);
-      setBuses(results); setBusInsight(getBusInsight(results));
+    if(!parsed.from||!parsed.to){setAiError("Couldn't find the cities. Try: 'bus bangalore to chennai kal' or 'flight blr to del tomorrow'");setLoading(false);return;}
+
+    if(isBusSearch){
+      setTravelType("bus");
+      // ── FIX: use parsed.from as FROM, parsed.to as TO — never reversed ──
+      let results=BUS_ROUTES.filter(b=>
+        b.from.toLowerCase()===parsed.from.toLowerCase()&&
+        b.to.toLowerCase()===parsed.to.toLowerCase()
+      );
+      if(busType!=="Any")results=results.filter(b=>b.type===busType);
+      if(parsed.budget)results=results.filter(b=>b.price<=parsed.budget);
+      if(/cheap|sasta|budget|lowest/i.test(q))results.sort((a,b)=>a.price-b.price);
+      if(/morning|subah/i.test(q))results=results.filter(b=>{const h=parseInt(b.dep.split(":")[0]);return h>=5&&h<12;});
+      if(/night|raat|evening/i.test(q))results=results.filter(b=>{const h=parseInt(b.dep.split(":")[0]);return h>=18||h<5;});
+      setBuses(results);
       setFilterMaxPrice(results.length>0?Math.max(...results.map(b=>b.price))+500:5000);
-      if(!results.length) setAiError(`No buses found. Redirecting to RedBus…`);
+      if(results.length===0)setAiError("No buses found from "+parsed.from+" to "+parsed.to+". Try different cities or check spelling.");
       setLoading(false);
-    } else {
-      if(!parsed.from||!parsed.to){setAiError("Couldn't find cities. Try: 'flights bangalore to mumbai tomorrow'");setLoading(false);return;}
+    }else{
+      setTravelType("flight");
       try{
-        const res=await axios.post(`${API}/ai-search`,{query:aiQuery});
-        const data=(res.data&&!res.data.message)?res.data:[];
-        const fin=parsed.budget?data.filter(f=>f.price<=parsed.budget):data;
-        if(!fin.length){
-          setFlights([{id:"aff",airline:"Multiple Airlines",from_city:parsed.from,to_city:parsed.to,departure_time:null,arrival_time:null,price:0,affiliate:true}]);
-        } else {
-          setFlights(fin);
-          setFilterMaxPrice(Math.max(...fin.map(f=>f.price))+1000);
+        const res=await axios.post(API+"/ai-search",{query:aiQuery});
+        if(res.data&&res.data.message){setAiError(res.data.message);setFlights([]);}
+        else{
+          const data=res.data||[];
+          const f2=parsed.budget?data.filter(f=>f.price<=parsed.budget):data;
+          setFlights(f2.length>0?f2:data);
+          setLastFlightSearch({from:parsed.from,to:parsed.to,date:parsed.date?.toISOString().split("T")[0]||"",passengers});
+          setFilterMaxPrice(data.length>0?Math.max(...data.map(f=>f.price))+1000:20000);
         }
-      }catch{
-        setFlights([{id:"aff",airline:"Multiple Airlines",from_city:parsed.from,to_city:parsed.to,departure_time:null,arrival_time:null,price:0,affiliate:true}]);
-      }
+      }catch(e){setAiError(e.response?.data?.message||"Search failed. Please try again.");setFlights([]);}
       setLoading(false);
     }
   };
 
+  const handleBookClick=item=>{if(!token){navigate("/login");return;}setBookingItem(item);setShowSeats(false);setShowPayment(false);setSelectedSeats([]);};
+  const handlePassengerConfirm=name=>{setPassengerName(name);setShowSeats(true);};
   const isDomestic=fromCity.country==="India"&&toCity.country==="India";
+
   const TRAVEL_TABS=[
     {id:"flight",icon:"✈️",label:"Flights"},
-    {id:"bus",icon:"🚌",label:"Buses"},
-    {id:"hotel",icon:"🏨",label:"Hotels"},
-    {id:"train",icon:"🚂",label:"Trains"},
-    {id:"cab",icon:"🚗",label:"Cabs",cs:true},
+    {id:"bus",   icon:"🚌",label:"Buses"},
+    {id:"hotel", icon:"🏨",label:"Hotels"},
+    {id:"train", icon:"🚂",label:"Trains",  cs:true},
+    {id:"cab",   icon:"🚗",label:"Cabs",    cs:true},
   ];
+  const CS_DATA={
+    train:{icon:"🚂",title:"Train Booking",desc:"IRCTC integration coming soon."},
+    cab:  {icon:"🚗",title:"Cab Booking",  desc:"Airport transfers and intercity cabs — coming soon."},
+  };
   const SPECIAL_FARES=[{id:"regular",label:"Regular"},{id:"student",label:"Student"},{id:"senior",label:"Senior Citizen"},{id:"armed",label:"Armed Forces"},{id:"doctor",label:"Doctor / Nurse"}];
 
-  // Theme-aware input style
-  const inp={background:"rgba(255,255,255,0.07)",borderRadius:12,padding:"12px 14px",border:`1.5px solid ${T.accent}44`,transition:"border-color 0.3s,background 0.3s",color:"#fff"};
-  const lbl={fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:T.accent,display:"block",marginBottom:6,letterSpacing:"0.1em"};
+  const lbl={fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:"#5a4a3a",display:"block",marginBottom:6,letterSpacing:"0.1em"};
+  const subText={fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#5a4a3a"};
+  const inp={background:"#fafaf8",borderRadius:12,padding:"12px 14px",border:"1.5px solid rgba(201,168,76,0.2)",transition:"border-color 0.2s"};
 
   return(
-    <div style={{minHeight:"100vh",position:"relative",overflowX:"hidden",fontFamily:"'DM Sans',sans-serif",color:"#fff"}}>
+    <div style={{minHeight:"100vh",position:"relative",overflowX:"hidden",fontFamily:"'DM Sans',sans-serif",
+      background:`linear-gradient(180deg,${TT.from}14 0%,#faf8f4 320px)`,
+      transition:"background 0.65s cubic-bezier(0.4,0,0.2,1)"}}>
       <style>{SHARED_CSS}</style>
+      <AuroraBackground/>
 
-      {/* ── DYNAMIC ANIMATED BACKGROUND ── */}
-      <DynamicBackground theme={T} transitioning={transitioning}/>
+      {showFromModal&&<CityModal title="Select departure city" onSelect={c=>{setFromCity(c);setShowFromModal(false);}} onClose={()=>setShowFromModal(false)} exclude={toCity.code}/>}
+      {showToModal&&<CityModal title="Select destination city" onSelect={c=>{setToCity(c);setShowToModal(false);}} onClose={()=>setShowToModal(false)} exclude={fromCity.code}/>}
+      {showBusFromModal&&<BusCityModal title="Bus departure city" onSelect={c=>{setBusFrom(c);setShowBusFromModal(false);}} onClose={()=>setShowBusFromModal(false)} exclude={busTo}/>}
+      {showBusToModal&&<BusCityModal title="Bus destination city" onSelect={c=>{setBusTo(c);setShowBusToModal(false);}} onClose={()=>setShowBusToModal(false)} exclude={busFrom}/>}
+      {bookingItem&&!showSeats&&!showPayment&&<PassengerModal item={bookingItem} passengers={passengers} type={travelType} onConfirm={handlePassengerConfirm} onCancel={()=>setBookingItem(null)}/>}
+      {bookingItem&&showSeats&&!showPayment&&<SeatModal type={travelType} passengers={passengers} onConfirm={s=>{setSelectedSeats(s);setShowSeats(false);setShowPayment(true);}} onCancel={()=>{setShowSeats(false);setBookingItem(null);}}/>}
+      {bookingItem&&showPayment&&<PaymentModal item={bookingItem} passengerName={passengerName} passengers={passengers} cabinClass={cabinClass} seats={selectedSeats} type={travelType} token={token} onSuccess={()=>{setShowPayment(false);setBookingItem(null);navigate("/bookings");}} onCancel={()=>{setShowPayment(false);setBookingItem(null);}}/>}
 
-      {/* ── MODALS ── */}
-      {showFromModal&&<CityModal title="Select departure city" onSelect={c=>{setFromCity(c);setShowFromModal(false);}} onClose={()=>setShowFromModal(false)} exclude={toCity.code} theme={T}/>}
-      {showToModal&&<CityModal title="Select destination city" onSelect={c=>{setToCity(c);setShowToModal(false);}} onClose={()=>setShowToModal(false)} exclude={fromCity.code} theme={T}/>}
-      {showBusFromModal&&<BusCityModal title="Bus departure city" onSelect={c=>{setBusFrom(c);setShowBusFromModal(false);}} onClose={()=>setShowBusFromModal(false)} exclude={busTo} theme={T}/>}
-      {showBusToModal&&<BusCityModal title="Bus destination city" onSelect={c=>{setBusTo(c);setShowBusToModal(false);}} onClose={()=>setShowBusToModal(false)} exclude={busFrom} theme={T}/>}
-      {showHotelModal&&<HotelCityModal title="Select hotel city" onSelect={c=>{setHotelCity(c);setShowHotelModal(false);}} onClose={()=>setShowHotelModal(false)} theme={T}/>}
-
-      {/* ── NAV ── */}
-      <nav style={{position:"sticky",top:0,zIndex:200,height:64,padding:"0 5%",display:"flex",alignItems:"center",justifyContent:"space-between",
-        background:navScrolled?"rgba(0,0,0,0.8)":"transparent",
-        backdropFilter:navScrolled?"blur(24px)":"none",
-        borderBottom:navScrolled?`1px solid ${T.accent}22`:"none",transition:"all 0.4s ease"}}>
+      {/* NAV */}
+      <nav style={{position:"sticky",top:0,zIndex:200,height:66,padding:"0 5%",display:"flex",alignItems:"center",justifyContent:"space-between",background:navScrolled?"rgba(250,248,244,0.95)":"rgba(250,248,244,0.82)",backdropFilter:"blur(22px)",borderBottom:"1px solid rgba(201,168,76,0.12)",transition:"all 0.3s"}}>
         <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>navigate("/")}>
-          <div style={{animation:"floatUD 4s ease-in-out infinite"}}><AlvrynIcon size={38} accent={T.accent}/></div>
+          <div style={{animation:"floatUD 4s ease-in-out infinite"}}><AlvrynIcon size={38}/></div>
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:16,color:"#fff",letterSpacing:"0.12em",lineHeight:1.1}}>ALVRYN</div>
-            <div style={{fontFamily:"'Space Mono',monospace",fontSize:7,color:T.accent,letterSpacing:"0.18em"}}>TRAVEL BEYOND</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:16,color:"#1a1410",letterSpacing:"0.12em",lineHeight:1.1}}>ALVRYN</div>
+            <div style={{fontFamily:"'Space Mono',monospace",fontSize:7,color:GOLD,letterSpacing:"0.18em"}}>TRAVEL BEYOND</div>
           </div>
         </div>
-        <div className="nav-right-btns" style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-          <button onClick={()=>navigate("/ai")}
-            style={{padding:"8px 16px",borderRadius:10,fontSize:13,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.04em",cursor:"pointer",background:`linear-gradient(135deg,${T.accent},${T.accent}cc)`,color:"#000",border:"none",boxShadow:`0 4px 12px ${T.accent}44`}}>
-            🤖 AI Chat
-          </button>
-          <button className="hide-mobile" onClick={()=>navigate("/bookings")}
-            style={{padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.8)",border:`1.5px solid rgba(255,255,255,0.15)`}}>
-            My Bookings
-          </button>
-          <button onClick={()=>navigate("/profile")}
-            style={{padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:T.accentSoft,color:T.accent,border:`1.5px solid ${T.accent}44`}}>
-            Profile
-          </button>
-          <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("user");navigate("/login");}}
-            style={{padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"rgba(239,68,68,0.1)",color:"#f87171",border:"1.5px solid rgba(239,68,68,0.25)"}}>
-            Sign Out
-          </button>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <button onClick={()=>navigate("/bookings")} style={{padding:"8px 16px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"transparent",color:"#3a2a1a",border:"1.5px solid rgba(0,0,0,0.15)"}}>My Bookings</button>
+          <button onClick={()=>navigate("/profile")} style={{padding:"8px 16px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"rgba(201,168,76,0.12)",color:GOLD_DARK,border:"1.5px solid rgba(201,168,76,0.3)"}}>Profile</button>
+          <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("user");navigate("/login");}} style={{padding:"8px 16px",borderRadius:10,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"#fff0f0",color:"#cc2222",border:"1.5px solid rgba(200,34,34,0.25)"}}>Sign Out</button>
         </div>
       </nav>
 
-      <div style={{position:"relative",zIndex:1,maxWidth:960,margin:"0 auto",padding:"clamp(16px,3vw,32px) 5% 80px"}}>
-
-        {/* ── GREETING ── */}
-        <div style={{marginBottom:28,animation:"fadeUp 0.6s both"}}>
-          <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:T.accent,letterSpacing:"0.2em",marginBottom:8}}>SEARCH TRAVEL</div>
-          <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"clamp(24px,4vw,48px)",color:"#fff",marginBottom:6,textShadow:"0 2px 20px rgba(0,0,0,0.5)"}}>
-            Hey {user.name?.split(" ")[0]||"Traveller"} 👋
-          </h1>
-          <p style={{fontSize:15,color:"rgba(255,255,255,0.65)",fontWeight:400}}>Where do you want to fly, ride or stay today?</p>
-          {/* Tab tagline badge */}
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:12,padding:"7px 18px",
-            borderRadius:100,background:T.accentSoft,border:`1px solid ${T.accent}44`,
-            boxShadow:`0 4px 16px ${T.accent}22`,
-            opacity:transitioning?0:1,transform:transitioning?"translateY(-8px)":"translateY(0)",
-            transition:"all 0.4s cubic-bezier(0.34,1.56,0.64,1)"}}>
-            <span style={{fontSize:16}}>{T.icon}</span>
-            <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,color:T.accent,letterSpacing:"0.04em"}}>{T.tagline}</span>
-          </div>
+      <div style={{position:"relative",zIndex:1,maxWidth:960,margin:"0 auto",padding:"32px 5% 80px"}}>
+        <div style={{marginBottom:24,animation:"fadeUp 0.6s both"}}>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:GOLD_DARK,letterSpacing:"0.2em",marginBottom:8}}>SEARCH TRAVEL</div>
+          <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:"clamp(22px,4vw,42px)",color:"#1a1410",marginBottom:4}}>Hey {user.name?.split(" ")[0]||"Traveller"} 👋</h1>
+          <p style={{fontSize:15,color:"#4a3a2a",fontWeight:500}}>Where do you want to fly, ride or stay today?</p>
         </div>
 
-        {/* ── TRAVEL TABS ── */}
-        <div style={{display:"flex",gap:0,borderRadius:"18px 18px 0 0",overflow:"hidden",
-          background:"rgba(0,0,0,0.3)",backdropFilter:"blur(20px)",
-          border:`1px solid rgba(255,255,255,0.08)`,borderBottom:"none",overflowX:"auto",
-          scrollbarWidth:"none"}}>
-          {TRAVEL_TABS.map((tab,i)=>{
-            const isActive=travelType===tab.id;
-            const tabT=TAB_THEMES[tab.id]||TAB_THEMES.flight;
-            return(
-              <button key={tab.id} onClick={()=>!tab.cs&&switchTab(tab.id)}
-                style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-                  padding:"14px clamp(10px,2.5vw,20px)",cursor:tab.cs?"default":"pointer",
-                  border:"none",
-                  borderBottom:isActive?`2.5px solid ${tabT.accent}`:"2.5px solid transparent",
-                  background:isActive?`${tabT.accent}14`:"transparent",
-                  color:isActive?tabT.accent:"rgba(255,255,255,0.45)",
-                  fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,
-                  transition:"all 0.3s cubic-bezier(0.4,0,0.2,1)",
-                  whiteSpace:"nowrap",minWidth:0,
-                  borderRadius:i===0?"18px 0 0 0":i===TRAVEL_TABS.length-1?"0 18px 0 0":"0",
-                  textShadow:isActive?`0 0 20px ${tabT.accent}66`:"none"}}>
-                <span style={{fontSize:22,transition:"transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",transform:isActive?"scale(1.25)":"scale(1)"}}>
-                  {tab.icon}
-                </span>
-                <span>{tab.label}</span>
-                {tab.cs&&<span style={{fontSize:7,background:`${tabT.accent}22`,border:`1px solid ${tabT.accent}44`,color:tabT.accent,padding:"1px 4px",borderRadius:5}}>SOON</span>}
-              </button>
-            );
-          })}
+        {/* Travel type tabs */}
+        <div style={{display:"flex",gap:0,background:"rgba(255,255,255,0.88)",backdropFilter:"blur(10px)",borderRadius:"16px 16px 0 0",border:"1px solid rgba(201,168,76,0.18)",borderBottom:"none",overflowX:"auto"}}>
+          {TRAVEL_TABS.map((tab,i)=>(
+            <button key={tab.id} onClick={()=>switchTab(tab.id)}
+              style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"14px 18px",cursor:"pointer",border:"none",borderBottom:travelType===tab.id?"2.5px solid "+GOLD:"2.5px solid transparent",background:"transparent",color:travelType===tab.id?GOLD_DARK:"#666",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,transition:"all 0.2s",whiteSpace:"nowrap",borderRadius:i===0?"16px 0 0 0":i===TRAVEL_TABS.length-1?"0 16px 0 0":"0"}}>
+              <span style={{fontSize:20}}>{tab.icon}</span>{tab.label}
+              {tab.cs&&<span style={{fontSize:7,background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.35)",color:GOLD_DARK,padding:"1px 4px",borderRadius:5}}>SOON</span>}
+            </button>
+          ))}
         </div>
 
-        {/* ── CAB COMING SOON ── */}
-        {travelType==="cab"&&(
-          <div style={{background:"rgba(0,0,0,0.5)",backdropFilter:"blur(20px)",borderRadius:"0 0 20px 20px",padding:"52px 32px",textAlign:"center",border:`1px solid ${T.accent}22`,borderTop:"none",animation:"fadeUp 0.4s both"}}>
-            <div style={{fontSize:56,marginBottom:18}}>🚗</div>
-            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:24,color:"#fff",marginBottom:10}}>Cab Booking — Coming Soon</h2>
-            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:"rgba(255,255,255,0.55)",lineHeight:1.7,maxWidth:400,margin:"0 auto"}}>Airport transfers and intercity cabs. We're working on it!</p>
+        {/* Hotel panel */}
+        {travelType==="hotel"&&<HotelPanel/>}
+
+        {/* Coming soon */}
+        {CS_DATA[travelType]&&(
+          <div style={{background:"rgba(255,255,255,0.88)",backdropFilter:"blur(10px)",borderRadius:"0 0 20px 20px",padding:"52px 32px",textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,0.05)",border:"1px solid rgba(201,168,76,0.15)",borderTop:"none",animation:"fadeUp 0.4s both"}}>
+            <div style={{fontSize:56,marginBottom:18}}>{CS_DATA[travelType].icon}</div>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:24,color:"#1a1410",marginBottom:10}}>{CS_DATA[travelType].title} — Coming Soon</h2>
+            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:"#555",lineHeight:1.7,maxWidth:400,margin:"0 auto"}}>{CS_DATA[travelType].desc}</p>
           </div>
         )}
 
-        {/* ── TRAIN PANEL ── */}
-        {travelType==="train"&&<TrainPanel theme={T}/>}
-
-        {/* ── SEARCH PANEL ── */}
-        {travelType!=="cab"&&travelType!=="train"&&(
-          <div style={{background:"rgba(0,0,0,0.45)",backdropFilter:"blur(24px)",borderRadius:"0 0 20px 20px",
-            padding:"24px clamp(14px,4vw,28px)",
-            border:`1px solid ${T.accent}22`,borderTop:"none",marginBottom:24,
-            opacity:transitioning?0:1,transform:transitioning?"translateY(10px)":"translateY(0)",
-            transition:"opacity 0.4s ease,transform 0.4s ease,border-color 0.6s ease"}}>
+        {/* Search panel — flights and buses only */}
+        {!CS_DATA[travelType]&&travelType!=="hotel"&&(
+          <div style={{background:"rgba(255,255,255,0.88)",backdropFilter:"blur(10px)",borderRadius:"0 0 20px 20px",padding:"22px 26px",boxShadow:"0 4px 20px rgba(0,0,0,0.05)",border:"1px solid rgba(201,168,76,0.15)",borderTop:"none",marginBottom:22}}>
 
             {/* Mode toggle */}
-            <div style={{display:"flex",gap:0,background:"rgba(255,255,255,0.06)",borderRadius:10,padding:3,marginBottom:20,width:"fit-content"}}>
+            <div style={{display:"flex",gap:0,background:"rgba(201,168,76,0.08)",borderRadius:10,padding:3,marginBottom:18,width:"fit-content"}}>
               {[["structured","Manual Search"],["ai","🤖 AI Search"]].map(([id,label])=>(
                 <button key={id} onClick={()=>{setMode(id);setFlights([]);setBuses([]);setSearched(false);setAiError("");setValidErr("");}}
-                  style={{padding:"8px 20px",border:"none",borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",transition:"all 0.2s",
-                    background:mode===id?T.accentSoft:"transparent",
-                    color:mode===id?T.accent:"rgba(255,255,255,0.5)",
-                    boxShadow:mode===id?`0 2px 8px ${T.accent}33`:"none"}}>
+                  style={{padding:"8px 20px",border:"none",borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",transition:"all 0.2s",background:mode===id?"rgba(255,255,255,0.95)":"transparent",color:mode===id?GOLD_DARK:"#666",boxShadow:mode===id?"0 2px 6px rgba(201,168,76,0.2)":"none"}}>
                   {label}
                 </button>
               ))}
             </div>
 
-            {/* ── FLIGHT STRUCTURED ── */}
+            {/* FLIGHT STRUCTURED */}
             {travelType==="flight"&&mode==="structured"&&(
               <>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,flexWrap:"wrap",gap:8}}>
-                  <div style={{display:"flex",gap:0,background:"rgba(255,255,255,0.06)",borderRadius:10,padding:3}}>
+                  <div style={{display:"flex",gap:0,background:"rgba(201,168,76,0.08)",borderRadius:10,padding:3}}>
                     {["oneway","roundtrip"].map(t=>(
-                      <button key={t} onClick={()=>setTripType(t)} style={{padding:"7px 16px",border:"none",borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",transition:"all 0.2s",background:tripType===t?T.accentSoft:"transparent",color:tripType===t?T.accent:"rgba(255,255,255,0.5)",boxShadow:tripType===t?`0 2px 6px ${T.accent}33`:"none"}}>
+                      <button key={t} onClick={()=>setTripType(t)} style={{padding:"7px 16px",border:"none",borderRadius:8,fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",transition:"all 0.2s",background:tripType===t?"rgba(255,255,255,0.95)":"transparent",color:tripType===t?"#1a1410":"#666",boxShadow:tripType===t?"0 2px 6px rgba(0,0,0,0.08)":"none"}}>
                         {t==="oneway"?"One Way":"Round Trip"}
                       </button>
                     ))}
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:8,background:T.accentSoft,border:`1px solid ${T.accent}44`}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:8,background:"rgba(201,168,76,"+(isDomestic?"0.1":"0.06")+")",border:"1px solid rgba(201,168,76,"+(isDomestic?"0.3":"0.18")+")"}}>
                     <span>{isDomestic?"🇮🇳":"🌍"}</span>
-                    <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:T.accent}}>{isDomestic?"Domestic":"International"}</span>
+                    <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:GOLD_DARK}}>{isDomestic?"Domestic · Seat selection available":"International"}</span>
                   </div>
                 </div>
-                <div className="search-city-grid" style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:10,alignItems:"center",marginBottom:14}}>
+                <div className="search-city-grid" style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:10,alignItems:"center",marginBottom:12}}>
                   {[{label:"FROM",city:fromCity,onClick:()=>setShowFromModal(true)},null,{label:"TO",city:toCity,onClick:()=>setShowToModal(true)}].map((item,i)=>item===null?(
-                    <button key="swap" onClick={swapFlight} style={{width:40,height:40,borderRadius:"50%",background:T.accentSoft,border:`1.5px solid ${T.accent}55`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:T.accent,transition:"transform 0.3s",justifySelf:"center"}}
-                      onMouseEnter={e=>e.currentTarget.style.transform="rotate(180deg)"}
-                      onMouseLeave={e=>e.currentTarget.style.transform="rotate(0)"}>⇄</button>
+                    <button key="swap" onClick={swapFlight} style={{width:40,height:40,borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1.5px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:GOLD_DARK,transition:"transform 0.3s",justifySelf:"center"}}
+                      onMouseEnter={e=>e.currentTarget.style.transform="rotate(180deg)"} onMouseLeave={e=>e.currentTarget.style.transform="rotate(0)"}>⇄</button>
                   ):(
-                    <div key={item.label} onClick={item.onClick} style={{...inp,cursor:"pointer",borderRadius:14}}
-                      onMouseEnter={e=>{e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.background="rgba(255,255,255,0.1)";}}
-                      onMouseLeave={e=>{e.currentTarget.style.borderColor=`${T.accent}44`;e.currentTarget.style.background="rgba(255,255,255,0.07)";}}>
+                    <div key={item.label} onClick={item.onClick} style={{...inp,cursor:"pointer"}}
+                      onMouseEnter={e=>{e.currentTarget.style.borderColor=GOLD;e.currentTarget.style.background="rgba(201,168,76,0.06)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(201,168,76,0.2)";e.currentTarget.style.background="#fafaf8";}}>
                       <div style={{...lbl,marginBottom:4}}>{item.label}</div>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:30,color:"#fff",textShadow:`0 2px 12px ${T.accent}44`}}>{item.city.code}</div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:2}}>{item.city.name}</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:28,color:"#1a1410"}}>{item.city.code}</div>
+                      <div style={{...subText,marginTop:2}}>{item.city.name}</div>
                     </div>
                   ))}
                 </div>
+                <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(201,168,76,0.07)",borderRadius:12,padding:"10px 16px",border:"1px solid rgba(201,168,76,0.22)",marginBottom:12,cursor:"pointer"}} onClick={()=>{setMode("ai");setFlights([]);setSearched(false);}}>
+                  <span>🤖</span>
+
+                </div>
                 <div className="search-date-grid" style={{display:"grid",gridTemplateColumns:tripType==="roundtrip"?"1fr 1fr 1fr 1fr":"1fr 1fr 1fr",gap:10,marginBottom:14}}>
-                  <div style={{...inp,borderColor:!date&&validErr?"#ef4444":`${T.accent}44`,borderRadius:12}}>
+                  <div style={{...inp,borderColor:!date&&validErr?"#ef4444":"rgba(201,168,76,0.2)"}}>
                     <label style={lbl}>DEPARTURE{!date&&<span style={{color:"#ef4444"}}> *</span>}</label>
-                    <input type="date" value={date} min={today} onChange={e=>{setDate(e.target.value);setValidErr("");}} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#fff",width:"100%",cursor:"pointer",colorScheme:"dark"}}/>
-                    {date&&<div style={{fontSize:12,color:T.accent,marginTop:2}}>{new Date(date).toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"})}</div>}
+                    <input type="date" value={date} min={today} onChange={e=>{setDate(e.target.value);setValidErr("");}} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#1a1410",width:"100%",cursor:"pointer"}}/>
+                    {date&&<div style={{fontSize:12,color:"#5a4a3a",marginTop:2,fontWeight:500}}>{new Date(date).toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"})}</div>}
                   </div>
-                  {tripType==="roundtrip"&&(
-                    <div style={{...inp,borderRadius:12}}>
-                      <label style={lbl}>RETURN</label>
-                      <input type="date" value={returnDate} min={date||today} onChange={e=>setReturnDate(e.target.value)} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#fff",width:"100%",cursor:"pointer",colorScheme:"dark"}}/>
-                    </div>
-                  )}
-                  <div style={{...inp,borderRadius:12}}>
+                  {tripType==="roundtrip"&&<div style={inp}><label style={lbl}>RETURN</label><input type="date" value={returnDate} min={date||today} onChange={e=>setReturnDate(e.target.value)} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#1a1410",width:"100%",cursor:"pointer"}}/></div>}
+                  <div style={inp}>
                     <label style={lbl}>TRAVELLERS</label>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <button onClick={()=>setPassengers(p=>Math.max(1,p-1))} style={{width:28,height:28,borderRadius:"50%",background:T.accentSoft,border:`1px solid ${T.accent}55`,color:T.accent,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>-</button>
-                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fff",minWidth:20,textAlign:"center"}}>{passengers}</span>
-                      <button onClick={()=>setPassengers(p=>Math.min(9,p+1))} style={{width:28,height:28,borderRadius:"50%",background:T.accentSoft,border:`1px solid ${T.accent}55`,color:T.accent,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>+</button>
+                      <button onClick={()=>setPassengers(p=>Math.max(1,p-1))} style={{width:30,height:30,borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.3)",color:GOLD_DARK,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>-</button>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#1a1410",minWidth:20,textAlign:"center"}}>{passengers}</span>
+                      <button onClick={()=>setPassengers(p=>Math.min(9,p+1))} style={{width:30,height:30,borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.3)",color:GOLD_DARK,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>+</button>
                     </div>
                   </div>
-                  <div style={{...inp,borderRadius:12}}>
+                  <div style={inp}>
                     <label style={lbl}>CLASS</label>
-                    <select value={cabinClass} onChange={e=>setCabinClass(e.target.value)} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:"#fff",width:"100%",cursor:"pointer",colorScheme:"dark"}}>{CLASSES.map(c=><option key={c} style={{background:"#1a1a2e"}}>{c}</option>)}</select>
+                    <select value={cabinClass} onChange={e=>setCabinClass(e.target.value)} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:"#1a1410",width:"100%",cursor:"pointer"}}>{CLASSES.map(c=><option key={c}>{c}</option>)}</select>
                   </div>
                 </div>
                 <div style={{marginBottom:14}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:T.accent,letterSpacing:"0.08em",marginBottom:8}}>SPECIAL FARES</div>
+                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:"#5a4a3a",letterSpacing:"0.08em",marginBottom:8}}>SPECIAL FARES</div>
                   <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
                     {SPECIAL_FARES.map(sf=>(
-                      <button key={sf.id} onClick={()=>setSpecialFare(sf.id)} style={{padding:"6px 13px",borderRadius:9,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:specialFare===sf.id?`1.5px solid ${T.accent}`:` 1.5px solid rgba(255,255,255,0.15)`,background:specialFare===sf.id?T.accentSoft:"rgba(255,255,255,0.05)",color:specialFare===sf.id?T.accent:"rgba(255,255,255,0.6)",transition:"all 0.2s"}}>{sf.label}</button>
+                      <button key={sf.id} onClick={()=>setSpecialFare(sf.id)} style={{padding:"7px 14px",borderRadius:9,fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:specialFare===sf.id?"1.5px solid "+GOLD:"1.5px solid rgba(0,0,0,0.12)",background:specialFare===sf.id?"rgba(201,168,76,0.12)":"#fafaf8",color:specialFare===sf.id?GOLD_DARK:"#444",transition:"all 0.2s"}}>{sf.label}</button>
                     ))}
                   </div>
                 </div>
-                {validErr&&<div style={{padding:"10px 14px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.35)",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#f87171",marginBottom:12}}>{validErr}</div>}
-                <button onClick={searchFlights}
-                  style={{width:"100%",padding:"15px",borderRadius:14,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#0a1628",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",boxShadow:`0 8px 28px ${T.accent}44`,transition:"transform 0.2s"}}
-                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
-                  onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Search Flights ✈</button>
+                {validErr&&<div style={{padding:"10px 14px",borderRadius:10,background:"#FFF0F0",border:"1px solid #FFCDD2",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#cc2222",marginBottom:12,fontWeight:500}}>{validErr}</div>}
+                <button onClick={searchFlights} style={{width:"100%",padding:"15px",borderRadius:14,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",boxShadow:"0 8px 28px rgba(201,168,76,0.44)",transition:"transform 0.2s"}}
+                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Search Flights ✈</button>
               </>
             )}
 
-            {/* ── BUS STRUCTURED ── */}
+            {/* BUS STRUCTURED */}
             {travelType==="bus"&&mode==="structured"&&(
               <>
-                <div className="search-city-grid" style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:10,alignItems:"center",marginBottom:14}}>
+                <div className="search-city-grid" style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:10,alignItems:"center",marginBottom:12}}>
                   {[{label:"FROM",city:busFrom,onClick:()=>setShowBusFromModal(true)},null,{label:"TO",city:busTo,onClick:()=>setShowBusToModal(true)}].map((item,i)=>item===null?(
-                    <button key="swap" onClick={swapBus} style={{width:40,height:40,borderRadius:"50%",background:T.accentSoft,border:`1.5px solid ${T.accent}55`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:T.accent,transition:"transform 0.3s",justifySelf:"center"}}
-                      onMouseEnter={e=>e.currentTarget.style.transform="rotate(180deg)"}
-                      onMouseLeave={e=>e.currentTarget.style.transform="rotate(0)"}>⇄</button>
+                    <button key="swap" onClick={swapBus} style={{width:40,height:40,borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1.5px solid rgba(201,168,76,0.3)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18,color:GOLD_DARK,transition:"transform 0.3s",justifySelf:"center"}}
+                      onMouseEnter={e=>e.currentTarget.style.transform="rotate(180deg)"} onMouseLeave={e=>e.currentTarget.style.transform="rotate(0)"}>⇄</button>
                   ):(
-                    <div key={item.label} onClick={item.onClick} style={{...inp,cursor:"pointer",borderRadius:14}}
-                      onMouseEnter={e=>{e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.background="rgba(255,255,255,0.1)";}}
-                      onMouseLeave={e=>{e.currentTarget.style.borderColor=`${T.accent}44`;e.currentTarget.style.background="rgba(255,255,255,0.07)";}}>
+                    <div key={item.label} onClick={item.onClick} style={{...inp,cursor:"pointer"}}
+                      onMouseEnter={e=>{e.currentTarget.style.borderColor=GOLD;e.currentTarget.style.background="rgba(201,168,76,0.06)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(201,168,76,0.2)";e.currentTarget.style.background="#fafaf8";}}>
                       <div style={{...lbl,marginBottom:4}}>{item.label}</div>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fff"}}>🚌 {item.city}</div>
+                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#1a1410"}}>🚌 {item.city}</div>
                     </div>
                   ))}
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:10,background:"rgba(201,168,76,0.07)",borderRadius:12,padding:"10px 16px",border:"1px solid rgba(201,168,76,0.22)",marginBottom:12,cursor:"pointer"}} onClick={()=>{setMode("ai");setBuses([]);setSearched(false);}}>
+                  <span>🤖</span>
+
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
-                  <div style={{...inp,borderColor:!date&&validErr?"#ef4444":`${T.accent}44`,borderRadius:12}}>
+                  <div style={{...inp,borderColor:!date&&validErr?"#ef4444":"rgba(201,168,76,0.2)"}}>
                     <label style={lbl}>TRAVEL DATE{!date&&<span style={{color:"#ef4444"}}> *</span>}</label>
-                    <input type="date" value={date} min={today} onChange={e=>{setDate(e.target.value);setValidErr("");}} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#fff",width:"100%",cursor:"pointer",colorScheme:"dark"}}/>
-                    {date&&<div style={{fontSize:12,color:T.accent,marginTop:2}}>{new Date(date).toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"})}</div>}
+                    <input type="date" value={date} min={today} onChange={e=>{setDate(e.target.value);setValidErr("");}} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#1a1410",width:"100%",cursor:"pointer"}}/>
+                    {date&&<div style={{fontSize:12,color:"#5a4a3a",marginTop:2,fontWeight:500}}>{new Date(date).toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"})}</div>}
                   </div>
-                  <div style={{...inp,borderRadius:12}}>
+                  <div style={inp}>
                     <label style={lbl}>PASSENGERS</label>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <button onClick={()=>setPassengers(p=>Math.max(1,p-1))} style={{width:28,height:28,borderRadius:"50%",background:T.accentSoft,border:`1px solid ${T.accent}55`,color:T.accent,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>-</button>
-                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fff",minWidth:20,textAlign:"center"}}>{passengers}</span>
-                      <button onClick={()=>setPassengers(p=>Math.min(6,p+1))} style={{width:28,height:28,borderRadius:"50%",background:T.accentSoft,border:`1px solid ${T.accent}55`,color:T.accent,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>+</button>
+                      <button onClick={()=>setPassengers(p=>Math.max(1,p-1))} style={{width:30,height:30,borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.3)",color:GOLD_DARK,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>-</button>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#1a1410",minWidth:20,textAlign:"center"}}>{passengers}</span>
+                      <button onClick={()=>setPassengers(p=>Math.min(6,p+1))} style={{width:30,height:30,borderRadius:"50%",background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.3)",color:GOLD_DARK,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>+</button>
                     </div>
                   </div>
-                  <div style={{...inp,borderRadius:12}}>
+                  <div style={inp}>
                     <label style={lbl}>BUS TYPE</label>
-                    <select value={busType} onChange={e=>setBusType(e.target.value)} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:"#fff",width:"100%",cursor:"pointer",colorScheme:"dark"}}>{BUS_TYPES.map(t=><option key={t} style={{background:"#042308"}}>{t}</option>)}</select>
+                    <select value={busType} onChange={e=>setBusType(e.target.value)} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:"#1a1410",width:"100%",cursor:"pointer"}}>{BUS_TYPES.map(t=><option key={t}>{t}</option>)}</select>
                   </div>
                 </div>
-                {validErr&&<div style={{padding:"10px 14px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.35)",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#f87171",marginBottom:12}}>{validErr}</div>}
-                <button onClick={searchBuses}
-                  style={{width:"100%",padding:"15px",borderRadius:14,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#042308",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",boxShadow:`0 8px 28px ${T.accent}44`,transition:"transform 0.2s"}}
-                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
-                  onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Search Buses 🚌</button>
+                {validErr&&<div style={{padding:"10px 14px",borderRadius:10,background:"#FFF0F0",border:"1px solid #FFCDD2",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#cc2222",marginBottom:12,fontWeight:500}}>{validErr}</div>}
+                <button onClick={searchBuses} style={{width:"100%",padding:"15px",borderRadius:14,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",boxShadow:"0 8px 28px rgba(201,168,76,0.44)",transition:"transform 0.2s"}}
+                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Search Buses 🚌</button>
               </>
             )}
 
-            {/* ── HOTEL STRUCTURED ── */}
-            {travelType==="hotel"&&mode==="structured"&&(
-              <>
-                <div style={{marginBottom:16}}>
-                  <div style={lbl}>DESTINATION</div>
-                  <div onClick={()=>setShowHotelModal(true)} style={{...inp,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",borderRadius:14}}
-                    onMouseEnter={e=>{e.currentTarget.style.borderColor=T.accent;e.currentTarget.style.background="rgba(255,255,255,0.1)";}}
-                    onMouseLeave={e=>{e.currentTarget.style.borderColor=`${T.accent}44`;e.currentTarget.style.background="rgba(255,255,255,0.07)";}}>
-                    <div>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fff"}}>🏨 {hotelCity}</div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.5)",marginTop:2}}>Tap to change city</div>
-                    </div>
-                    <span style={{color:T.accent,fontSize:18}}>›</span>
-                  </div>
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-                  <div style={{...inp,borderColor:!date&&validErr?"#ef4444":`${T.accent}44`,borderRadius:12}}>
-                    <label style={lbl}>CHECK-IN{!date&&<span style={{color:"#ef4444"}}> *</span>}</label>
-                    <input type="date" value={date} min={today} onChange={e=>{setDate(e.target.value);setValidErr("");}} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#fff",width:"100%",cursor:"pointer",colorScheme:"dark"}}/>
-                  </div>
-                  <div style={{...inp,borderRadius:12}}>
-                    <label style={lbl}>CHECK-OUT</label>
-                    <input type="date" value={checkOut} min={date||today} onChange={e=>setCheckOut(e.target.value)} style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,color:"#fff",width:"100%",cursor:"pointer",colorScheme:"dark"}}/>
-                  </div>
-                </div>
-                {validErr&&<div style={{padding:"10px 14px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.35)",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#f87171",marginBottom:12}}>{validErr}</div>}
-                <button onClick={()=>{setValidErr("");if(!date){setValidErr("Please select a check-in date");return;}openHotelLink(hotelCity);}}
-                  style={{width:"100%",padding:"15px",borderRadius:14,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#1a0a00",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",boxShadow:`0 8px 28px ${T.accent}44`,transition:"transform 0.2s"}}
-                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
-                  onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Search Hotels on Booking.com 🏨</button>
-                <div style={{textAlign:"center",marginTop:10,fontFamily:"'DM Sans',sans-serif",fontSize:12,color:`${T.accent}88`}}>You'll be redirected to Booking.com — best prices guaranteed</div>
-              </>
-            )}
-
-            {/* ── AI MODE ── */}
+            {/* AI MODE */}
             {mode==="ai"&&(
               <div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.6)",marginBottom:12,lineHeight:1.6}}>
-                  Type in any language — English, Hindi, Tamil, Kannada, Telugu. Typos are fine 😄
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#4a3a2a",marginBottom:12,lineHeight:1.6,fontWeight:500}}>
+                  Type in any language — English, Hindi, Tamil, Telugu, Kannada. Typos are fine:
                 </div>
-                <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>
-                  {[
-                    travelType==="hotel"&&"hotel in goa",
-                    travelType==="hotel"&&"hotels bangalore",
-                    travelType==="bus"&&"bus bangalore to chennai kal",
-                    travelType==="bus"&&"bus blr to hyd raat",
-                    travelType==="flight"&&"flights frm bangaluru to mumbai kal",
-                    travelType==="flight"&&"blr to del friday sasta flight",
-                    travelType==="flight"&&"flight bangalore to dubai tomorrow",
-                    travelType==="flight"&&"mumbai to delhi kal subah",
-                  ].filter(Boolean).map(ex=>(
-                    <button key={ex} onClick={()=>setAiQuery(ex)} style={{padding:"6px 13px",borderRadius:100,fontSize:12,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:T.accentSoft,border:`1px solid ${T.accent}44`,color:T.accent,fontWeight:500,transition:"all 0.15s"}}
-                      onMouseEnter={e=>e.currentTarget.style.background=`${T.accent}25`}
-                      onMouseLeave={e=>e.currentTarget.style.background=T.accentSoft}>{ex}</button>
+                <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:12}}>
+                  {travelType==="bus"?[
+                    "bus frm bangaluru to chennai",
+                    "bus blr to hyd kal raat",
+                    "bus bangalore to goa tomorrow",
+                    "bus mumbai to pune subah",
+                    "bus delhi to jaipur kal sasta",
+                  ]:[
+                    "flights frm bangaluru to mumbai",
+                    "blr to del friday sasta flight",
+                    "flight bangalore to dubai tomorrow",
+                    "mumbai to delhi kal subah",
+                    "goa flights this weekend under 4000",
+                  ].map(ex=>(
+                    <button key={ex} onClick={()=>{travelType==="bus"?setBusAiQuery(ex):setFlightAiQuery(ex);}} style={{padding:"6px 13px",borderRadius:100,fontSize:12,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.25)",color:GOLD_DARK,fontWeight:500}}>{ex}</button>
                   ))}
                 </div>
-                <div style={{display:"flex",alignItems:"center",gap:12,background:"rgba(255,255,255,0.06)",borderRadius:14,padding:"4px 4px 4px 18px",border:`1.5px solid ${T.accent}44`,marginBottom:8}}>
+                <div style={{display:"flex",alignItems:"center",gap:12,background:"#fafaf8",borderRadius:14,padding:"4px 4px 4px 18px",border:"1.5px solid rgba(201,168,76,0.3)",marginBottom:8}}>
                   <span style={{fontSize:18,opacity:0.7}}>🤖</span>
-                  <input value={aiQuery} onChange={e=>{setAiQuery(e.target.value);setAiError("");}} onKeyDown={e=>e.key==="Enter"&&searchAI()}
-                    placeholder={travelType==="hotel"?"e.g. hotels in Goa, best hotels Mumbai under 2000":travelType==="bus"?"e.g. bus Bangalore to Chennai tomorrow night":"e.g. cheap flights BLR to GOA this weekend"}
-                    style={{flex:1,background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:15,color:"#fff",padding:"12px 0"}}/>
+                  <input
+                    value={travelType==="bus"?busAiQuery:flightAiQuery}
+                    onChange={e=>travelType==="bus"?setBusAiQuery(e.target.value):setFlightAiQuery(e.target.value)}
+                    onKeyDown={e=>e.key==="Enter"&&searchAI()}
+                    placeholder={travelType==="bus"?'Try: "bus frm bangaluru to chennai kal"':'Try: "flights frm bangaluru to mumbai kal"'}
+                    style={{flex:1,background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:15,color:"#1a1410",padding:"12px 0"}}/>
                 </div>
-                {aiError&&<div style={{padding:"10px 14px",borderRadius:10,background:"rgba(239,68,68,0.12)",border:"1px solid rgba(239,68,68,0.35)",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#f87171",marginBottom:8}}>{aiError}</div>}
-                <button onClick={searchAI}
-                  style={{width:"100%",padding:"15px",borderRadius:14,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#0a1628",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",boxShadow:`0 8px 28px ${T.accent}44`,transition:"transform 0.2s"}}
-                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
-                  onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Search with AI 🤖</button>
+                {aiError&&<div style={{padding:"10px 14px",borderRadius:10,background:"#FFF0F0",border:"1px solid #FFCDD2",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#cc2222",marginBottom:8,fontWeight:500}}>{aiError}</div>}
+                <button onClick={searchAI} style={{width:"100%",padding:"15px",borderRadius:14,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 4s ease infinite",boxShadow:"0 8px 28px rgba(201,168,76,0.44)",transition:"transform 0.2s"}}
+                  onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>{travelType==="bus"?"Search Buses with AI 🚌":"Search Flights with AI ✈️"}</button>
               </div>
             )}
           </div>
         )}
 
-        {/* ── LOADING ── */}
-        {loading&&(
-          <div style={{textAlign:"center",padding:"60px 0",animation:"fadeUp 0.4s both"}}>
-            <div style={{width:48,height:48,border:`3px solid ${T.accent}33`,borderTopColor:T.accent,borderRadius:"50%",animation:"spinSlow 1s linear infinite",margin:"0 auto 16px"}}/>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:17,color:T.accent}}>
-              {travelType==="bus"?"Scanning bus routes…":travelType==="hotel"?"Finding hotels…":"Scanning flight paths…"}
-            </div>
-          </div>
-        )}
+        {/* Loading */}
+        {loading&&<div style={{textAlign:"center",padding:"60px 0",animation:"fadeUp 0.4s both"}}><div style={{width:44,height:44,border:"3px solid rgba(201,168,76,0.2)",borderTopColor:GOLD,borderRadius:"50%",animation:"spinSlow 1s linear infinite",margin:"0 auto 16px"}}/><div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:16,color:GOLD_DARK}}>{travelType==="bus"?"Scanning bus routes…":"Scanning flight paths…"}</div></div>}
 
-        {/* ── FILTERS ── */}
-        {!loading&&filtered.length>0&&travelType!=="hotel"&&(
-          <div style={{background:"rgba(0,0,0,0.4)",backdropFilter:"blur(16px)",borderRadius:16,padding:"18px 20px",border:`1px solid ${T.accent}22`,marginBottom:18,animation:"fadeUp 0.4s both"}}>
-            <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:T.accent,letterSpacing:"0.15em",marginBottom:12,fontWeight:700}}>FILTER & SORT</div>
+        {/* Filters */}
+        {!loading&&filtered.length>0&&(
+          <div style={{background:"rgba(255,255,255,0.88)",backdropFilter:"blur(10px)",borderRadius:16,padding:"18px 20px",boxShadow:"0 4px 16px rgba(0,0,0,0.05)",border:"1px solid rgba(201,168,76,0.15)",marginBottom:18,animation:"fadeUp 0.4s both"}}>
+            <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:"#7a6a5a",letterSpacing:"0.15em",marginBottom:12,fontWeight:700}}>FILTER &amp; SORT</div>
             <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:10}}>
               {travelType==="flight"&&[["any","All times"],["morning","Morning"],["afternoon","Afternoon"],["evening","Evening"]].map(([v,l])=>(
-                <button key={v} onClick={()=>setFilterTime(v)} style={{padding:"6px 14px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:filterTime===v?`1.5px solid ${T.accent}`:"1.5px solid rgba(255,255,255,0.2)",background:filterTime===v?T.accentSoft:"rgba(255,255,255,0.06)",color:filterTime===v?T.accent:"rgba(255,255,255,0.6)"}}>{l}</button>
+                <button key={v} onClick={()=>setFilterTime(v)} style={{padding:"6px 14px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:filterTime===v?"1.5px solid "+GOLD:"1.5px solid rgba(0,0,0,0.15)",background:filterTime===v?"rgba(201,168,76,0.12)":"#fafaf8",color:filterTime===v?GOLD_DARK:"#444"}}>{l}</button>
               ))}
               {[["price","Cheapest"],["price-desc","Priciest"],["departure","Earliest"]].map(([v,l])=>(
-                <button key={v} onClick={()=>setSortBy(v)} style={{padding:"6px 14px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:sortBy===v?`1.5px solid ${T.accent}`:"1.5px solid rgba(255,255,255,0.2)",background:sortBy===v?T.accentSoft:"rgba(255,255,255,0.06)",color:sortBy===v?T.accent:"rgba(255,255,255,0.6)"}}>{l}</button>
+                <button key={v} onClick={()=>setSortBy(v)} style={{padding:"6px 14px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",border:sortBy===v?"1.5px solid "+GOLD:"1.5px solid rgba(0,0,0,0.15)",background:sortBy===v?"rgba(201,168,76,0.12)":"#fafaf8",color:sortBy===v?GOLD_DARK:"#444"}}>{l}</button>
               ))}
             </div>
-            <input type="range" min="100" max={filterMaxPrice+500} step="100" value={filterMaxPrice} onChange={e=>setFilterMaxPrice(Number(e.target.value))} style={{width:"100%",accentColor:T.accent}}/>
-            <div style={{display:"flex",justifyContent:"space-between",fontFamily:"'Space Mono',monospace",fontSize:11,color:`${T.accent}88`,marginTop:6}}>
-              <span>Min</span><span style={{color:T.accent}}>Max ₹{filterMaxPrice.toLocaleString()}</span>
+            <input type="range" min="100" max={filterMaxPrice+500} step="100" value={filterMaxPrice} onChange={e=>setFilterMaxPrice(Number(e.target.value))} style={{width:"100%",accentColor:GOLD}}/>
+            <div style={{display:"flex",justifyContent:"space-between",fontFamily:"'Space Mono',monospace",fontSize:11,color:"#7a6a5a",marginTop:6,fontWeight:600}}>
+              <span>Min</span><span style={{color:GOLD_DARK}}>Max ₹{filterMaxPrice.toLocaleString()}</span>
             </div>
           </div>
         )}
 
-        {/* ── RESULTS ── */}
+        {/* Results */}
         {!loading&&searched&&(
           <>
-            {filtered.length>0&&(
-              <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:T.accent,letterSpacing:"0.15em",marginBottom:10,fontWeight:700}}>
-                {travelType==="bus"?`${filtered.length} BUSES FOUND`:travelType==="flight"&&!filtered[0]?.affiliate?`${filtered.length} FLIGHTS FOUND`:""}
+            {/* Bus operator tip */}
+            {travelType==="bus"&&filtered.length>0&&(
+              <div style={{padding:"12px 16px",borderRadius:12,background:"rgba(201,168,76,0.07)",border:"1px solid rgba(201,168,76,0.2)",marginBottom:14,display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:16}}>💡</span>
+                <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#5a4a3a",fontWeight:500}}>Multiple operators serve this route. Compare timing and bus type before booking.</span>
               </div>
             )}
-            {(flightInsight||busInsight)&&(
-              <div style={{marginBottom:14,padding:"12px 18px",background:`${T.accent}11`,borderRadius:12,border:`1px solid ${T.accent}33`,animation:"fadeUp 0.4s both"}}>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:T.accent,lineHeight:1.6}}>{travelType==="bus"?busInsight:flightInsight}</div>
-              </div>
-            )}
-            <div style={{display:"flex",flexDirection:"column",gap:14}}>
 
-              {/* Flight results */}
-              {travelType==="flight"&&filtered.map((flight,i)=>(
-                <div key={flight.id||i}
-                  style={{background:"rgba(0,0,0,0.5)",backdropFilter:"blur(16px)",borderRadius:18,padding:"22px",
-                    border:`1px solid ${T.accent}22`,animation:`fadeUp 0.4s ${i*60}ms both`,transition:"all 0.2s",
-                    boxShadow:`0 4px 20px rgba(0,0,0,0.3)`}}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor=`${T.accent}55`;e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 8px 32px ${T.accent}22`;}}
-                  onMouseLeave={e=>{e.currentTarget.style.borderColor=`${T.accent}22`;e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="0 4px 20px rgba(0,0,0,0.3)";}}>
-                  {flight.affiliate?(
-                    <div style={{textAlign:"center",padding:"10px 0"}}>
-                      <div style={{fontSize:44,marginBottom:14}}>✈️</div>
-                      <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:22,color:"#fff",marginBottom:8}}>
-                        {flight.from_city?.charAt(0).toUpperCase()+flight.from_city?.slice(1)} → {flight.to_city?.charAt(0).toUpperCase()+flight.to_city?.slice(1)}
-                      </h3>
-                      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:"rgba(255,255,255,0.55)",marginBottom:20}}>Live fares from 700+ airlines — best prices guaranteed</p>
-                      <button onClick={()=>handleFlightDeal(flight.from_city,flight.to_city)}
-                        style={{padding:"14px 36px",borderRadius:14,fontSize:16,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#0a1628",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:`0 6px 20px ${T.accent}44`}}>
-                        Check Live Prices →
-                      </button>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"rgba(255,255,255,0.25)",marginTop:12}}>Prices on partner site · may vary</div>
+            <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:"#7a6a5a",letterSpacing:"0.15em",marginBottom:14,fontWeight:700}}>
+              {filtered.length>0?filtered.length+" "+(travelType==="bus"?"BUSES":"FLIGHTS")+" FOUND":"NO RESULTS — TRY A DIFFERENT DATE OR ROUTE"}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+
+              {/* FLIGHT CARDS */}
+              {travelType==="flight"&&filtered.map((flight,i)=>{
+                const labels=getFlightLabels(flight,flights,i);
+                const insight=getFlightInsight(flight,flights);
+                const minPrice=Math.min(...flights.map(f=>f.price));
+                const savings=Math.max(...flights.map(f=>f.price))-flight.price;
+                const dateStr=lastFlightSearch?.date?fmtDateStr(lastFlightSearch.date):"";
+                const affLink=getAviasalesLink(flight.from_city||fromCity.name,flight.to_city||toCity.name,dateStr,passengers);
+                return(
+                  <div key={flight.id} style={{background:"rgba(255,255,255,0.88)",backdropFilter:"blur(10px)",borderRadius:18,padding:"20px 22px",boxShadow:"0 4px 16px rgba(0,0,0,0.05)",border:"1px solid rgba(201,168,76,0.12)",animation:"fadeUp 0.4s "+(i*60)+"ms both",transition:"all 0.2s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(201,168,76,0.38)";e.currentTarget.style.transform="translateY(-2px)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(201,168,76,0.12)";e.currentTarget.style.transform="translateY(0)";}}>
+
+                    {/* Labels row */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                        {labels.map(l=>(
+                          <span key={l.text} style={{padding:"3px 10px",borderRadius:20,fontSize:10,fontFamily:"'Space Mono',monospace",fontWeight:700,color:l.color,background:l.bg}}>{l.text}</span>
+                        ))}
+                        {savings>500&&flight.price===minPrice&&<span style={{padding:"3px 10px",borderRadius:20,fontSize:10,fontFamily:"'Space Mono',monospace",fontWeight:700,color:"#16a34a",background:"rgba(22,163,74,0.1)"}}>You save ₹{savings.toLocaleString()}</span>}
+                      </div>
+                      <div style={{display:"flex",gap:7}}>
+                        {isDomestic&&<span style={{padding:"3px 9px",borderRadius:20,fontSize:10,background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.3)",color:GOLD_DARK,fontFamily:"'Space Mono',monospace",fontWeight:600}}>Seats ✓</span>}
+                        <span style={{padding:"3px 9px",borderRadius:20,fontSize:10,background:"rgba(16,185,129,0.1)",border:"1px solid rgba(16,185,129,0.25)",color:"#047857",fontFamily:"'Space Mono',monospace",fontWeight:600}}>Non-stop</span>
+                      </div>
                     </div>
-                  ):(
-                    <>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
-                        <div style={{display:"flex",alignItems:"center",gap:10}}>
-                          <div style={{width:8,height:8,borderRadius:"50%",background:T.accent,boxShadow:`0 0 8px ${T.accent}`}}/>
-                          <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:16,color:"#fff"}}>{flight.airline}</span>
-                          <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:"rgba(255,255,255,0.4)"}}>{flight.flight_no}</span>
-                        </div>
-                        <div style={{display:"flex",gap:7}}>
-                          {isDomestic&&<span style={{padding:"3px 9px",borderRadius:20,fontSize:10,background:T.accentSoft,border:`1px solid ${T.accent}55`,color:T.accent,fontFamily:"'Space Mono',monospace",fontWeight:600}}>Seats ✓</span>}
-                          <span style={{padding:"3px 9px",borderRadius:20,fontSize:10,background:"rgba(22,163,74,0.12)",border:"1px solid rgba(22,163,74,0.3)",color:"#4ade80",fontFamily:"'Space Mono',monospace",fontWeight:600}}>Non-stop</span>
-                        </div>
-                      </div>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
-                        <div style={{textAlign:"center"}}>
-                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:30,color:"#fff"}}>{fmtTime(flight.departure_time)}</div>
-                          <div style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:"rgba(255,255,255,0.45)",marginTop:2,fontWeight:600}}>{flight.from_city?.slice(0,3).toUpperCase()}</div>
-                          <div style={{fontSize:12,color:"rgba(255,255,255,0.35)",fontWeight:500}}>{fmtDate(flight.departure_time)}</div>
-                        </div>
-                        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"0 16px"}}>
-                          <span style={{fontSize:12,color:"rgba(255,255,255,0.45)",fontFamily:"'DM Sans',sans-serif"}}>{calcDur(flight.departure_time,flight.arrival_time)}</span>
-                          <div style={{width:"100%",display:"flex",alignItems:"center",gap:4}}>
-                            <div style={{flex:1,height:1,background:`linear-gradient(90deg,${T.accent}44,${T.accent}cc,${T.accent}44)`}}/>
-                            <span style={{fontSize:16,color:T.accent}}>✈</span>
-                            <div style={{flex:1,height:1,background:`linear-gradient(90deg,${T.accent}cc,${T.accent}44)`}}/>
-                          </div>
-                          <span style={{fontSize:12,color:"#4ade80",fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>Direct</span>
-                        </div>
-                        <div style={{textAlign:"center"}}>
-                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:30,color:"#fff"}}>{fmtTime(flight.arrival_time)}</div>
-                          <div style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:"rgba(255,255,255,0.45)",marginTop:2,fontWeight:600}}>{flight.to_city?.slice(0,3).toUpperCase()}</div>
-                          <div style={{fontSize:12,color:"rgba(255,255,255,0.35)",fontWeight:500}}>{fmtDate(flight.arrival_time)}</div>
-                        </div>
-                      </div>
-                      <div className="results-card-bottom" style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:16,borderTop:`1px solid ${T.accent}22`}}>
-                        <div>
-                          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.35)",letterSpacing:"0.1em",fontWeight:600}}>APPROX FROM</div>
-                          <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:32,color:T.accent}}>{`₹${(flight.price*passengers).toLocaleString()}`}</div>
-                          <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",fontFamily:"'DM Sans',sans-serif"}}>{passengers} pax · {cabinClass}</div>
-                        </div>
-                        <button onClick={()=>handleFlightDeal(flight.from_city,flight.to_city)}
-                          style={{padding:"13px 28px",borderRadius:13,fontSize:14,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#0a1628",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:`0 6px 20px ${T.accent}44`,transition:"transform 0.2s"}}
-                          onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
-                          onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Check Live Prices →</button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
 
-              {/* Bus results */}
-              {travelType==="bus"&&filtered.length===0&&searched&&!loading&&(
-                <div style={{background:"rgba(0,0,0,0.5)",backdropFilter:"blur(16px)",borderRadius:18,padding:"32px",border:`1px solid ${T.accent}22`,textAlign:"center",animation:"fadeUp 0.4s both"}}>
-                  <div style={{fontSize:48,marginBottom:14}}>🚌</div>
-                  <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:20,color:"#fff",marginBottom:8}}>More options on RedBus</h3>
-                  <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:"rgba(255,255,255,0.5)",marginBottom:18}}>Check full schedule and live seat availability for {busFrom} → {busTo}</p>
-                  <button onClick={()=>openBusLink(busFrom,busTo)}
-                    style={{padding:"13px 32px",borderRadius:13,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.08em",color:"#042308",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:`0 6px 20px ${T.accent}44`}}>
-                    View on RedBus →
-                  </button>
-                </div>
-              )}
-
-              {travelType==="bus"&&filtered.map((bus,i)=>(
-                <div key={i}
-                  style={{background:"rgba(0,0,0,0.5)",backdropFilter:"blur(16px)",borderRadius:18,padding:"22px",
-                    border:`1px solid ${T.accent}22`,animation:`fadeUp 0.4s ${i*60}ms both`,transition:"all 0.2s",
-                    boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor=`${T.accent}55`;e.currentTarget.style.transform="translateY(-2px)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.borderColor=`${T.accent}22`;e.currentTarget.style.transform="translateY(0)";}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:T.accent,boxShadow:`0 0 8px ${T.accent}`}}/>
-                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:16,color:"#fff"}}>{bus.op}</span>
+                    {/* Airline row */}
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:GOLD}}/>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:15,color:"#1a1410"}}>{flight.airline}</span>
+                      <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:"#777"}}>{flight.flight_no}</span>
                     </div>
-                    <div style={{display:"flex",gap:7}}>
-                      <span style={{padding:"3px 9px",borderRadius:20,fontSize:10,background:T.accentSoft,border:`1px solid ${T.accent}55`,color:T.accent,fontFamily:"'Space Mono',monospace",fontWeight:600}}>Seats ✓</span>
-                      <span style={{padding:"3px 9px",borderRadius:20,fontSize:10,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.6)",fontFamily:"'Space Mono',monospace",fontWeight:600}}>{bus.type}</span>
+
+                    {/* Route */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:"#1a1410"}}>{fmtTime(flight.departure_time)}</div>
+                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:"#666",marginTop:2,fontWeight:600}}>{(flight.from_city||fromCity.name).slice(0,3).toUpperCase()}</div>
+                        <div style={{fontSize:12,color:"#666",fontWeight:500}}>{fmtDate(flight.departure_time)}</div>
+                      </div>
+                      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"0 16px"}}>
+                        <span style={{fontSize:12,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:500}}>{calcDur(flight.departure_time,flight.arrival_time)}</span>
+                        <div style={{width:"100%",display:"flex",alignItems:"center",gap:4}}>
+                          <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,rgba(201,168,76,0.4),rgba(201,168,76,0.8),rgba(201,168,76,0.4))"}}/>
+                          <span style={{fontSize:14,color:GOLD}}>✈</span>
+                          <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,rgba(201,168,76,0.8),rgba(201,168,76,0.4))"}}/>
+                        </div>
+                        <span style={{fontSize:12,color:"#047857",fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>Direct</span>
+                      </div>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:"#1a1410"}}>{fmtTime(flight.arrival_time)}</div>
+                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:12,color:"#666",marginTop:2,fontWeight:600}}>{(flight.to_city||toCity.name).slice(0,3).toUpperCase()}</div>
+                        <div style={{fontSize:12,color:"#666",fontWeight:500}}>{fmtDate(flight.arrival_time)}</div>
+                      </div>
+                    </div>
+
+                    {/* AI Insight */}
+                    <div style={{padding:"8px 12px",borderRadius:10,background:"rgba(201,168,76,0.06)",border:"1px solid rgba(201,168,76,0.15)",marginBottom:14,fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"#6b5d4e",fontStyle:"italic"}}>
+                      💡 {insight}
+                    </div>
+
+                    {/* Bottom row */}
+                    <div className="results-card-bottom" style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:14,borderTop:"1px solid rgba(201,168,76,0.12)"}}>
+                      <div>
+                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:"#777",letterSpacing:"0.1em",fontWeight:600}}>APPROX FROM</div>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:28,color:GOLD_DARK}}>₹{(flight.price*passengers).toLocaleString()}</div>
+                        <div style={{fontSize:13,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:500}}>{passengers} pax · {cabinClass}</div>
+                      </div>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                        <button onClick={()=>handleBookClick(flight)} style={{padding:"12px 26px",borderRadius:12,fontSize:14,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:"0 4px 14px rgba(201,168,76,0.44)",transition:"transform 0.2s"}}
+                          onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Book Now →</button>
+                        <a href={affLink} target="_blank" rel="noopener noreferrer" style={{padding:"8px 20px",borderRadius:10,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",color:GOLD_DARK,border:"1.5px solid rgba(201,168,76,0.3)",background:"transparent",cursor:"pointer",textDecoration:"none",textAlign:"center",transition:"all 0.2s"}}
+                          onMouseEnter={e=>e.currentTarget.style.background="rgba(201,168,76,0.08)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>Check Live Prices →</a>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:"#bbb",fontStyle:"italic"}}>Prices may vary slightly based on provider</div>
+                      </div>
                     </div>
                   </div>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:28,color:"#fff"}}>{bus.dep}</div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.5)",marginTop:2}}>{bus.from}</div>
-                    </div>
-                    <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"0 16px"}}>
-                      <span style={{fontSize:12,color:"rgba(255,255,255,0.45)",fontFamily:"'DM Sans',sans-serif"}}>{bus.dur}</span>
-                      <div style={{width:"100%",display:"flex",alignItems:"center",gap:4}}>
-                        <div style={{flex:1,height:1,background:`linear-gradient(90deg,${T.accent}44,${T.accent}cc,${T.accent}44)`}}/>
-                        <span style={{fontSize:18}}>🚌</span>
-                        <div style={{flex:1,height:1,background:`linear-gradient(90deg,${T.accent}cc,${T.accent}44)`}}/>
+                );
+              })}
+
+              {/* BUS CARDS */}
+              {travelType==="bus"&&filtered.map((bus,i)=>{
+                const labels=getBusLabels(bus,buses,i);
+                const insight=getBusInsight(bus,buses);
+                const minPrice=Math.min(...buses.map(b=>b.price));
+                const savings=Math.max(...buses.map(b=>b.price))-bus.price;
+                const redLink=getRedbusLink(bus.from,bus.to);
+                return(
+                  <div key={i} style={{background:"rgba(255,255,255,0.88)",backdropFilter:"blur(10px)",borderRadius:18,padding:"20px 22px",boxShadow:"0 4px 16px rgba(0,0,0,0.05)",border:"1px solid rgba(201,168,76,0.12)",animation:"fadeUp 0.4s "+(i*60)+"ms both",transition:"all 0.2s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(201,168,76,0.38)";e.currentTarget.style.transform="translateY(-2px)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(201,168,76,0.12)";e.currentTarget.style.transform="translateY(0)";}}>
+
+                    {/* Labels */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                        {labels.map(l=>(
+                          <span key={l.text} style={{padding:"3px 10px",borderRadius:20,fontSize:10,fontFamily:"'Space Mono',monospace",fontWeight:700,color:l.color,background:l.bg}}>{l.text}</span>
+                        ))}
+                        {savings>200&&bus.price===minPrice&&<span style={{padding:"3px 10px",borderRadius:20,fontSize:10,fontFamily:"'Space Mono',monospace",fontWeight:700,color:"#16a34a",background:"rgba(22,163,74,0.1)"}}>You save ₹{savings.toLocaleString()}</span>}
                       </div>
-                      <span style={{fontSize:12,color:"#4ade80",fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>Direct</span>
+                      <div style={{display:"flex",gap:7}}>
+                        <span style={{padding:"3px 9px",borderRadius:20,fontSize:10,background:"rgba(201,168,76,0.12)",border:"1px solid rgba(201,168,76,0.3)",color:GOLD_DARK,fontFamily:"'Space Mono',monospace",fontWeight:600}}>Seats ✓</span>
+                        <span style={{padding:"3px 9px",borderRadius:20,fontSize:10,background:"rgba(0,0,0,0.04)",border:"1px solid rgba(0,0,0,0.12)",color:"#444",fontFamily:"'Space Mono',monospace",fontWeight:600}}>{bus.type}</span>
+                      </div>
                     </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:28,color:"#fff"}}>{bus.arr}</div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.5)",marginTop:2}}>{bus.to}</div>
+
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:GOLD}}/>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:15,color:"#1a1410"}}>{bus.op}</span>
+                    </div>
+
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:"#1a1410"}}>{bus.dep}</div>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#555",marginTop:2,fontWeight:500}}>{bus.from}</div>
+                      </div>
+                      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"0 16px"}}>
+                        <span style={{fontSize:12,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:500}}>{bus.dur}</span>
+                        <div style={{width:"100%",display:"flex",alignItems:"center",gap:4}}>
+                          <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,rgba(201,168,76,0.4),rgba(201,168,76,0.8),rgba(201,168,76,0.4))"}}/>
+                          <span style={{fontSize:16}}>🚌</span>
+                          <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,rgba(201,168,76,0.8),rgba(201,168,76,0.4))"}}/>
+                        </div>
+                        <span style={{fontSize:12,color:"#047857",fontFamily:"'DM Sans',sans-serif",fontWeight:600}}>Direct</span>
+                      </div>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:26,color:"#1a1410"}}>{bus.arr}</div>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#555",marginTop:2,fontWeight:500}}>{bus.to}</div>
+                      </div>
+                    </div>
+
+                    {/* AI Insight */}
+                    <div style={{padding:"8px 12px",borderRadius:10,background:"rgba(201,168,76,0.06)",border:"1px solid rgba(201,168,76,0.15)",marginBottom:14,fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"#6b5d4e",fontStyle:"italic"}}>
+                      💡 {insight}
+                    </div>
+
+                    <div className="results-card-bottom" style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:14,borderTop:"1px solid rgba(201,168,76,0.12)"}}>
+                      <div>
+                        <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:"#777",letterSpacing:"0.1em",fontWeight:600}}>APPROX FROM</div>
+                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:28,color:GOLD_DARK}}>₹{(bus.price*passengers).toLocaleString()}</div>
+                        <div style={{fontSize:13,color:"#555",fontFamily:"'DM Sans',sans-serif",fontWeight:500}}>{passengers} pax · {bus.seats} seats available</div>
+                      </div>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                        <button onClick={()=>handleBookClick(bus)} style={{padding:"12px 26px",borderRadius:12,fontSize:14,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:"0 4px 14px rgba(201,168,76,0.44)",transition:"transform 0.2s"}}
+                          onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Book Now →</button>
+                        <a href={redLink} target="_blank" rel="noopener noreferrer" style={{padding:"8px 20px",borderRadius:10,fontSize:12,fontWeight:600,fontFamily:"'DM Sans',sans-serif",color:"#cc2200",border:"1.5px solid rgba(204,34,0,0.25)",background:"transparent",cursor:"pointer",textDecoration:"none",textAlign:"center",transition:"all 0.2s"}}
+                          onMouseEnter={e=>e.currentTarget.style.background="rgba(204,34,0,0.05)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>View on RedBus →</a>
+                        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:"#bbb",fontStyle:"italic"}}>More operators available on RedBus</div>
+                      </div>
                     </div>
                   </div>
-                  <div className="results-card-bottom" style={{display:"flex",alignItems:"center",justifyContent:"space-between",paddingTop:14,borderTop:`1px solid ${T.accent}22`}}>
-                    <div>
-                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.35)",letterSpacing:"0.1em",fontWeight:600}}>APPROX FROM</div>
-                      <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:30,color:T.accent}}>₹{(bus.price*passengers).toLocaleString()}</div>
-                      <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",fontFamily:"'DM Sans',sans-serif"}}>{passengers} pax</div>
-                    </div>
-                    <button onClick={()=>openBusLink(bus.from,bus.to)}
-                      style={{padding:"13px 28px",borderRadius:13,fontSize:14,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#042308",border:"none",cursor:"pointer",background:T.btnBg,backgroundSize:"200% 200%",animation:"gradShift 3s ease infinite",boxShadow:`0 6px 20px ${T.accent}44`,transition:"transform 0.2s"}}
-                      onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
-                      onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>Check Live Prices →</button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
 
-        {/* Empty state */}
-        {!loading&&!searched&&(
+        {!loading&&!searched&&travelType!=="hotel"&&!CS_DATA[travelType]&&(
           <div style={{textAlign:"center",padding:"80px 20px",animation:"fadeUp 0.5s both"}}>
-            <div style={{fontSize:72,marginBottom:20,animation:"floatUD 3s ease-in-out infinite",filter:`drop-shadow(0 0 30px ${T.accent}55)`}}>
-              {T.icon}
-            </div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:300,fontSize:28,color:"#fff",marginBottom:8,textShadow:"0 2px 20px rgba(0,0,0,0.5)"}}>Your journey starts here</div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:"rgba(255,255,255,0.45)",marginTop:8}}>Search above or use AI search in any language</div>
+            <div style={{fontSize:64,marginBottom:20,animation:"floatUD 3s ease-in-out infinite"}}>{travelType==="bus"?"🚌":"✈️"}</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:600,fontSize:22,color:"#7a6a5a"}}>Your journey starts here</div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:"#7a6a5a",marginTop:8,fontWeight:500}}>Search above or try AI search in any language</div>
           </div>
         )}
-      </div>
-
-      {/* Affiliate disclosure */}
-      <div style={{position:"relative",zIndex:1,textAlign:"center",padding:"16px 5%",borderTop:`1px solid rgba(255,255,255,0.06)`,fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.2)"}}>
-        Alvryn is a travel discovery platform. We may earn a commission from partner links at no extra cost to you.
       </div>
     </div>
   );
 }
 
-function App() {
-  useEffect(()=>{
-    fetch(`${API}/test`).catch(()=>{});
-    const t=setInterval(()=>fetch(`${API}/test`).catch(()=>{}),14*60*1000);
-    return()=>clearInterval(t);
-  },[]);
+// ═══════════════════════════════════════════════════════
+//  APP ROUTER
+// ═══════════════════════════════════════════════════════
+function App(){
+  useEffect(()=>{fetch(API+"/test").catch(()=>{});const t=setInterval(()=>fetch(API+"/test").catch(()=>{}),14*60*1000);return()=>clearInterval(t);},[]);
   return(
     <Router>
       <Routes>
-        <Route path="/" element={<LandingPage/>}/>
-        <Route path="/login" element={<Login/>}/>
+        <Route path="/"         element={<LandingPage/>}/>
+        <Route path="/login"    element={<Login/>}/>
         <Route path="/register" element={<Register/>}/>
-        <Route path="/search" element={<SearchPage/>}/>
+        <Route path="/search"   element={<SearchPage/>}/>
         <Route path="/bookings" element={<MyBookings/>}/>
-        <Route path="/profile" element={<UserProfile/>}/>
-        <Route path="/admin" element={<AdminDashboard/>}/>
-        <Route path="/ai" element={<AIChatPage/>}/>
+        <Route path="/profile"  element={<UserProfile/>}/>
+        <Route path="/admin"    element={<AdminDashboard/>}/>
       </Routes>
     </Router>
   );
