@@ -1,580 +1,1345 @@
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BACKEND = "https://cometai-backend.onrender.com";
+/* ─── GLOBAL STYLES ─────────────────────────────────────────────────────────── */
+const G = `
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:#fafaf8;color:#0a0a0a;overflow-x:hidden;transition:background 0.7s ease,color 0.7s ease;}
+.nav-links{display:flex;gap:32px;}
+.nav-btns{display:flex;gap:8px;align-items:center;}
+@media(max-width:640px){
+  .nav-links{display:none!important;}
+  .nav-signin{display:none!important;}
+  .nav-started{padding:7px 14px!important;font-size:12px!important;}
+  .nav-ai{padding:7px 12px!important;font-size:12px!important;}
+}
+@media(max-width:380px){
+  .nav-ai{display:none!important;}
+}
+@keyframes blink{50%{opacity:0;}}
+@keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes gradShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+@keyframes letterGlow{0%,100%{text-shadow:0 0 0 transparent;}50%{text-shadow:0 0 20px rgba(201,168,76,0.6),0 0 40px rgba(201,168,76,0.3);}}
+@keyframes bgPan{0%{background-position:0% 50%;}100%{background-position:200% 50%;}}
+@keyframes scaleIn{from{transform:scale(0.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes shimmerText{0%{background-position:200% center;}100%{background-position:-200% center;}}
+@keyframes float3d{0%,100%{transform:translateY(0) rotateX(0deg) rotateY(0deg);}25%{transform:translateY(-8px) rotateX(2deg) rotateY(-1deg);}75%{transform:translateY(-4px) rotateX(-1deg) rotateY(2deg);}}
+@keyframes card3dHover{0%{transform:perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1);}100%{transform:perspective(800px) rotateX(-3deg) rotateY(5deg) scale3d(1.03,1.03,1.03);}}
+@keyframes depthPulse{0%,100%{box-shadow:0 8px 30px rgba(201,168,76,0.15),0 4px 12px rgba(0,0,0,0.08);}50%{box-shadow:0 20px 60px rgba(201,168,76,0.25),0 8px 24px rgba(0,0,0,0.12);}}
+@keyframes textReveal3d{from{opacity:0;transform:perspective(600px) rotateX(40deg) translateY(30px);filter:blur(4px);}to{opacity:1;transform:perspective(600px) rotateX(0deg) translateY(0);filter:blur(0);}}
+@keyframes tiltIn{from{opacity:0;transform:perspective(1000px) rotateY(-15deg) translateX(-30px);}to{opacity:1;transform:perspective(1000px) rotateY(0deg) translateX(0);}}
+@keyframes layerFloat{0%,100%{transform:translateY(0) translateZ(0);}50%{transform:translateY(-15px) translateZ(20px);}}
+.card-3d{transform-style:preserve-3d;perspective:1000px;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.4s ease;}
+.card-3d:hover{transform:perspective(800px) rotateX(-4deg) rotateY(6deg) scale3d(1.04,1.04,1.04) translateZ(10px);box-shadow:0 30px 80px rgba(201,168,76,0.2),0 10px 30px rgba(0,0,0,0.15)!important;}
+.card-3d-left:hover{transform:perspective(800px) rotateX(-4deg) rotateY(-6deg) scale3d(1.04,1.04,1.04) translateZ(10px);}
+.parallax-layer{will-change:transform;transform-style:preserve-3d;}
+.depth-shadow{box-shadow:0 20px 60px rgba(0,0,0,0.15),0 0 0 1px rgba(201,168,76,0.1);}
+.text-3d{text-shadow:0 2px 4px rgba(0,0,0,0.1),0 4px 8px rgba(0,0,0,0.06);}
+@keyframes zoomIn{from{transform:scale(1.08);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 20px rgba(108,99,255,0.2);}50%{box-shadow:0 0 40px rgba(108,99,255,0.5);}}
+@keyframes borderGlow{0%,100%{border-color:rgba(108,99,255,0.3);}50%{border-color:rgba(108,99,255,0.8);}}
+@keyframes wingAnim{0%,100%{transform:scaleX(1);}50%{transform:scaleX(1.08);}}
+@keyframes counterUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes splashFade{0%{opacity:1;}100%{opacity:0;}}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:linear-gradient(#c9a84c,#8B6914);border-radius:2px;}
 
-export default function LandingPage({ darkMode, toggleDarkMode }) {
+/* ── CSS custom properties for smooth dark/light mode ─────────────────────── */
+:root {
+  --bg-card: rgba(255,255,255,0.97);
+  --bg-card-soft: rgba(255,255,255,0.88);
+  --text-primary: #1a1410;
+  --text-secondary: #5a4a3a;
+  --text-muted: #888;
+  --border-card: rgba(201,168,76,0.15);
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.07);
+}
+[data-dark="true"] {
+  --bg-card: rgba(30,24,12,0.96);
+  --bg-card-soft: rgba(26,20,10,0.92);
+  --text-primary: #f0e6d0;
+  --text-secondary: #d4a853;
+  --text-muted: rgba(230,215,185,0.6);
+  --border-card: rgba(201,168,76,0.22);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.35);
+}
+
+/* Smooth transitions for ALL elements when dark mode toggles */
+[data-dark], [data-dark] * {
+  transition: background-color 0.5s cubic-bezier(0.4,0,0.2,1),
+              color 0.5s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.4s ease,
+              box-shadow 0.4s ease !important;
+}
+/* BUT keep transform transitions snappy */
+[data-dark] .card3d,[data-dark] .tilt-card {
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.4s ease !important;
+}
+.card3d,.tilt-card{transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.4s ease;}
+/* ─── Universal smooth transitions ─────────────────────────────────────────── */
+*{transition-property:background-color,background,border-color,color,fill,stroke,opacity;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:0.4s;}
+*:where(button,a,[class*="card"]){transition-duration:0.4s;}
+/* Exceptions — don't animate transforms via * */
+[style*="transform"]{transition-duration:0s;}
+.card-3d,.card3d,.tilt-card{transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.4s ease!important;}
+/* Dark mode page bg */
+body{background:#fafaf8;transition:background 0.6s ease;}
+[data-dark="true"]{color-scheme:dark;}
+@keyframes goldShimmer{0%{background-position:200% center;}100%{background-position:-200% center;}}
+@keyframes slideUpFade{from{opacity:0;transform:translateY(40px);}to{opacity:1;transform:translateY(0);}}
+@keyframes revealLine{from{width:0;}to{width:100%;}}
+@keyframes pulseGold{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0);}50%{box-shadow:0 0 0 8px rgba(201,168,76,0.15);}}
+/* 3D & depth effects */
+@keyframes float3d{0%,100%{transform:translateY(0) rotateX(0deg) rotateY(0deg);}25%{transform:translateY(-8px) rotateX(2deg) rotateY(-1deg);}50%{transform:translateY(-14px) rotateX(0deg) rotateY(2deg);}75%{transform:translateY(-6px) rotateX(-1deg) rotateY(-2deg);}}
+@keyframes depthPulse{0%,100%{transform:scale(1) translateZ(0);}50%{transform:scale(1.02) translateZ(20px);}}
+@keyframes morphBg{0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%;}50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%;}}
+@keyframes tiltReveal{from{opacity:0;transform:perspective(800px) rotateX(15deg) translateY(40px);}to{opacity:1;transform:perspective(800px) rotateX(0deg) translateY(0);}}
+.card3d{transform-style:preserve-3d;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.4s ease;}
+.card3d:hover{transform:perspective(1000px) rotateX(-4deg) rotateY(4deg) translateY(-8px) scale(1.02);box-shadow:20px 28px 48px rgba(0,0,0,0.18),0 0 0 1px rgba(201,168,76,0.2)!important;}
+.depth-shadow{box-shadow:0 4px 6px rgba(0,0,0,0.05),0 10px 15px rgba(0,0,0,0.08),0 20px 30px rgba(0,0,0,0.06);}
+.reveal3d{animation:tiltReveal 0.8s cubic-bezier(0.34,1.56,0.64,1) both;}
+perspective-section{perspective:1200px;transform-style:preserve-3d;}
+.shine-btn{position:relative;overflow:hidden;cursor:pointer;transition:transform 0.2s,box-shadow 0.3s;}
+.shine-btn:hover{transform:translateY(-2px);}
+.shine-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,0.25) 50%,transparent 70%);transform:translateX(-100%);transition:transform 0.5s;}
+.shine-btn:hover::after{transform:translateX(100%);}
+.tilt-card{transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+@media(max-width:768px){
+  .hero-grid{flex-direction:column!important;text-align:center!important;}
+  .mockup-box{display:none!important;}
+  .nav-links{display:none!important;}
+  .how-grid{grid-template-columns:1fr!important;}
+  .feat-grid{grid-template-columns:1fr!important;}
+  .stats-grid{grid-template-columns:1fr 1fr!important;}
+  .wa-grid{grid-template-columns:1fr!important;}
+  .cta-row{flex-direction:column!important;align-items:stretch!important;}
+  .footer-grid{flex-direction:column!important;gap:20px!important;text-align:center!important;}
+/* Dark mode text fixes */
+[data-dark="true"] p,[data-dark="true"] span,[data-dark="true"] div{transition:color 0.5s ease,background 0.5s ease;}
+}
+`;
+
+/* ─── LUXURY MONOGRAM ICON ──────────────────────────────────────────────────── */
+const AlvrynIcon = ({ size = 44, color = "#6C63FF", animate = false }) => (
+  <svg width={size} height={size} viewBox="0 0 56 56" fill="none">
+    <defs>
+      <linearGradient id="icon_g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#c9a84c"/>
+        <stop offset="50%" stopColor="#f0d080"/>
+        <stop offset="100%" stopColor="#8B6914"/>
+      </linearGradient>
+      <filter id="icon_glow">
+        <feGaussianBlur stdDeviation="1" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    {/* Outer ring — luxury feel */}
+    <circle cx="28" cy="28" r="26" stroke="url(#icon_g)" strokeWidth="1" fill="none" opacity="0.4"/>
+    <circle cx="28" cy="28" r="22" stroke="url(#icon_g)" strokeWidth="0.5" fill="none" opacity="0.2"/>
+    {/* Overlapping A monogram — luxury brand style */}
+    {/* First A — slightly left */}
+    <path d="M19 42 L26 14 L33 42" stroke="url(#icon_g)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" filter="url(#icon_glow)"
+      style={animate ? { animation:"wingAnim 3s ease-in-out infinite" } : {}}/>
+    <path d="M21.5 32 L30.5 32" stroke="url(#icon_g)" strokeWidth="1.8" strokeLinecap="round"/>
+    {/* Second A — slightly right, offset for overlap */}
+    <path d="M24 42 L31 14 L38 42" stroke="url(#icon_g)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.5"/>
+    <path d="M26.5 32 L35.5 32" stroke="url(#icon_g)" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+    {/* Center diamond accent */}
+    <circle cx="28" cy="28" r="1.5" fill="url(#icon_g)" opacity="0.9"/>
+  </svg>
+);
+
+/* ─── GRAVITY PARTICLE CANVAS ───────────────────────────────────────────────── */
+const GravityCanvas = ({ active }) => {
+  const ref = useRef(null);
+  const mouse = useRef({ x: -999, y: -999 });
+  const particles = useRef([]);
+  const raf = useRef(null);
+  useEffect(() => {
+    if (!active) return;
+    const canvas = ref.current;
+    const ctx = canvas.getContext("2d");
+    let W = window.innerWidth, H = window.innerHeight;
+    canvas.width = W; canvas.height = H;
+    const COLORS = ["#c9a84c","#f0d080","#8B6914","#d4b868","#e8c97a"];
+    particles.current = Array.from({ length: 55 }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 1.8 + 0.4,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: Math.random() * 0.4 + 0.15,
+    }));
+    const resize = () => { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; };
+    window.addEventListener("resize", resize);
+    const onMove = e => { const t = e.touches ? e.touches[0] : e; mouse.current = { x: t.clientX, y: t.clientY }; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      particles.current.forEach(p => {
+        const dx = mouse.current.x - p.x, dy = mouse.current.y - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 180) { const f = (180 - dist) / 180; p.vx += dx / dist * f * 0.06; p.vy += dy / dist * f * 0.06; }
+        p.vx *= 0.96; p.vy *= 0.96;
+        p.vx += (Math.random() - 0.5) * 0.03; p.vy += (Math.random() - 0.5) * 0.03;
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.save(); ctx.globalAlpha = p.alpha; ctx.shadowBlur = 5; ctx.shadowColor = p.color;
+        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      });
+      particles.current.forEach((a, i) => {
+        particles.current.slice(i + 1).forEach(b => {
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < 80) { ctx.save(); ctx.globalAlpha = (1 - d / 80) * 0.08; ctx.strokeStyle = a.color; ctx.lineWidth = 0.4; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore(); }
+        });
+      });
+      raf.current = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf.current); window.removeEventListener("resize", resize); window.removeEventListener("mousemove", onMove); window.removeEventListener("touchmove", onMove); };
+  }, [active]);
+  return <canvas ref={ref} style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", opacity: active ? 1 : 0 }}/>;
+};
+
+/* ─── SPLASH SCREEN ─────────────────────────────────────────────────────────── */
+const Splash = ({ onDone }) => {
+  const [phase, setPhase] = useState(0);
+  const [litIdx, setLitIdx] = useState(-1); // which char is highlighted
+  const name = "ALVRYN";
+  useEffect(() => {
+    // Phase 0→1: top line
+    const t1 = setTimeout(() => setPhase(1), 200);
+    // Phase 1→2: icon appears
+    const t2 = setTimeout(() => setPhase(2), 600);
+    // Phase 2→3: name appears, then highlight each letter A→N
+    const t3 = setTimeout(() => setPhase(3), 1000);
+    // Light up letters one by one
+    let li = 0;
+    const highlightInterval = setInterval(() => {
+      setLitIdx(li);
+      li++;
+      if (li > name.length) clearInterval(highlightInterval);
+    }, 130);
+    const t4 = setTimeout(() => setPhase(4), 1000 + name.length * 130 + 300);
+    const t5 = setTimeout(() => setPhase(5), 2400); // fade out
+    const t6 = setTimeout(() => onDone(), 3100);
+    return () => {
+      [t1,t2,t3,t4,t5,t6].forEach(clearTimeout);
+      clearInterval(highlightInterval);
+    };
+  }, [onDone]);
+
+  return (
+    <div style={{ position:"fixed", inset:0, zIndex:9999,
+      background: phase >= 5 ? "#0a0a0a" : "#fafaf8",
+      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+      opacity: phase === 5 ? 0 : 1,
+      transition:"opacity 0.7s ease, background 0.5s ease",
+      pointerEvents: phase >= 5 ? "none" : "all" }}>
+
+      {/* Top decorative line */}
+      <div style={{ width: phase >= 1 ? 100 : 0, height:1,
+        background:"linear-gradient(90deg,transparent,#c9a84c,transparent)",
+        transition:"width 0.8s cubic-bezier(0.4,0,0.2,1)", marginBottom:36 }}/>
+
+      {/* Alvryn icon — floats in */}
+      <div style={{ marginBottom:32,
+        opacity: phase >= 2 ? 1 : 0,
+        transform: phase >= 2 ? "scale(1) translateY(0)" : "scale(0.6) translateY(20px)",
+        transition:"all 0.7s cubic-bezier(0.34,1.56,0.64,1)" }}>
+        <AlvrynIcon size={56} animate/>
+      </div>
+
+      {/* ALVRYN — each letter lights up gold one by one */}
+      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300,
+        letterSpacing:"0.4em", fontSize:"clamp(36px,7vw,64px)",
+        display:"flex", gap:2,
+        opacity: phase >= 3 ? 1 : 0,
+        transform: phase >= 3 ? "translateY(0)" : "translateY(30px)",
+        transition:"all 0.6s cubic-bezier(0.34,1.56,0.64,1)" }}>
+        {name.split("").map((ch, i) => {
+          const isLit   = i <= litIdx;
+          const isActive = i === litIdx;
+          return (
+            <span key={i} style={{
+              display:"inline-block",
+              color: isLit ? "#c9a84c" : "#0a0a0a",
+              textShadow: isActive ? "0 0 30px rgba(201,168,76,0.8), 0 0 60px rgba(201,168,76,0.4)" : isLit ? "0 0 12px rgba(201,168,76,0.3)" : "none",
+              transform: isActive ? "translateY(-4px) scale(1.15)" : "translateY(0) scale(1)",
+              transition:"all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
+            }}>{ch}</span>
+          );
+        })}
+      </div>
+
+      {/* Underline — grows left to right */}
+      <div style={{ position:"relative", marginTop:8, overflow:"hidden", width:"clamp(140px,20vw,220px)", height:1 }}>
+        <div style={{
+          position:"absolute", left:0, top:0, height:1,
+          background:"linear-gradient(90deg,transparent,#c9a84c,#f0d080,#c9a84c,transparent)",
+          width: litIdx >= 0 ? `${Math.min(100, (litIdx / name.length) * 100)}%` : "0%",
+          transition:"width 0.13s linear",
+        }}/>
+      </div>
+
+      {/* Tagline */}
+      <div style={{ fontFamily:"'Space Mono',monospace", fontSize:"clamp(8px,1.2vw,10px)",
+        color:"#888", letterSpacing:"0.45em", marginTop:24,
+        opacity: phase >= 4 ? 1 : 0,
+        transform: phase >= 4 ? "translateY(0)" : "translateY(12px)",
+        transition:"all 0.6s 0.1s ease" }}>
+        TRAVEL BEYOND BOUNDARIES
+      </div>
+
+      {/* Bottom line */}
+      <div style={{ width: phase >= 4 ? 100 : 0, height:1,
+        background:"linear-gradient(90deg,transparent,#c9a84c,transparent)",
+        transition:"width 0.8s 0.2s ease", marginTop:36 }}/>
+    </div>
+  );
+};
+
+/* ─── SPLIT TEXT ANIMATION ──────────────────────────────────────────────────── */
+const SplitText = ({ text, style, charStyle, stagger = 40, delay = 0, started }) => (
+  <span style={style}>
+    {text.split("").map((ch, i) => (
+      <span key={i} style={{ display:"inline-block", opacity: started ? 1 : 0,
+        transform: started ? "translateY(0) rotateX(0deg)" : "translateY(60px) rotateX(20deg)",
+        transition:`opacity 0.5s ${delay + i * stagger}ms ease, transform 0.6s ${delay + i * stagger}ms cubic-bezier(0.34,1.56,0.64,1)`,
+        ...charStyle }}>
+        {ch === " " ? "\u00A0" : ch}
+      </span>
+    ))}
+  </span>
+);
+
+/* ─── BLUR TEXT ─────────────────────────────────────────────────────────────── */
+const BlurText = ({ text, style, delay = 0 }) => {
+  const ref = useRef(null);
+  const [vis, setVis] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.1 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{ opacity: vis ? 1 : 0, filter: vis ? "blur(0)" : "blur(12px)",
+      transform: vis ? "translateY(0)" : "translateY(20px)",
+      transition:`all 0.8s ${delay}ms cubic-bezier(0.22,1,0.36,1)`, ...style }}>
+      {text}
+    </div>
+  );
+};
+
+/* ─── SCROLL REVEAL ─────────────────────────────────────────────────────────── */
+const Reveal = ({ children, delay = 0, style }) => {
+  const ref = useRef(null);
+  const [vis, setVis] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.08 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{ opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(40px)",
+      transition:`opacity 0.7s ${delay}ms ease, transform 0.8s ${delay}ms cubic-bezier(0.22,1,0.36,1)`, ...style }}>
+      {children}
+    </div>
+  );
+};
+
+/* ─── BORDER GLOW CARD ──────────────────────────────────────────────────────── */
+const BorderGlowCard = ({ children, style, accentColor = "#c9a84c" }) => {
+  const [pos, setPos] = useState({ x: 50, y: 50 });
+  const onMove = e => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setPos({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
+  };
+  return (
+    <div onMouseMove={onMove}
+      style={{ position:"relative", borderRadius:"inherit", ...style }}>
+      <div style={{ position:"absolute", inset:-1, borderRadius:"inherit", background:`radial-gradient(circle at ${pos.x}% ${pos.y}%, ${accentColor}44 0%, transparent 60%)`, pointerEvents:"none", transition:"background 0.1s" }}/>
+      {children}
+    </div>
+  );
+};
+
+/* ─── 3D TILT CARD ──────────────────────────────────────────────────────────── */
+const TiltCard = ({ children, style }) => {
+  const [t, setT] = useState({ rx:0, ry:0, s:1 });
+  return (
+    <div className="tilt-card card3d"
+      onMouseMove={e => { const r=e.currentTarget.getBoundingClientRect(); setT({ rx:((e.clientY-r.top)/r.height-0.5)*-12, ry:((e.clientX-r.left)/r.width-0.5)*12, s:1.02 }); }}
+      onMouseLeave={() => setT({ rx:0, ry:0, s:1 })}
+      style={{ transform:`perspective(900px) rotateX(${t.rx}deg) rotateY(${t.ry}deg) scale(${t.s})`, ...style }}>
+      {children}
+    </div>
+  );
+};
+
+/* ─── TYPEWRITER ────────────────────────────────────────────────────────────── */
+const TypeText = ({ phrases, color }) => {
+  const [pi, setPi] = useState(0); const [txt, setTxt] = useState(""); const [del, setDel] = useState(false); const [ci, setCi] = useState(0);
+  useEffect(() => {
+    const w = phrases[pi % phrases.length];
+    if (!del) { if (ci < w.length) { const t=setTimeout(()=>{setTxt(w.slice(0,ci+1));setCi(c=>c+1);},70);return()=>clearTimeout(t); } else { const t=setTimeout(()=>setDel(true),2400);return()=>clearTimeout(t); } }
+    else { if (ci > 0) { const t=setTimeout(()=>{setTxt(w.slice(0,ci-1));setCi(c=>c-1);},40);return()=>clearTimeout(t); } else { setDel(false);setPi(p=>p+1); } }
+  }, [ci,del,pi,phrases]);
+  return <span style={{ color, fontWeight:600 }}>{txt}<span style={{ animation:"blink 0.8s step-end infinite", color }}>|</span></span>;
+};
+
+/* ─── COUNTER ───────────────────────────────────────────────────────────────── */
+const Counter = ({ end, suffix="" }) => {
+  const [n, setN] = useState(0); const ref = useRef(null); const done = useRef(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !done.current) { done.current=true; const s=Date.now(); const step=()=>{const p=Math.min((Date.now()-s)/2000,1);setN(Math.round((1-Math.pow(1-p,3))*end));if(p<1)requestAnimationFrame(step);};requestAnimationFrame(step); }
+    }, { threshold:0.4 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [end]);
+  return <span ref={ref}>{n.toLocaleString()}{suffix}</span>;
+};
+
+/* ─── PARALLAX HOOK ─────────────────────────────────────────────────────────── */
+const useParallax = (speed=0.25) => {
+  const [offset, setOffset] = useState(0); const ref = useRef(null);
+  useEffect(() => {
+    const fn = () => { if (!ref.current) return; const r=ref.current.getBoundingClientRect(); setOffset((r.top+r.height/2-window.innerHeight/2)*speed); };
+    window.addEventListener("scroll", fn, { passive:true }); fn();
+    return () => window.removeEventListener("scroll", fn);
+  }, [speed]);
+  return [ref, offset];
+};
+
+/* ─── SECTION THEMES ────────────────────────────────────────────────────────── */
+const GOLD_A  = "#c9a84c";
+const GOLD_D  = "#8B6914";
+const GOLD_G  = "linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)";
+// Light themes (default — gold cream)
+const THEMES_LIGHT = [
+  { bg:"#faf8f4", accent:GOLD_A, grad:GOLD_G, text:"#1a1410", sub:"#5a4a3a", card:"rgba(255,255,255,0.97)", cardBorder:"rgba(201,168,76,0.12)", desc:"#444" },
+  { bg:"#f5f0e8", accent:GOLD_D, grad:GOLD_G, text:"#1a1410", sub:"#5a4a3a", card:"rgba(255,255,255,0.97)", cardBorder:"rgba(201,168,76,0.10)", desc:"#444" },
+  { bg:"#fdf8f0", accent:GOLD_A, grad:GOLD_G, text:"#1a1410", sub:"#4a3a2a", card:"rgba(255,255,255,0.97)", cardBorder:"rgba(201,168,76,0.12)", desc:"#444" },
+  { bg:"#f8f4ec", accent:GOLD_D, grad:GOLD_G, text:"#1a1410", sub:"#4a3a2a", card:"rgba(255,255,255,0.97)", cardBorder:"rgba(201,168,76,0.10)", desc:"#444" },
+  { bg:"#f5f2ea", accent:GOLD_A, grad:GOLD_G, text:"#1a1410", sub:"#5a4a3a", card:"rgba(255,255,255,0.97)", cardBorder:"rgba(201,168,76,0.12)", desc:"#444" },
+];
+// Dark themes (premium dark gold)
+const THEMES_DARK = [
+  { bg:"#13110a", accent:GOLD_A, grad:GOLD_G, text:"#f0e6d0", sub:"#d4a853", card:"rgba(30,26,15,0.95)", cardBorder:"rgba(201,168,76,0.18)", desc:"rgba(240,230,208,0.65)" },
+  { bg:"#16120b", accent:GOLD_D, grad:GOLD_G, text:"#f0e6d0", sub:"#c9a84c", card:"rgba(34,28,16,0.95)", cardBorder:"rgba(201,168,76,0.15)", desc:"rgba(240,230,208,0.65)" },
+  { bg:"#12100a", accent:GOLD_A, grad:GOLD_G, text:"#f0e6d0", sub:"#d4a853", card:"rgba(28,24,14,0.95)", cardBorder:"rgba(201,168,76,0.18)", desc:"rgba(240,230,208,0.65)" },
+  { bg:"#15110a", accent:GOLD_D, grad:GOLD_G, text:"#f0e6d0", sub:"#c9a84c", card:"rgba(32,26,15,0.95)", cardBorder:"rgba(201,168,76,0.18)", desc:"rgba(240,230,208,0.65)" },
+  { bg:"#13100a", accent:GOLD_A, grad:GOLD_G, text:"#f0e6d0", sub:"#d4a853", card:"rgba(30,25,14,0.95)", cardBorder:"rgba(201,168,76,0.18)", desc:"rgba(240,230,208,0.65)" },
+];
+
+/* ─── FOOTER MODAL ──────────────────────────────────────────────────────────── */
+const FooterModal = ({ open, onClose, title, children, darkMode=false }) => {
+  if (!open) return null;
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:2000, display:"flex", alignItems:"flex-end", justifyContent:"center", backdropFilter:"blur(8px)", padding:"0 0 0 0" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:640, background:darkMode?"#1a1508":"#fff", borderRadius:"24px 24px 0 0", padding:"40px 36px 48px", maxHeight:"80vh", overflowY:"auto", animation:"slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:28 }}>
+          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:26, color:darkMode?"#f0e6d0":"#1a1410" }}>{title}</div>
+          <button onClick={onClose} style={{ width:36, height:36, borderRadius:"50%", background:"#f5f5f5", border:"none", cursor:"pointer", fontSize:18, display:"flex", alignItems:"center", justifyContent:"center", color:darkMode?"#c9a84c":"#888" }}>×</button>
+        </div>
+        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:darkMode?"rgba(230,215,185,0.75)":"#555", lineHeight:1.8 }}>{children}</div>
+      </div>
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LANDING PAGE
+═══════════════════════════════════════════════════════════════════════════════ */
+export default function LandingPage() {
   const navigate = useNavigate();
-  const [waitlistEmail, setWaitlistEmail] = useState("");
-  const [waitlistStatus, setWaitlistStatus] = useState("");
-  const [waitlistCount, setWaitlistCount] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [splashDone, setSplashDone] = useState(false);
+  const [heroReady, setHeroReady]   = useState(false);
+  const [themeIdx,  setThemeIdx]    = useState(0);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [modal, setModal]           = useState(null);
+  const [darkMode, setDarkMode]     = useState(false);
+  const ACTIVE_THEMES = darkMode ? THEMES_DARK : THEMES_LIGHT;
+  const T = ACTIVE_THEMES[themeIdx];
 
-  // ── Colours ──────────────────────────────────────────────────────────────
-  const gold    = "#c9a84c";
-  const goldD   = "#8B6914";
-  const green   = "#4ade80";
-  // background
-  const bg      = darkMode ? "#0e0c09"  : "#faf8f4";
-  // card backgrounds
-  const card    = darkMode ? "#1c1810"  : "#ffffff";
-  const cardAlt = darkMode ? "#141109"  : "#f5f0e8";
-  // borders
-  const bd      = darkMode ? "rgba(201,168,76,0.22)" : "rgba(201,168,76,0.18)";
-  // text
-  const txt     = darkMode ? "#f5f0e8"  : "#1a1410";
-  const txt2    = darkMode ? "#b8a882"  : "#6b5e45";
-  const txtMut  = darkMode ? "#7a6e5a"  : "#9e8f78";
-  // nav
-  const navBg   = darkMode
-    ? (scrolled ? "rgba(14,12,9,0.97)" : "rgba(14,12,9,0.88)")
-    : (scrolled ? "rgba(250,248,244,0.97)" : "rgba(250,248,244,0.88)");
+  const onSplashDone = useCallback(() => { setSplashDone(true); setTimeout(() => setHeroReady(true), 100); }, []);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", fn, { passive: true });
+    const fn = () => {
+      setNavScrolled(window.scrollY > 50);
+      setThemeIdx(Math.min(Math.floor(window.scrollY / window.innerHeight), 4));
+    };
+    window.addEventListener("scroll", fn, { passive:true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  useEffect(() => {
-    fetch(`${BACKEND}/waitlist/count`).then(r => r.json()).then(d => setWaitlistCount(d.count)).catch(() => {});
-  }, []);
+  const goSearch = useCallback(() => navigate(localStorage.getItem("token") ? "/search" : "/login"), [navigate]);
+  const [heroRef, heroOffset] = useParallax(0.18);
+  const [sec2Ref, sec2Offset] = useParallax(0.12);
 
-  const handleWaitlist = async (e) => {
-    e.preventDefault();
-    try {
-      const r = await fetch(`${BACKEND}/waitlist`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: waitlistEmail }),
-      });
-      const d = await r.json();
-      if (r.ok) { setWaitlistStatus("🎉 You're in! " + (d.refCode ? "Ref: " + d.refCode : "")); setWaitlistEmail(""); setWaitlistCount(c => (c || 0) + 1); }
-      else setWaitlistStatus(d.message || "Error. Try again.");
-    } catch { setWaitlistStatus("Connection error."); }
-  };
-
-  // ── Inline CSS ──────────────────────────────────────────────────────────
-  const css = `
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
-    *,*::before,*::after{box-sizing:border-box;}
-    @keyframes alvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-    @keyframes alvGrad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-    @keyframes alvFadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes alvOrb1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-40px) scale(1.05)}}
-    @keyframes alvOrb2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-30px,30px) scale(1.08)}}
-    .alvNavBtn:hover{opacity:0.82!important;transform:translateY(-1px)!important;}
-    .alvHeroBtn:hover{transform:translateY(-2px)!important;box-shadow:0 10px 32px rgba(201,168,76,0.42)!important;}
-    .alvPartnerCard:hover{transform:translateY(-5px)!important;box-shadow:0 14px 44px rgba(201,168,76,0.28)!important;}
-    .alvHowCard:hover{transform:translateY(-3px)!important;box-shadow:0 10px 32px rgba(201,168,76,0.18)!important;}
-    .alvGuideCard:hover{transform:translateY(-3px)!important;}
-    .alvFooterLink:hover{color:#c9a84c!important;}
-    @media(max-width:680px){
-      .alvNavLinks{display:none!important;}
-      .alvHamburger{display:flex!important;}
-    }
-    @media(min-width:681px){.alvMobileMenu{display:none!important;}}
-    @media(max-width:500px){.alvHeroBtns{flex-direction:column!important;align-items:center!important;}}
-    @media(max-width:640px){.alvStatsGrid{grid-template-columns:1fr 1fr!important;}}
-    @media(max-width:520px){.alvPartnersGrid{grid-template-columns:1fr!important;}}
-    @media(max-width:580px){.alvTestiGrid{grid-template-columns:1fr!important;}}
-  `;
-
-  const partners = [
-    { emoji: "✈️", name: "Aviasales", desc: "India's best flight fares — domestic & international", url: "https://aviasales.in" },
-    { emoji: "🚌", name: "RedBus",    desc: "Largest bus network — 30,000+ routes across India",  url: "https://redbus.in"   },
-    { emoji: "🏨", name: "Booking.com",desc:"Hotels, resorts & stays worldwide",                   url: "https://booking.com" },
+  const features = [
+    { icon:"🧠", title:"AI Natural Search",  desc:"Type like texting — any language, typos, Hindi-English mix. Alvryn understands everything.", color:"#c9a84c" },
+    { icon:"✈️", title:"Flight Booking",     desc:"Domestic and international routes. Best fares via trusted partners, instantly.", color:"#0284C7" },
+    { icon:"🚌", title:"Bus Booking",        desc:"AC Sleeper, Semi-Sleeper buses across 50+ intercity routes in India.", color:"#059669" },
+    { icon:"🏨", title:"Hotel Booking",      desc:"Hotels worldwide — from budget stays to luxury resorts. Best prices via partner.", color:"#EA580C" },
+    { icon:"💬", title:"WhatsApp Native",    desc:"Book flights, buses and hotels entirely inside WhatsApp. No app needed.", color:"#25D366" },
+    { icon:"🔒", title:"Zero Hidden Fees",   desc:"The price you see is the price you pay. We may earn a small commission at no cost to you.", color:"#7C3AED" },
   ];
-
-  const howCards = [
-    { icon: "🤖", title: "Talk to Alvryn AI",
-      desc: "Type naturally — 'flight blr to del kal', 'bus Chennai to Hyd tonight', 'hotels goa under 2k'.",
-      bullets: ["100+ city aliases","Understands Indian date formats","Works with typos and abbreviations"] },
-    { icon: "🔍", title: "We Search Our Partners",
-      desc: "Alvryn queries our trusted travel partners — across flights, buses and hotels instantly.",
-      bullets: ["Live fares from airline partners","Bus schedules across India","Hotels worldwide"] },
-    { icon: "🔒", title: "Book Directly & Securely",
-      desc: "We open the official partner page. Payment is processed directly by the partner — never by Alvryn.",
-      bullets: ["Opens official partner site","256-bit SSL on all partner pages","Ticket directly from operator"] },
-  ];
-
-  const testimonials = [
-    { text: "Found a Bangalore to Goa flight for ₹2,800 in 30 seconds. No other site was even close!", user: "Rahul M., Bangalore", stars: 5 },
-    { text: "The AI understood 'bus chennai to hyd kal night' perfectly. Crazy smart and fast.",          user: "Priya K., Chennai",   stars: 5 },
-    { text: "Dark mode, clean UI, fast results. This is how travel search should feel.",                  user: "Arjun S., Hyderabad", stars: 5 },
-  ];
-
-  const faqs = [
-    { q: "Is Alvryn free to use?",       a: "Yes, Alvryn is completely free. We earn a small commission from partner sites when you book — at no extra cost to you." },
-    { q: "Who processes my payment?",    a: "Your payment is always processed by the official partner (Aviasales, RedBus, or Booking.com). Alvryn never handles money." },
-    { q: "Does the AI work in Hindi?",   a: "Yes! Alvryn AI understands mixed-language queries in English, Hindi, Tamil, Telugu, Kannada and more." },
-    { q: "Why use Alvryn over going directly?", a: "Alvryn's AI understands natural queries, compares options across our network, and saves you from opening 5 tabs." },
-  ];
-
-  // Shared section label
-  const SectionLabel = ({ text }) => (
-    <p style={{ fontSize: 10, letterSpacing: "0.32em", color: gold, fontFamily: "sans-serif",
-      fontWeight: 700, textAlign: "center", marginBottom: 14 }}>{text}</p>
-  );
-  const SectionH2 = ({ children }) => (
-    <h2 style={{ fontSize: "clamp(26px,4vw,44px)", fontWeight: 400, textAlign: "center",
-      color: txt, marginBottom: 14, lineHeight: 1.25, fontFamily: "'Cormorant Garamond',serif" }}>
-      {children}
-    </h2>
-  );
-  const Divider = () => (
-    <div style={{ width: 40, height: 1.5,
-      background: `linear-gradient(90deg,transparent,${gold},transparent)`,
-      margin: "0 auto 44px" }}/>
-  );
 
   return (
-    <div style={{ minHeight: "100vh", background: bg, color: txt,
-      fontFamily: "'Georgia','Times New Roman',serif",
-      transition: "background 0.4s,color 0.4s", position: "relative" }}>
-      <style>{css}</style>
+    <>
+      <style>{G}</style>
+      <GravityCanvas active={splashDone}/>
+      {!splashDone && <Splash onDone={onSplashDone}/>}
 
-      {/* Aurora orbs */}
-      <div style={{ position:"fixed",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden" }}>
-        <div style={{ position:"absolute",width:600,height:600,borderRadius:"50%",
-          background: darkMode ? "radial-gradient(circle,rgba(201,168,76,0.06) 0%,transparent 70%)" : "radial-gradient(circle,rgba(201,168,76,0.10) 0%,transparent 70%)",
-          top:"-200px",left:"-150px",animation:"alvOrb1 12s ease-in-out infinite" }}/>
-        <div style={{ position:"absolute",width:380,height:380,borderRadius:"50%",
-          background: darkMode ? "radial-gradient(circle,rgba(201,168,76,0.04) 0%,transparent 70%)" : "radial-gradient(circle,rgba(201,168,76,0.07) 0%,transparent 70%)",
-          bottom:"80px",right:"-80px",animation:"alvOrb2 15s ease-in-out infinite" }}/>
-      </div>
+      {/* Footer Modals */}
+      <FooterModal open={modal==="about"} onClose={()=>setModal(null)} title="About Alvryn" darkMode={darkMode}>
+        <p style={{marginBottom:16}}>Alvryn is India's most intelligent travel booking platform, built to make flight and bus booking effortless for every Indian traveller.</p>
+        <p style={{marginBottom:16}}>We believe travel should be simple — whether you type in perfect English, Hindi, Tamil, or a mix of everything. Our AI understands you, finds the best fares, and gets you booked in under 60 seconds.</p>
+        <p style={{marginBottom:16}}>Alvryn is currently in its early affiliate phase, connecting travellers with the best deals across domestic flights and intercity buses. We are rapidly expanding to international flights, trains, and hotel bookings.</p>
+        <p>Our mission is to remove every friction point between you and your next journey.</p>
+      </FooterModal>
 
-      {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <nav style={{ position:"fixed",top:0,left:0,right:0,zIndex:100,
-        background: navBg, backdropFilter:"blur(20px)",
-        borderBottom: scrolled ? `1px solid ${bd}` : "1px solid transparent",
-        transition:"all 0.3s",padding:"0 24px" }}>
-        <div style={{ maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",
-          justifyContent:"space-between",height:68 }}>
+      <FooterModal open={modal==="terms"} onClose={()=>setModal(null)} title="Terms & Conditions" darkMode={darkMode}>
+        <p style={{marginBottom:16}}><strong>Last updated:</strong> March 2026</p>
+        <p style={{marginBottom:16}}>By using Alvryn, you agree to the following terms. Please read them carefully before using our services.</p>
+        <p style={{marginBottom:12}}><strong>1. Use of Service</strong><br/>Alvryn provides a travel booking platform. You must be 18 years or older to book. All bookings are subject to availability.</p>
+        <p style={{marginBottom:12}}><strong>2. Accuracy of Information</strong><br/>You are responsible for providing accurate passenger details. Alvryn is not liable for bookings made with incorrect information.</p>
+        <p style={{marginBottom:12}}><strong>3. Payment</strong><br/>Payments are processed securely. Prices are displayed inclusive of applicable taxes. Alvryn reserves the right to cancel bookings in case of pricing errors.</p>
+        <p style={{marginBottom:12}}><strong>4. Cancellation & Refunds</strong><br/>Cancellation policies are governed by the respective airline or bus operator. Alvryn facilitates the booking but does not control refund timelines.</p>
+        <p style={{marginBottom:12}}><strong>5. Limitation of Liability</strong><br/>Alvryn is not responsible for flight delays, cancellations, or any losses arising from travel disruptions.</p>
+        <p><strong>6. Changes to Terms</strong><br/>We may update these terms at any time. Continued use of Alvryn constitutes acceptance of the updated terms.</p>
+      </FooterModal>
 
-          {/* Logo */}
-          <a href="/" onClick={e=>{e.preventDefault();navigate("/");}}
-            style={{ display:"flex",alignItems:"center",gap:10,textDecoration:"none" }}>
-            <div style={{ width:38,height:38,borderRadius:"50%",border:`1.5px solid ${gold}`,
-              display:"flex",alignItems:"center",justifyContent:"center",color:gold,
-              fontSize:14,fontWeight:700,letterSpacing:1 }}>A</div>
-            <div>
-              <div style={{ fontSize:15,fontWeight:700,letterSpacing:"0.18em",color:txt,fontFamily:"'Georgia',serif" }}>ALVRYN</div>
-              <div style={{ fontSize:8,letterSpacing:"0.25em",color:txtMut,fontFamily:"sans-serif" }}>TRAVEL BEYOND</div>
-            </div>
+      <FooterModal open={modal==="privacy"} onClose={()=>setModal(null)} title="Privacy Policy" darkMode={darkMode}>
+        <p style={{marginBottom:16}}><strong>Last updated:</strong> March 2026</p>
+        <p style={{marginBottom:16}}>Your privacy is important to us. This policy explains how Alvryn collects, uses, and protects your information.</p>
+        <p style={{marginBottom:12}}><strong>1. Information We Collect</strong><br/>We collect your name, email address, phone number, and booking details when you create an account or make a booking.</p>
+        <p style={{marginBottom:12}}><strong>2. How We Use Your Information</strong><br/>Your information is used to process bookings, send confirmation emails, personalise your experience, and improve our services. We do not sell your data to third parties.</p>
+        <p style={{marginBottom:12}}><strong>3. Data Security</strong><br/>We use industry-standard encryption to protect your data. Payment information is processed via secure payment gateways and is never stored on our servers.</p>
+        <p style={{marginBottom:12}}><strong>4. Cookies</strong><br/>We use cookies to maintain your session and improve site performance. You may disable cookies in your browser settings, though this may affect functionality.</p>
+        <p style={{marginBottom:12}}><strong>5. Third-Party Services</strong><br/>We integrate with airline APIs, bus operators, and payment processors. Their respective privacy policies apply to data shared with them.</p>
+        <p><strong>6. Your Rights</strong><br/>You may request deletion of your account and data at any time by contacting us at dynamics.studyai@gmail.com.</p>
+      </FooterModal>
+
+      <FooterModal open={modal==="contact"} onClose={()=>setModal(null)} title="Contact Us" darkMode={darkMode}>
+        <p style={{marginBottom:20}}>We'd love to hear from you — whether it's a question, feedback, or a partnership enquiry.</p>
+        <div style={{ background:"#f5f3ff", borderRadius:16, padding:"24px", border:"1px solid rgba(108,99,255,0.15)", marginBottom:20 }}>
+          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:11, color:"#c9a84c", letterSpacing:"0.12em", marginBottom:8 }}>EMAIL</div>
+          <a href="mailto:dynamics.studyai@gmail.com" style={{ fontFamily:"'DM Sans',sans-serif", fontSize:18, fontWeight:600, color:T.text||"#0a0a0a", textDecoration:"none" }}>
+            dynamics.studyai@gmail.com
           </a>
-
-          {/* Desktop nav */}
-          <div className="alvNavLinks" style={{ display:"flex",alignItems:"center",gap:8 }}>
-            {[["🌙 Dark","☀️ Light",toggleDarkMode],["Search",null,()=>navigate("/search")],["🤖 AI Chat",null,()=>navigate("/ai")]].map(([la,lb,fn],i)=>(
-              <button key={i} className="alvNavBtn" onClick={fn}
-                style={{ padding:"9px 16px",borderRadius:8,border:`1px solid ${bd}`,
-                  background:"transparent",color:txt,fontWeight:500,fontSize:13,cursor:"pointer",
-                  transition:"all 0.2s" }}>
-                {darkMode && i===0 ? lb||la : la}
-              </button>
-            ))}
-            <button className="alvNavBtn" onClick={()=>navigate("/register")}
-              style={{ padding:"9px 20px",borderRadius:8,border:"none",
-                background:`linear-gradient(135deg,${gold},#f0d080,${gold})`,
-                color:"#1a1410",fontWeight:700,fontSize:13,cursor:"pointer",
-                transition:"all 0.2s" }}>Get Started →</button>
-          </div>
-
-          {/* Hamburger */}
-          <button className="alvHamburger"
-            onClick={()=>setMobileMenuOpen(o=>!o)}
-            style={{ display:"none",flexDirection:"column",gap:5,cursor:"pointer",
-              padding:8,border:"none",background:"transparent" }}>
-            <span style={{ width:22,height:2,borderRadius:2,background:txt,display:"block",
-              transition:"all 0.3s",
-              transform:mobileMenuOpen?"rotate(45deg) translate(5px,5px)":"" }}/>
-            <span style={{ width:22,height:2,borderRadius:2,background:txt,display:"block",
-              transition:"all 0.3s",opacity:mobileMenuOpen?0:1 }}/>
-            <span style={{ width:22,height:2,borderRadius:2,background:txt,display:"block",
-              transition:"all 0.3s",
-              transform:mobileMenuOpen?"rotate(-45deg) translate(5px,-5px)":"" }}/>
-          </button>
         </div>
-      </nav>
-
-      {/* Mobile menu */}
-      <div className="alvMobileMenu" style={{
-        position:"fixed",top:68,left:0,right:0,zIndex:99,
-        background: darkMode ? "rgba(14,12,9,0.98)" : "rgba(250,248,244,0.98)",
-        backdropFilter:"blur(20px)",borderBottom:`1px solid ${bd}`,
-        padding:"16px 24px 24px",display:"flex",flexDirection:"column",gap:10,
-        transform: mobileMenuOpen ? "translateY(0)" : "translateY(-110%)",
-        transition:"transform 0.3s ease",
-      }}>
-        {[
-          { label: darkMode?"☀️ Light Mode":"🌙 Dark Mode", fn: ()=>{ toggleDarkMode(); setMobileMenuOpen(false); } },
-          { label:"✈️ Search Travel", fn:()=>{ navigate("/search"); setMobileMenuOpen(false); } },
-          { label:"🤖 AI Chat",       fn:()=>{ navigate("/ai");     setMobileMenuOpen(false); } },
-          { label:"Sign In",          fn:()=>{ navigate("/login");  setMobileMenuOpen(false); } },
-        ].map(b=>(
-          <button key={b.label} onClick={b.fn}
-            style={{ padding:"12px 20px",borderRadius:10,border:`1px solid ${bd}`,
-              background:"transparent",color:txt,fontWeight:600,fontSize:15,
-              cursor:"pointer",textAlign:"center" }}>
-            {b.label}
-          </button>
-        ))}
-        <button onClick={()=>{ navigate("/register"); setMobileMenuOpen(false); }}
-          style={{ padding:"12px 20px",borderRadius:10,border:"none",
-            background:`linear-gradient(135deg,${gold},#f0d080,${gold})`,
-            color:"#1a1410",fontWeight:700,fontSize:15,cursor:"pointer" }}>
-          Create Free Account →
-        </button>
-      </div>
-
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section style={{ minHeight:"100vh",display:"flex",alignItems:"center",
-        justifyContent:"center",textAlign:"center",
-        padding:"110px 24px 60px",position:"relative",zIndex:1 }}>
-        <div style={{ maxWidth:680 }}>
-          <span style={{ fontSize:11,letterSpacing:"0.28em",color:gold,
-            fontFamily:"sans-serif",fontWeight:600,marginBottom:20,display:"block" }}>
-            INDIA'S AI TRAVEL PLATFORM
-          </span>
-          <h1 style={{ fontSize:"clamp(36px,6vw,70px)",fontWeight:400,lineHeight:1.15,
-            color:txt,marginBottom:20,fontFamily:"'Cormorant Garamond',serif" }}>
-            Start planning your<br/>next trip.
-          </h1>
-          <p style={{ fontSize:"clamp(15px,2vw,18px)",color:txt2,lineHeight:1.75,
-            marginBottom:36,maxWidth:520,margin:"0 auto 36px" }}>
-            India's most intelligent travel booking platform.<br/>
-            Best fares on flights and buses, instantly.
-          </p>
-          <div className="alvHeroBtns" style={{ display:"flex",gap:12,
-            justifyContent:"center",flexWrap:"wrap" }}>
-            <button className="alvHeroBtn" onClick={()=>navigate("/register")}
-              style={{ padding:"14px 32px",borderRadius:12,
-                background:`linear-gradient(135deg,${gold},#f0d080,${gold})`,
-                backgroundSize:"200% 200%",animation:"alvGrad 4s ease infinite",
-                border:"none",color:"#1a1410",fontWeight:700,fontSize:15,
-                cursor:"pointer",transition:"all 0.3s",letterSpacing:"0.03em",
-                boxShadow:`0 6px 22px ${gold}30` }}>
-              Create Free Account →
-            </button>
-            <button onClick={()=>navigate("/login")}
-              style={{ padding:"14px 32px",borderRadius:12,background:"transparent",
-                border:`1px solid ${bd}`,color:txt,fontWeight:500,fontSize:15,cursor:"pointer" }}>
-              Sign In →
-            </button>
-          </div>
-          {waitlistCount != null && (
-            <p style={{ marginTop:28,fontSize:13,color:txtMut,fontFamily:"sans-serif" }}>
-              🔥 {waitlistCount.toLocaleString()}+ travellers already on board
-            </p>
-          )}
+        <div style={{ background:"#f0fdf4", borderRadius:16, padding:"24px", border:"1px solid rgba(5,150,105,0.15)" }}>
+          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:11, color:"#059669", letterSpacing:"0.12em", marginBottom:8 }}>WHATSAPP SUPPORT</div>
+          <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:T.text||"#0a0a0a" }}>Message us on WhatsApp: <strong>+1-415-523-8886</strong><br/><span style={{ color:T.desc||"#888", fontSize:13 }}>Join code: join meal-biggest</span></div>
         </div>
-      </section>
+        <p style={{ marginTop:20, fontSize:13, color:"#aaa" }}>We typically respond within 24 hours on business days.</p>
+      </FooterModal>
 
-      {/* ── STATS ────────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth:1160,margin:"0 auto",padding:"0 24px 60px",position:"relative",zIndex:1 }}>
-        <div className="alvStatsGrid" style={{ display:"grid",
-          gridTemplateColumns:"repeat(4,1fr)",gap:20,textAlign:"center" }}>
-          {[{n:"100+",l:"City Aliases"},{n:"3",l:"Partner Networks"},{n:"₹0",l:"Extra Charges"},{n:"AI",l:"Powered Search"}].map(s=>(
-            <div key={s.l}>
-              <div style={{ fontSize:"clamp(28px,4vw,44px)",fontWeight:700,color:gold,
-                marginBottom:6,fontFamily:"'Cormorant Garamond',serif" }}>{s.n}</div>
-              <div style={{ fontSize:12,color:txt2,letterSpacing:"0.06em",fontFamily:"sans-serif" }}>{s.l}</div>
+      {/* PAGE */}
+      <div data-dark={String(darkMode)}
+        style={{ opacity: splashDone ? 1 : 0,
+          transition:"opacity 0.6s ease, background 0.6s cubic-bezier(0.4,0,0.2,1), color 0.5s ease",
+          transform: splashDone ? "translateY(0)" : "translateY(20px)",
+          background:T.bg, color:T.text, minHeight:"100vh" }}>
+
+        {/* ══ NAVBAR ══ */}
+        <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:1000, height:64, padding:"0 clamp(12px,4%,5%)",
+          display:"flex", alignItems:"center", justifyContent:"space-between",
+          background: navScrolled ? (darkMode ? "rgba(15,12,5,0.95)" : "rgba(250,250,248,0.9)") : "transparent",
+          backdropFilter: navScrolled ? "blur(24px)" : "none",
+          borderBottom: navScrolled ? "1px solid rgba(0,0,0,0.06)" : "none",
+          transition:"all 0.4s ease" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:12, cursor:"pointer" }} onClick={() => window.scrollTo({top:0,behavior:"smooth"})}>
+            <div style={{ animation:"floatY 4s ease-in-out infinite" }}><AlvrynIcon size={42} animate/></div>
+            <div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:22, color:T.text, letterSpacing:"0.12em", lineHeight:1.1 }}>ALVRYN</div>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:7, color:T.accent, letterSpacing:"0.2em" }}>TRAVEL BEYOND</div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+          <div className="nav-links" style={{ display:"flex", gap:32 }}>
+            {[["How it works","how-it-works"],["Features","features"],["Flights","cta"],["Buses","cta"]].map(([l,id]) => (
+              <span key={l} onClick={()=>{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth"});}}
+                style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:500, color:T.text, opacity:0.6, cursor:"pointer", transition:"opacity 0.2s" }}
+                onMouseEnter={e=>e.target.style.opacity=1} onMouseLeave={e=>e.target.style.opacity=0.6}>{l}</span>
+            ))}
+          </div>
+          <div className="nav-btns" style={{ display:"flex", gap:8, alignItems:"center" }}>
+            {/* Dark mode toggle */}
+            <button onClick={() => setDarkMode(d => !d)} title={darkMode ? "Switch to Light" : "Switch to Dark"}
+              style={{ width:42, height:24, borderRadius:12, position:"relative", cursor:"pointer", border:"none",
+                background: darkMode ? "linear-gradient(135deg,#c9a84c,#f0d080)" : "rgba(0,0,0,0.18)",
+                transition:"background 0.4s cubic-bezier(0.4,0,0.2,1)", flexShrink:0,
+                WebkitTapHighlightColor:"transparent", boxShadow:darkMode?"0 0 10px rgba(201,168,76,0.4)":"none" }}>
+              <div style={{ position:"absolute", top:3, left: darkMode ? 21 : 3, width:18, height:18, borderRadius:"50%",
+                background: darkMode ? "#1a1508" : "#fff",
+                boxShadow:"0 2px 8px rgba(0,0,0,0.3)",
+                transition:"left 0.35s cubic-bezier(0.34,1.56,0.64,1), background 0.4s ease",
+                display:"flex", alignItems:"center", justifyContent:"center", fontSize:9 }}>
+                {darkMode ? "🌙" : "☀️"}
+              </div>
+            </button>
+            <button onClick={() => navigate("/login")} className="nav-signin"
+              style={{ padding:"8px 16px", borderRadius:10, fontSize:13, fontWeight:500, fontFamily:"'DM Sans',sans-serif", background:"transparent", color:T.text, border:"1.5px solid rgba(0,0,0,0.12)", cursor:"pointer", transition:"all 0.2s", whiteSpace:"nowrap" }}>
+              Sign In
+            </button>
+            <button onClick={()=>navigate(localStorage.getItem("token")?"/ai":"/login")} className="nav-ai"
+              style={{ padding:"8px 14px", borderRadius:10, fontSize:13, fontWeight:600, fontFamily:"'DM Sans',sans-serif", cursor:"pointer", background:"rgba(201,168,76,0.1)", border:"1.5px solid rgba(201,168,76,0.35)", color:"#8B6914", whiteSpace:"nowrap" }}>
+              🤖 AI Chat
+            </button>
+            <button onClick={() => navigate("/register")} className="shine-btn nav-started"
+              style={{ padding:"8px 18px", borderRadius:10, fontSize:13, fontWeight:700, fontFamily:"'DM Sans',sans-serif", color:"#fff", border:"none", background:T.grad, boxShadow:`0 4px 20px ${T.accent}44`, whiteSpace:"nowrap" }}>
+              Get Started
+            </button>
+          </div>
+        </nav>
 
-      {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section style={{ maxWidth:1160,margin:"0 auto",padding:"20px 24px 80px",
-        position:"relative",zIndex:1 }}>
-        <SectionLabel text="HOW IT WORKS"/>
-        <SectionH2>Three steps to the best deal.</SectionH2>
-        <Divider/>
-        <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:24 }}>
-          {howCards.map((c,ci)=>(
-            <div key={c.title} className="alvHowCard"
-              style={{ background: darkMode ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.9)",
-                border:`1px solid ${bd}`,borderRadius:20,padding:"32px 28px",
-                backdropFilter:"blur(12px)",transition:"transform 0.2s,box-shadow 0.2s",
-                animation:`alvFadeUp 0.4s ${ci*80}ms both` }}>
-              <div style={{ fontSize:28,marginBottom:16 }}>{c.icon}</div>
-              <div style={{ fontSize:16,fontWeight:700,color:txt,marginBottom:12,
-                letterSpacing:"0.04em",fontFamily:"'Georgia',serif" }}>{c.title}</div>
-              <p style={{ fontSize:14,color:txt2,lineHeight:1.7,marginBottom:14 }}>{c.desc}</p>
-              {c.bullets.map(b=>(
-                <div key={b} style={{ display:"flex",alignItems:"flex-start",gap:8,marginBottom:6 }}>
-                  <div style={{ width:5,height:5,borderRadius:"50%",background:gold,
-                    marginTop:6,flexShrink:0 }}/>
-                  <span style={{ fontSize:13,color:txt2 }}>{b}</span>
+        {/* ══════════════════════════════════
+            HERO — IMMERSIVE ZOOM IN
+        ══════════════════════════════════ */}
+        <section ref={heroRef} style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", position:"relative", overflow:"hidden", padding:"0 5%",
+          animation: splashDone ? "zoomIn 1s ease both" : "none" }}>
+          {/* 3D Parallax depth layers */}
+          <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:0,
+            background: darkMode
+              ? "linear-gradient(135deg,rgba(201,168,76,0.03) 0%,transparent 50%,rgba(201,168,76,0.02) 100%)"
+              : "linear-gradient(135deg,rgba(201,168,76,0.04) 0%,transparent 50%,rgba(240,208,128,0.03) 100%)",
+            backgroundSize:"400% 400%", animation:"bgPan 12s ease infinite" }}/>
+          {/* 3D floating orbs — depth effect */}
+          <div style={{ position:"absolute", width:"min(500px,80vw)", height:"min(500px,80vw)",
+            borderRadius:"50%", pointerEvents:"none", zIndex:0, filter:"blur(80px)",
+            background: darkMode ? "radial-gradient(circle,rgba(201,168,76,0.08),transparent 60%)" : "radial-gradient(circle,rgba(201,168,76,0.06),transparent 60%)",
+            top:"10%", right:"-10%", animation:"float3d 8s ease-in-out infinite",
+            transform:"translateZ(-50px)" }}/>
+          <div style={{ position:"absolute", width:"min(300px,60vw)", height:"min(300px,60vw)",
+            borderRadius:"50%", pointerEvents:"none", zIndex:0, filter:"blur(60px)",
+            background: darkMode ? "radial-gradient(circle,rgba(240,208,128,0.05),transparent 70%)" : "radial-gradient(circle,rgba(240,208,128,0.04),transparent 70%)",
+            bottom:"15%", left:"-5%", animation:"float3d 10s 2s ease-in-out infinite" }}/>
+          {/* Radial glow — dark mode aware */}
+          <div style={{ position:"absolute", inset:0,
+            background: darkMode
+              ? "radial-gradient(ellipse at 55% 40%, rgba(201,168,76,0.06) 0%, transparent 65%), radial-gradient(ellipse at 20% 70%, rgba(201,168,76,0.04) 0%, transparent 55%)"
+              : "radial-gradient(ellipse at 55% 40%, rgba(201,168,76,0.06) 0%, transparent 65%), radial-gradient(ellipse at 20% 70%, rgba(240,208,128,0.04) 0%, transparent 55%)",
+            pointerEvents:"none" }}/>
+
+          <div style={{ position:"relative", zIndex:2, width:"100%", paddingTop:80, transform:`translateY(${heroOffset * -0.3}px)` }}>
+            <div className="hero-grid" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:48 }}>
+              <div style={{ maxWidth:660 }}>
+                {/* Live badge */}
+                <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"7px 18px", borderRadius:100,
+                  background:`${T.accent}0F`, border:`1px solid ${T.accent}25`, marginBottom:44,
+                  opacity: heroReady ? 1 : 0, transform: heroReady ? "translateY(0)" : "translateY(-14px)",
+                  transition:"all 0.6s ease", animation: "none" }}>
+                  <span style={{ width:7, height:7, borderRadius:"50%", background:T.accent, boxShadow:`0 0 8px ${T.accent}`, display:"inline-block" }}/>
+                  <span style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.12em" }}>NOW LIVE · INDIA'S SMARTEST TRAVEL AI</span>
                 </div>
+
+                {/* Main headline — Split Text drop-in */}
+                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, lineHeight:1.05, marginBottom:8 }}>
+                  <div style={{ whiteSpace:"nowrap" }}>
+                    <SplitText text="Travel Beyond" started={heroReady} delay={200} stagger={45}
+                      charStyle={{ fontSize:"clamp(44px,6vw,96px)", color:T.text||"#0a0a0a", letterSpacing:"-0.02em" }}/>
+                  </div>
+                  <div style={{ whiteSpace:"nowrap" }}>
+                    <SplitText text="Boundaries." started={heroReady} delay={200 + "Travel Beyond".length * 45 + 120} stagger={45}
+                      charStyle={{ fontSize:"clamp(44px,6vw,96px)", letterSpacing:"-0.02em",
+                        background:"linear-gradient(135deg,#c9a84c,#f0d080)", WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}/>
+                  </div>
+                </div>
+
+                {/* Typewriter sub */}
+                <div style={{ fontSize:"clamp(16px,2vw,21px)", color:T.desc||T.sub||"#666", lineHeight:1.6, marginTop:24, marginBottom:48,
+                  opacity: heroReady ? 1 : 0, transform: heroReady ? "translateY(0)" : "translateY(14px)", transition:"all 0.7s 1.8s ease" }}>
+                  Flights, buses and hotels — all in one sentence.
+                  <br/>No filters. No confusion. Just tell Alvryn what you want.{" "}
+                  <TypeText color={T.accent} phrases={["plain English.","a WhatsApp message.","in any language.","zero hidden fees.","even with typos."]}/>
+                </div>
+
+                {/* CTAs */}
+                <div className="cta-row" style={{ display:"flex", gap:13, flexWrap:"wrap",
+                  opacity: heroReady ? 1 : 0, transform: heroReady ? "translateY(0)" : "translateY(14px)", transition:"all 0.7s 2.1s ease" }}>
+                  <button onClick={goSearch} className="shine-btn"
+                    style={{ padding:"15px 38px", borderRadius:14, fontSize:16, fontWeight:600, fontFamily:"'DM Sans',sans-serif", color:"#fff", border:"none",
+                      background:T.grad, backgroundSize:"200% 200%", animation:"gradShift 4s ease infinite",
+                      boxShadow:`0 10px 40px ${T.accent}40` }}>
+                    Search Flights ✈
+                  </button>
+                  <button onClick={goSearch} className="shine-btn"
+                    style={{ padding:"15px 38px", borderRadius:14, fontSize:16, fontWeight:500, fontFamily:"'DM Sans',sans-serif", color:T.text||"#0a0a0a",
+                      background:T.card||"var(--bg-card)", border:`1.5px solid ${T.cardBorder||"rgba(0,0,0,0.1)"}`, boxShadow:"0 4px 18px rgba(0,0,0,0.07)" }}>
+                    Book a Bus 🚌
+                  </button>
+                  <button onClick={() => navigate("/register")}
+                    style={{ padding:"15px 26px", borderRadius:14, fontSize:15, fontWeight:500, fontFamily:"'DM Sans',sans-serif", color:T.desc||"#888",
+                      background:"transparent", border:"1.5px solid rgba(0,0,0,0.09)", cursor:"pointer" }}>
+                    Create Account →
+                  </button>
+                </div>
+
+                {/* Trust pills */}
+                <div style={{ display:"flex", gap:24, marginTop:40, flexWrap:"wrap",
+                  opacity: heroReady ? 0.6 : 0, transition:"opacity 0.7s 2.4s ease" }}>
+                  {["⚡ AI-Powered","📊 Real-time results","🔒 Trusted partners","500+ Routes"].map(b => (
+                    <span key={b} style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.desc||"#999", letterSpacing:"0.05em" }}>{b}</span>
+                  ))}
+                  <div style={{ width:"100%", marginTop:4, fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"#bbb" }}>
+                    Powered by AI · Real-time results · Trusted booking partners
+                  </div>
+                </div>
+              </div>
+
+              {/* Search mockup — right */}
+              <div className="mockup-box" style={{ flexShrink:0, animation:"floatY 6s ease-in-out infinite",
+                opacity: heroReady ? 1 : 0, transition:"opacity 0.8s 2.5s ease", position:"relative" }}>
+                {/* Glowing backdrop */}
+                <div style={{ position:"absolute", inset:-20, borderRadius:32,
+                  background: darkMode ? "radial-gradient(ellipse,rgba(201,168,76,0.12),transparent 70%)" : "radial-gradient(ellipse,rgba(201,168,76,0.08),transparent 70%)",
+                  filter:"blur(20px)", zIndex:0 }}/>
+                <div style={{ position:"relative", zIndex:1 }}>
+                  <SearchMockup accent={T.accent}/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3D floating depth orbs */}
+          <div style={{ position:"absolute", top:"20%", right:"5%", width:200, height:200, borderRadius:"50%",
+            background:darkMode?"radial-gradient(circle,rgba(201,168,76,0.06),transparent 70%)":"radial-gradient(circle,rgba(201,168,76,0.08),transparent 70%)",
+            animation:"layerFloat 8s ease-in-out infinite", pointerEvents:"none", filter:"blur(1px)" }}/>
+          <div style={{ position:"absolute", bottom:"30%", left:"3%", width:120, height:120, borderRadius:"50%",
+            background:darkMode?"radial-gradient(circle,rgba(240,208,128,0.05),transparent 70%)":"radial-gradient(circle,rgba(201,168,76,0.06),transparent 70%)",
+            animation:"layerFloat 6s ease-in-out infinite 2s", pointerEvents:"none", filter:"blur(2px)" }}/>
+          {/* Scroll cue */}
+          <div style={{ position:"absolute", bottom:36, left:"50%", transform:"translateX(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:6, animation:"floatY 2s ease-in-out infinite" }}>
+            <span style={{ fontFamily:"'Space Mono',monospace", fontSize:8, color:T.sub||"#ccc", letterSpacing:"0.2em" }}>SCROLL</span>
+            <div style={{ width:1, height:36, background:`linear-gradient(to bottom,${T.accent}80,transparent)` }}/>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════
+            TRAVEL VISUAL SHOWCASE
+        ══════════════════════════════════ */}
+        <section style={{ minHeight:"65vh", background:T.bg, display:"flex", alignItems:"center",
+          justifyContent:"center", padding:"80px 5%", transition:"background 0.8s ease" }}>
+          <div style={{ maxWidth:1100, width:"100%", display:"flex", flexDirection:"column", alignItems:"center", gap:48 }}>
+            <Reveal>
+              <div style={{ textAlign:"center" }}>
+                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>
+                  WHERE WILL YOU GO?
+                </div>
+                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300,
+                  fontSize:"clamp(28px,4vw,54px)", color:T.text, lineHeight:1.2, marginBottom:16 }}>
+                  Every destination. Every budget.<br/>
+                  <span style={{ background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                    One conversation.
+                  </span>
+                </div>
+                <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.sub,
+                  maxWidth:520, margin:"0 auto", lineHeight:1.7 }}>
+                  From Electronic City to New York, Goa, Dubai or Bali — Alvryn plans your complete
+                  door-to-door trip in seconds. No filters. No confusion.
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Destination image grid */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:16, width:"100%" }}>
+              {[
+                { city:"Goa", img:"photo-1512343879784-a960bf40e7f2", tag:"🏖️ Beach" },
+                { city:"Dubai", img:"photo-1512453979798-5ea266f8880c", tag:"✈️ International" },
+                { city:"Manali", img:"photo-1626621341517-bbf3d9990a23", tag:"🏔️ Hills" },
+                { city:"Singapore", img:"photo-1525625293386-3f8f99389edd", tag:"🌇 City" },
+                { city:"Kerala", img:"photo-1602216056096-3b40cc0c9944", tag:"🌴 Backwaters" },
+                { city:"Jaipur", img:"photo-1477587458883-47145ed6d1f5", tag:"🏰 Heritage" },
+              ].map((d,i) => (
+                <Reveal key={d.city} delay={i*80}>
+                  <div className="card-3d" style={{ borderRadius:18, overflow:"hidden", cursor:"pointer", position:"relative",
+                    boxShadow: darkMode ? "0 20px 50px rgba(0,0,0,0.5),0 0 0 1px rgba(201,168,76,0.1)" : "0 10px 40px rgba(0,0,0,0.1),0 0 0 1px rgba(201,168,76,0.08)",
+                    transition:"all 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+                    animation:`pulseGold ${3+i*0.4}s ease-in-out infinite` }}
+                    onMouseEnter={e=>{e.currentTarget.style.transform="perspective(800px) rotateX(-4deg) rotateY(6deg) scale3d(1.05,1.05,1.05) translateZ(10px)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.transform="none";}}
+                    onClick={()=>{}}>
+                    <img
+                      src={`https://images.unsplash.com/${d.img}?auto=format&fit=crop&w=400&h=240&q=75`}
+                      alt={d.city}
+                      style={{ width:"100%", height:140, objectFit:"cover", display:"block" }}
+                      onError={e=>e.target.style.display="none"}
+                      loading="lazy"
+                    />
+                    <div style={{ padding:"10px 14px",
+                      background: darkMode ? "rgba(20,17,8,0.97)" : "rgba(255,255,255,0.97)",
+                      display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600,
+                        fontSize:16, color:T.text }}>{d.city}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                        color:T.accent, fontWeight:600 }}>{d.tag}</div>
+                    </div>
+                  </div>
+                </Reveal>
               ))}
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── AI DEMO ──────────────────────────────────────────────────────── */}
-      <div style={{ background: darkMode
-          ? "linear-gradient(135deg,#060810,#0c1220,#060810)"
-          : "linear-gradient(135deg,#0c1445,#1e3a8a,#0284c7)",
-        padding:"80px 24px",position:"relative",zIndex:1 }}>
-        <div style={{ maxWidth:720,margin:"0 auto",textAlign:"center" }}>
-          <p style={{ fontSize:10,letterSpacing:"0.32em",color:"rgba(255,255,255,0.5)",
-            fontFamily:"sans-serif",marginBottom:12 }}>AI IN ACTION</p>
-          <h2 style={{ fontSize:"clamp(24px,3.5vw,38px)",color:"#ffffff",fontWeight:400,
-            marginBottom:8,lineHeight:1.3,fontFamily:"'Cormorant Garamond',serif" }}>
-            Just tell it what you need.
-          </h2>
-          <p style={{ color:"rgba(255,255,255,0.6)",marginBottom:36,fontSize:15,lineHeight:1.7 }}>
-            Any language. Any route. Typos? No problem.
-          </p>
-          <div style={{ display:"flex",flexDirection:"column",gap:12,textAlign:"left" }}>
-            {[
-              { u:"bus bangalore to chennai kal night",
-                a:"🚌 Buses: BLR → Chennai\nVRL Travels · AC Sleeper · 21:00 → 02:30 · ₹550\nKSRTC · Semi-Sleeper · 23:00 → 04:30 · ₹480\n👉 View all on RedBus" },
-              { u:"cheap flights blr to goa this weekend",
-                a:"✈️ Flights: BLR → GOI · Saturday\nIndiGo 6E-123 · 06:20 → 07:35 · ₹2,840\nSpiceJet · 14:15 → 15:30 · ₹3,100\n👉 Book on Aviasales" },
-            ].map((ex,i)=>(
-              <div key={i} style={{ background:"rgba(255,255,255,0.08)",borderRadius:16,
-                border:"1px solid rgba(255,255,255,0.12)",padding:"22px 20px",
-                backdropFilter:"blur(10px)" }}>
-                <p style={{ fontSize:13,color:"rgba(255,255,255,0.5)",fontStyle:"italic",
-                  marginBottom:8,fontFamily:"sans-serif" }}>You: "{ex.u}"</p>
-                <p style={{ fontSize:14,lineHeight:1.75,color:"#ffffff",
-                  whiteSpace:"pre-line",fontFamily:"sans-serif" }}>{ex.a}</p>
-              </div>
-            ))}
           </div>
-          <button onClick={()=>navigate("/ai")}
-            style={{ marginTop:28,padding:"13px 32px",borderRadius:12,
-              background:`linear-gradient(135deg,${gold},#f0d080,${gold})`,
-              border:"none",color:"#1a1410",fontWeight:700,fontSize:15,cursor:"pointer" }}>
-            Try Alvryn AI →
-          </button>
-        </div>
-      </div>
+        </section>
 
-      {/* ── PARTNERS — always visible in dark & light ─────────────────── */}
-      <div style={{
-        background: darkMode ? "#111009" : "#f0ece4",
-        borderTop:`1px solid ${bd}`,borderBottom:`1px solid ${bd}`,
-        padding:"70px 24px",position:"relative",zIndex:1,
-      }}>
-        <div style={{ maxWidth:1100,margin:"0 auto" }}>
-          <SectionLabel text="OUR PARTNERS"/>
-          <SectionH2>Book with trusted platforms.</SectionH2>
-          <p style={{ fontSize:15,color:txt2,textAlign:"center",maxWidth:500,
-            margin:"0 auto 44px",lineHeight:1.7,fontFamily:"sans-serif" }}>
-            Alvryn connects you directly to our trusted travel partners — live fares, millions of bookings.
-          </p>
-          <div className="alvPartnersGrid" style={{ display:"grid",
-            gridTemplateColumns:"repeat(3,1fr)",gap:20,maxWidth:860,margin:"0 auto" }}>
-            {partners.map(p=>(
-              <div key={p.name} className="alvPartnerCard"
-                onClick={()=>window.open(p.url,"_blank")}
-                style={{
-                  /* Explicitly set card bg so it's ALWAYS visible */
-                  background: darkMode ? "#1e1a12" : "#ffffff",
-                  border:`1.5px solid ${darkMode?"rgba(201,168,76,0.35)":"rgba(201,168,76,0.25)"}`,
-                  borderRadius:18,padding:"32px 24px",textAlign:"center",cursor:"pointer",
-                  transition:"all 0.25s",
-                  boxShadow: darkMode
-                    ? "0 2px 20px rgba(0,0,0,0.5)"
-                    : "0 2px 16px rgba(201,168,76,0.1)",
-                }}>
-                {/* emoji always visible */}
-                <span style={{ fontSize:40,marginBottom:16,display:"block",
-                  filter:"none",lineHeight:1 }}>{p.emoji}</span>
-                {/* name — explicit color so never transparent */}
-                <div style={{ fontSize:16,fontWeight:700,
-                  color: darkMode ? "#f5f0e8" : "#1a1410",
-                  marginBottom:8,letterSpacing:"0.04em",fontFamily:"sans-serif" }}>
-                  {p.name}
-                </div>
-                <div style={{ fontSize:13,
-                  color: darkMode ? "#b8a882" : "#6b5e45",
-                  lineHeight:1.6,fontFamily:"sans-serif" }}>
-                  {p.desc}
-                </div>
+        {/* ══════════════════════════════════
+            HOW IT WORKS
+        ══════════════════════════════════ */}
+        <section id="how-it-works" ref={sec2Ref} style={{ minHeight:"100vh", background:T.bg, position:"relative", overflow:"hidden", padding:"110px 5%", display:"flex", alignItems:"center", transition:"background 1.5s ease" }}>
+          <div style={{ position:"absolute", top:"50%", right:"-8%", width:500, height:500, borderRadius:"50%",
+            background:`radial-gradient(circle,${T.accent}08,transparent 70%)`,
+            transform:`translateY(calc(-50% + ${sec2Offset}px))`, pointerEvents:"none", transition:"transform 0.1s linear" }}/>
+          <div style={{ position:"relative", zIndex:2, width:"100%" }}>
+            <Reveal>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>HOW IT WORKS</div>
+              <BlurText text="Book like you text a friend." style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(30px,4.5vw,64px)", color:T.text, marginBottom:10, animation:"tiltReveal 0.8s ease both" }}/>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(30px,4.5vw,64px)", marginBottom:64,
+                background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                No learning curve.
               </div>
-            ))}
+            </Reveal>
+            <div className="how-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }}>
+              {[
+                { n:"01", icon:"💬", title:"Type Naturally", desc:"Any language, any style. 'BLR to GOA kal cheap' — Alvryn understands context, dates and budgets perfectly." },
+                { n:"02", icon:"⚡", title:"AI Finds Best", desc:"Searches flights and buses in real time. Ranked by value, filtered to your exact budget." },
+                { n:"03", icon:"✅", title:"Book in 60 Seconds", desc:"Enter name, pick your seat, confirm. Your ticket is in your inbox and WhatsApp instantly." },
+              ].map((s, i) => (
+                <Reveal key={i} delay={i * 140}>
+                  <BorderGlowCard accentColor={T.accent} style={{ borderRadius:22 }}>
+                    <TiltCard style={{ padding:"36px 28px", background:"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:darkMode?"0 20px 60px rgba(0,0,0,0.35),0 0 0 1px rgba(201,168,76,0.15)":"0 20px 60px rgba(0,0,0,0.06)", border:darkMode?"1px solid rgba(201,168,76,0.18)":"1px solid rgba(0,0,0,0.04)", transformStyle:"preserve-3d", cursor:"default" }}>
+                      <div style={{ fontSize:36, marginBottom:18 }}>{s.icon}</div>
+                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:28, color:T.accent, marginBottom:10, textShadow:darkMode?"0 0 20px rgba(201,168,76,0.4)":"none" }}>{s.n}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:18, color:T.text, marginBottom:12 }}>{s.title}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:darkMode?"#b8a888":"#666", lineHeight:1.7 }}>{s.desc}</div>
+                    </TiltCard>
+                  </BorderGlowCard>
+                </Reveal>
+              ))}
+            </div>
+            <Reveal delay={380}>
+              <div style={{ marginTop:44, padding:"16px 24px", borderRadius:14, display:"inline-flex", alignItems:"center", gap:14,
+                background:`${T.accent}0C`, border:`1px solid ${T.accent}20` }}>
+                <span>🔐</span>
+                <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||"#555" }}>
+                  Free account needed — takes 30 seconds.{" "}
+                  <span onClick={() => navigate("/register")} style={{ color:T.accent, cursor:"pointer", fontWeight:600, textDecoration:"underline" }}>Sign up free →</span>
+                </span>
+              </div>
+            </Reveal>
           </div>
-          <p style={{ textAlign:"center",marginTop:28,fontSize:12,
-            color:txtMut,fontFamily:"sans-serif" }}>
-            Alvryn is a travel discovery platform. We may earn a commission from partner links at no extra cost to you.
-          </p>
-        </div>
-      </div>
+        </section>
 
-      {/* ── TESTIMONIALS ─────────────────────────────────────────────────── */}
-      <section style={{ maxWidth:1100,margin:"0 auto",padding:"80px 24px",
-        position:"relative",zIndex:1 }}>
-        <SectionLabel text="WHAT TRAVELLERS SAY"/>
-        <SectionH2>Real people. Real savings.</SectionH2>
-        <Divider/>
-        <div className="alvTestiGrid" style={{ display:"grid",
-          gridTemplateColumns:"repeat(3,1fr)",gap:20 }}>
-          {testimonials.map(t=>(
-            <div key={t.user} style={{
-              background: darkMode ? "rgba(201,168,76,0.07)" : "rgba(255,255,255,0.9)",
-              border:`1px solid ${bd}`,borderRadius:16,padding:"24px",
-              backdropFilter:"blur(8px)" }}>
-              <div style={{ color:"#f0d080",fontSize:14,marginBottom:10 }}>{"★".repeat(t.stars)}</div>
-              <p style={{ fontSize:14,color:txt2,lineHeight:1.7,marginBottom:14,
-                fontFamily:"sans-serif" }}>"{t.text}"</p>
-              <p style={{ fontSize:12,color:txtMut,fontFamily:"sans-serif" }}>— {t.user}</p>
+        {/* ══════════════════════════════════
+            FEATURES
+        ══════════════════════════════════ */}
+        <section id="features" style={{ minHeight:"100vh", background:T.bg, position:"relative", overflow:"hidden", padding:"110px 5%", transition:"background 1.5s ease" }}>
+          <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background:`radial-gradient(ellipse at 25% 60%,${T.accent}06 0%,transparent 55%)`, pointerEvents:"none" }}/>
+          <div style={{ position:"relative", zIndex:2 }}>
+            <Reveal style={{ textAlign:"center" }}>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>FEATURES</div>
+              <BlurText text="Everything you need." style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,58px)", color:T.text, marginBottom:10, display:"block" }}/>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,58px)", marginBottom:70,
+                background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                Nothing you don't.
+              </div>
+            </Reveal>
+            <div className="feat-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:22 }}>
+              {features.map((f, i) => (
+                <Reveal key={i} delay={i * 75}>
+                  <BorderGlowCard accentColor={f.color} style={{ borderRadius:22 }}>
+                    <TiltCard style={{ padding:"32px 26px", background:T.card||"var(--bg-card)", backdropFilter:"blur(12px)", borderRadius:22, boxShadow:darkMode?"0 4px 24px rgba(0,0,0,0.35)":"0 4px 18px rgba(0,0,0,0.06)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, cursor:"default", transition:"background 0.5s ease,border-color 0.5s ease" }}>
+                      <div style={{ fontSize:34, marginBottom:16 }}>{f.icon}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:17, color:T.text, marginBottom:10, transition:"color 0.4s ease" }}>{f.title}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||T.sub||"#666", lineHeight:1.65, transition:"color 0.4s ease" }}>{f.desc}</div>
+                      <div style={{ marginTop:20, height:2, borderRadius:2, width:"50%", background:`linear-gradient(90deg,${f.color},transparent)` }}/>
+                    </TiltCard>
+                  </BorderGlowCard>
+                </Reveal>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* ── TRAVEL GUIDE ──────────────────────────────────────────────────── */}
-      <section style={{ maxWidth:1100,margin:"0 auto",padding:"0 24px 80px",
-        position:"relative",zIndex:1 }}>
-        <SectionLabel text="TRAVEL GUIDE"/>
-        <SectionH2>Tips, guides and smarter travel.</SectionH2>
-        <Divider/>
-        <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:18 }}>
-          {[
-            { title:"Best time to book flights in India",    tag:"Flights", emoji:"✈️" },
-            { title:"Top 10 overnight bus routes from Bangalore", tag:"Buses", emoji:"🚌" },
-            { title:"Budget hotels in Goa under ₹2000",     tag:"Hotels", emoji:"🏨" },
-            { title:"Cheapest weekend getaways from Mumbai", tag:"Tips",   emoji:"💡" },
-          ].map(g=>(
-            <div key={g.title} className="alvGuideCard"
-              style={{ background: darkMode?"rgba(201,168,76,0.06)":"rgba(255,255,255,0.8)",
-                border:`1px solid ${bd}`,borderRadius:14,padding:"22px 20px",
-                cursor:"pointer",transition:"transform 0.2s" }}>
-              <div style={{ fontSize:22,marginBottom:10 }}>{g.emoji}</div>
-              <div style={{ fontSize:10,letterSpacing:"0.2em",color:gold,
-                fontFamily:"sans-serif",marginBottom:8,fontWeight:700 }}>{g.tag}</div>
-              <div style={{ fontSize:14,fontWeight:600,color:txt,lineHeight:1.5,
-                fontFamily:"sans-serif" }}>{g.title}</div>
+        {/* ══════════════════════════════════
+            STATS
+        ══════════════════════════════════ */}
+        <section style={{ minHeight:"45vh", background:T.bg, position:"relative", overflow:"hidden", padding:"100px 5%", display:"flex", alignItems:"center", transition:"background 1.5s ease" }}>
+          <div style={{ position:"relative", zIndex:2, width:"100%", textAlign:"center" }}>
+            <Reveal>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(26px,3.5vw,50px)", color:T.text, marginBottom:60 }}>
+                Alvryn is growing fast 🚀
+              </div>
+            </Reveal>
+            <div className="stats-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:22 }}>
+              {[
+                { val:500,  suf:"+", label:"Routes Available" },
+                { val:98,    suf:"%", label:"Satisfaction Rate" },
+                { val:500,   suf:"+", label:"Routes Covered" },
+                { val:60,    suf:"s", label:"Avg Search Time" },
+              ].map((s, i) => (
+                <Reveal key={i} delay={i * 90}>
+                  <BorderGlowCard accentColor={T.accent} style={{ borderRadius:20 }}>
+                    <TiltCard style={{ padding:"38px 16px", background:T.card||"var(--bg-card)", backdropFilter:"blur(8px)", borderRadius:20, boxShadow:darkMode?"0 4px 24px rgba(0,0,0,0.35)":"0 4px 18px rgba(0,0,0,0.05)", cursor:"default", transition:"background 0.5s ease,box-shadow 0.5s ease,border-color 0.5s ease", border:`1px solid ${T.cardBorder||"rgba(0,0,0,0.06)"}` }}>
+                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:48, color:T.accent, lineHeight:1, animation:"counterUp 0.6s both" }}>
+                        <Counter end={s.val} suffix={s.suf}/>
+                      </div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||"#999", marginTop:8 }}>{s.label}</div>
+                    </TiltCard>
+                  </BorderGlowCard>
+                </Reveal>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <div style={{ background: darkMode?"#111009":"#f0ece4",
-        borderTop:`1px solid ${bd}`,borderBottom:`1px solid ${bd}`,
-        padding:"70px 24px",position:"relative",zIndex:1 }}>
-        <div style={{ maxWidth:680,margin:"0 auto" }}>
-          <SectionLabel text="FAQ"/>
-          <SectionH2>Common questions.</SectionH2>
-          <Divider/>
-          {faqs.map(f=>(
-            <div key={f.q} style={{ borderBottom:`1px solid ${bd}`,paddingBottom:20,marginBottom:20 }}>
-              <div style={{ fontSize:15,fontWeight:600,color:txt,marginBottom:8,
-                fontFamily:"sans-serif" }}>💡 {f.q}</div>
-              <div style={{ fontSize:14,color:txt2,lineHeight:1.7,fontFamily:"sans-serif" }}>{f.a}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── WAITLIST ─────────────────────────────────────────────────────── */}
-      <div style={{ background:bg,borderTop:`1px solid ${bd}`,padding:"80px 24px",
-        textAlign:"center",position:"relative",zIndex:1 }}>
-        <div style={{ maxWidth:520,margin:"0 auto" }}>
-          <SectionLabel text="JOIN ALVRYN"/>
-          <SectionH2>Get early access.</SectionH2>
-          <p style={{ fontSize:15,color:txt2,marginBottom:32,lineHeight:1.7,fontFamily:"sans-serif" }}>
-            Join {waitlistCount ? waitlistCount.toLocaleString()+"+" : "hundreds of"} travellers already on the list.
-          </p>
-          <form onSubmit={handleWaitlist}
-            style={{ display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap" }}>
-            <input type="email" placeholder="Your email address"
-              value={waitlistEmail} onChange={e=>setWaitlistEmail(e.target.value)} required
-              style={{ padding:"13px 20px",borderRadius:10,fontSize:15,
-                border:`1.5px solid ${bd}`,
-                background: darkMode?"rgba(255,255,255,0.07)":"#ffffff",
-                color:txt,outline:"none",width:"100%",maxWidth:300,fontFamily:"sans-serif" }}/>
-            <button type="submit"
-              style={{ padding:"13px 28px",borderRadius:10,
-                background:`linear-gradient(135deg,${gold},#f0d080,${gold})`,
-                border:"none",color:"#1a1410",fontWeight:700,fontSize:15,
-                cursor:"pointer",whiteSpace:"nowrap" }}>
-              Join →
-            </button>
-          </form>
-          {waitlistStatus && (
-            <p style={{ marginTop:16,fontSize:14,fontFamily:"sans-serif",
-              color: waitlistStatus.startsWith("🎉") ? gold : "#ef4444" }}>
-              {waitlistStatus}
-            </p>
-          )}
-          <p style={{ marginTop:18,fontSize:12,color:txtMut,fontFamily:"sans-serif" }}>
-            No spam. Refer friends and earn ₹150 per booking.
-          </p>
-        </div>
-      </div>
-
-      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer style={{ background: darkMode?"#0a0806":"#f5f0e8",
-        borderTop:`1px solid ${bd}`,padding:"48px 24px 32px",
-        position:"relative",zIndex:1 }}>
-        <div style={{ maxWidth:1100,margin:"0 auto",
-          display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",
-          gap:32,marginBottom:40 }}>
-          {/* Brand */}
-          <div>
-            <div style={{ display:"flex",alignItems:"center",gap:8,marginBottom:14 }}>
-              <div style={{ width:34,height:34,borderRadius:"50%",border:`1.5px solid ${gold}`,
-                display:"flex",alignItems:"center",justifyContent:"center",
-                color:gold,fontSize:13,fontWeight:700 }}>A</div>
+        {/* ══════════════════════════════════
+            WHATSAPP
+        ══════════════════════════════════ */}
+        <section style={{ minHeight:"70vh", background:T.bg, position:"relative", overflow:"hidden", padding:"100px 5%", display:"flex", alignItems:"center", transition:"background 1.5s ease" }}>
+          <div className="wa-grid" style={{ position:"relative", zIndex:2, width:"100%", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center" }}>
+            <Reveal>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:18 }}>WHATSAPP NATIVE</div>
+              <BlurText text="Your entire trip." style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,54px)", color:T.text, marginBottom:8, display:"block" }}/>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,54px)", marginBottom:28,
+                background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                One chat thread.
+              </div>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.desc||T.sub||"#555", lineHeight:1.7, marginBottom:32 }}>
+                Search flights and buses, pick seats, confirm — all inside WhatsApp. No app download required.
+              </p>
+              <div style={{ marginBottom:32, padding:"14px 20px", borderRadius:12, background:"rgba(0,0,0,0.03)", border:"1px solid rgba(0,0,0,0.07)", display:"inline-block" }}>
+                <span style={{ fontFamily:"'Space Mono',monospace", fontSize:11, color:T.desc||"#555" }}>
+                  📱 +1-415-523-8886 · code: <strong>join meal-biggest</strong>
+                </span>
+              </div>
               <div>
-                <div style={{ fontSize:13,fontWeight:700,letterSpacing:"0.18em",color:txt,
-                  fontFamily:"'Georgia',serif" }}>ALVRYN</div>
-                <div style={{ fontSize:8,letterSpacing:"0.22em",color:txtMut,fontFamily:"sans-serif" }}>TRAVEL BEYOND</div>
+                <button onClick={goSearch} className="shine-btn"
+                  style={{ padding:"14px 34px", borderRadius:13, fontSize:15, fontWeight:600, fontFamily:"'DM Sans',sans-serif", color:"#fff", border:"none", cursor:"pointer", background:T.grad, boxShadow:`0 8px 28px ${T.accent}44` }}>
+                  Book Now ✈
+                </button>
+              </div>
+            </Reveal>
+            <Reveal delay={200}>
+              <TiltCard style={{ maxWidth:310, margin:"0 auto", cursor:"default" }}>
+                <div style={{ borderRadius:26, overflow:"hidden", boxShadow:"0 28px 70px rgba(0,0,0,0.13)" }}>
+                  <div style={{ background:"#128C7E", padding:"14px 18px", display:"flex", alignItems:"center", gap:12 }}>
+                    <div style={{ width:38, height:38, borderRadius:"50%", background:T.card||"var(--bg-card)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <AlvrynIcon size={26}/>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:700, color:"#fff", fontSize:14 }}>Alvryn AI</div>
+                      <div style={{ fontSize:11, color:"rgba(255,255,255,0.7)" }}>● online</div>
+                    </div>
+                  </div>
+                  <div style={{ background:"#E5DDD5", padding:"14px 12px", display:"flex", flexDirection:"column", gap:9 }}>
+                    {[
+                      { me:false, msg:"BLR to DEL kal under 5000" },
+                      { me:true,  msg:"Found 3 flights! ✈️\nSkyWings · ₹3,840 · 6:10AM\nBluJet · ₹4,120 · 9:30AM\nReply 1 or 2 to select" },
+                      { me:false, msg:"1" },
+                      { me:true,  msg:"✅ Booked! Ticket sent 📧" },
+                    ].map((m, i) => (
+                      <div key={i} style={{ display:"flex", justifyContent:m.me?"flex-end":"flex-start" }}>
+                        <div style={{ maxWidth:"86%", padding:"9px 13px", borderRadius:m.me?"18px 18px 4px 18px":"18px 18px 18px 4px",
+                          background:m.me?(darkMode?"rgba(37,211,102,0.18)":"#DCF8C6"):(darkMode?"rgba(42,36,20,0.9)":"#fff"), fontSize:12, lineHeight:1.55, whiteSpace:"pre-line",
+                          fontFamily:"'DM Sans',sans-serif", color:"#1a1a1a", boxShadow:"0 1px 3px rgba(0,0,0,0.08)" }}>
+                          {m.msg}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TiltCard>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS DETAILED */}
+        <section style={{ background:"#faf8f4", position:"relative", overflow:"hidden", padding:"100px 5%", transition:"background 1.5s ease" }}>
+          <div style={{ position:"relative", zIndex:2, maxWidth:900, margin:"0 auto" }}>
+            <Reveal style={{ textAlign:"center", marginBottom:60 }}>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>THE PROCESS</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:T.text, lineHeight:1.05, marginBottom:10 }}>How Alvryn works</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", lineHeight:1.05, background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>in three simple steps.</div>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.desc||T.sub||"#555", lineHeight:1.7, maxWidth:600, margin:"20px auto 0" }}>Alvryn is an AI-powered travel search engine. We find the best fares from our trusted partners and redirect you to book securely — no hidden fees, no markup.</p>
+            </Reveal>
+            <div className="how-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:28 }}>
+              {[
+                { n:"01", icon:"🔍", title:"Search flights, buses or hotels", desc:"Type your query naturally — in English, Hindi, Tamil or any mix. Try 'cheap flights BLR to GOA Friday' or 'bus bangalore to chennai kal'. Our AI understands dates, budgets, typos and local language phrases.", sub:["Supports 100+ city aliases","Understands all Indian date formats","Works with typos and abbreviations"] },
+                { n:"02", icon:"⚡", title:"We compare and rank results", desc:"Alvryn searches across our partner network — trusted travel partners across flights, buses and hotels. Results are ranked by price and value so you decide in seconds.", sub:["Live fares from airline partners","Bus schedules across India","Hotels worldwide"] },
+                { n:"03", icon:"🔒", title:"Book securely on partner site", desc:"We redirect you to the official partner booking page in a new tab. Your payment is processed directly by the partner. You always pay the price you see — no extra charges from Alvryn.", sub:["Opens official partner site","256-bit SSL on all partner pages","Ticket directly from the operator"] },
+              ].map((s,i)=>(
+                <Reveal key={i} delay={i*140}>
+                  <div style={{ padding:"36px 28px", background:T.card||"var(--bg-card-soft)", backdropFilter:"blur(12px)", borderRadius:22, boxShadow:darkMode?"0 8px 28px rgba(0,0,0,0.4)":"0 4px 20px rgba(0,0,0,0.06)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.18)"}`, height:"100%", transition:"background 0.5s ease,border-color 0.5s ease" }}>
+                    <div style={{ fontSize:36, marginBottom:16 }}>{s.icon}</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:30, color:"#c9a84c", marginBottom:12 }}>{s.n}</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text, marginBottom:12, lineHeight:1.3 }}>{s.title}</div>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||T.sub||"#555", lineHeight:1.7, marginBottom:18 }}>{s.desc}</div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {s.sub.map((point,j)=>(<div key={j} style={{ display:"flex", alignItems:"center", gap:10 }}><div style={{ width:6, height:6, borderRadius:"50%", background:"#c9a84c", flexShrink:0 }}/><span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||T.sub||"#666" }}>{point}</span></div>))}
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+            <Reveal delay={400}>
+              <div style={{ marginTop:40, padding:"20px 28px", background:darkMode?"rgba(201,168,76,0.12)":"rgba(201,168,76,0.07)", backdropFilter:"blur(8px)", borderRadius:16, border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.2)"}`, transition:"background 0.5s ease", display:"flex", gap:16, alignItems:"flex-start", flexWrap:"wrap" }}>
+                <span style={{ fontSize:24, flexShrink:0 }}>💡</span>
+                <div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:17, color:T.text, marginBottom:6 }}>Why does Alvryn redirect to partner sites?</div>
+                  <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||T.sub||"#555", lineHeight:1.7 }}>Alvryn is a travel search and discovery platform. We work with trusted partners — trusted travel partners — who process all payments securely. This means you always get the official ticket directly from the source, backed by the partner's customer support and cancellation policies. Alvryn earns a small referral commission when you book, which keeps our service completely free for you.</div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+
+        {/* ══ AI EXPERIENCE SECTION ══ */}
+        <section style={{ background:T.bg, position:"relative", overflow:"hidden", padding:"100px 5%", transition:"background 1.5s ease" }}>
+          <div style={{ position:"relative", zIndex:2, maxWidth:960, margin:"0 auto" }}>
+            <Reveal style={{ textAlign:"center", marginBottom:60 }}>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>AI INTELLIGENCE</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:T.text, lineHeight:1.05, marginBottom:10 }}>Not just search.</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", lineHeight:1.05, background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>Smart travel decisions.</div>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.desc||T.sub||"#555", lineHeight:1.7, maxWidth:580, margin:"20px auto 0" }}>
+                Alvryn doesn't just show options — it tells you which one to pick and why. Like having a travel expert in your pocket.
+              </p>
+            </Reveal>
+
+            {/* Sample AI response UI */}
+            <div className="wa-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:48, alignItems:"center" }}>
+              <Reveal>
+                <div style={{ background:T.card||"var(--bg-card)", backdropFilter:"blur(10px)", borderRadius:22, overflow:"hidden", boxShadow:"0 20px 60px rgba(0,0,0,0.08)", border:"1px solid rgba(201,168,76,0.2)" }}>
+                  <div style={{ background:"linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)", backgroundSize:"200% 200%", padding:"14px 20px", display:"flex", alignItems:"center", gap:10 }}>
+                    <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(255,255,255,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>✈️</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, color:T.text, fontSize:15 }}>Alvryn AI Response</div>
+                  </div>
+                  <div style={{ padding:"20px" }}>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||"#555", marginBottom:14, lineHeight:1.6 }}>
+                      ✈️ I found the best options for your trip from Bangalore to Mumbai.
+                    </div>
+                    <div style={{ background:"rgba(201,168,76,0.08)", borderRadius:12, padding:"12px 14px", marginBottom:10, border:"1px solid rgba(201,168,76,0.2)" }}>
+                      <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:"#8B6914", marginBottom:6 }}>💡 AI INSIGHT</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.text }}>Morning flights are typically 18% cheaper for this route. Booking now usually saves ₹400–₹800 vs last-minute.</div>
+                    </div>
+                    {[
+                      { label:"🏷️ Likely cheapest", range:"₹3,200–₹3,800", tag:"CHEAPEST", why:"Early morning departure, no frills" },
+                      { label:"⚡ Fastest option",   range:"₹4,200–₹4,800", tag:"FASTEST",  why:"Direct, 1h 45m, premium airline" },
+                      { label:"⭐ Best overall",     range:"₹3,800–₹4,400", tag:"TOP PICK", why:"Good timing, highly rated airline" },
+                    ].map((opt,i)=>(
+                      <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 12px", borderRadius:10, background:i===2?"rgba(201,168,76,0.08)":"transparent", border:i===2?"1px solid rgba(201,168,76,0.25)":"1px solid transparent", marginBottom:6 }}>
+                        <div>
+                          <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.text, fontWeight:600 }}>{opt.label}</div>
+                          <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:T.desc||"#888", marginTop:2 }}>{opt.why}</div>
+                        </div>
+                        <div style={{ textAlign:"right" }}>
+                          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:15, color:"#8B6914" }}>{opt.range}</div>
+                          <div style={{ fontFamily:"'Space Mono',monospace", fontSize:8, color:i===2?"#c9a84c":"#aaa", marginTop:2 }}>{opt.tag}</div>
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ fontSize:11, color:"#bbb", fontFamily:"'DM Sans',sans-serif", marginTop:8, marginBottom:14 }}>
+                      Prices may vary. Live availability shown on partner site.
+                    </div>
+                    <button style={{ width:"100%", padding:"11px", borderRadius:11, fontSize:14, fontWeight:700, fontFamily:"'Cormorant Garamond',serif", letterSpacing:"0.06em", color:T.text, border:"none", cursor:"pointer", background:"linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)", backgroundSize:"200% 200%" }}>
+                      Check Live Prices →
+                    </button>
+                  </div>
+                </div>
+              </Reveal>
+              <Reveal delay={180}>
+                <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
+                  <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.18em", marginBottom:4 }}>DECISION SHORTCUTS</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(22px,3vw,36px)", color:T.text, lineHeight:1.1, marginBottom:8 }}>Make decisions instantly.</div>
+                  {[
+                    { icon:"💰", label:"Cheapest", desc:"Show the lowest-cost option across all platforms for your route and date." },
+                    { icon:"⚡", label:"Fastest",  desc:"Prioritise direct routes and early arrivals. No long layovers." },
+                    { icon:"😌", label:"Best comfort", desc:"Highest-rated option balancing price, timing and airline quality." },
+                  ].map((item,i)=>(
+                    <div key={i} style={{ display:"flex", gap:16, padding:"18px 20px", background:T.card||"var(--bg-card-soft)", backdropFilter:"blur(10px)", borderRadius:16, border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, boxShadow:darkMode?"0 4px 20px rgba(0,0,0,0.35)":"0 4px 14px rgba(0,0,0,0.04)", transition:"background 0.5s ease" }}>
+                      <div style={{ fontSize:28, flexShrink:0 }}>{item.icon}</div>
+                      <div>
+                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text, marginBottom:5 }}>{item.label}</div>
+                        <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||T.sub||"#666", lineHeight:1.6 }}>{item.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ══ PLAN MY TRIP ══ */}
+        <section style={{ background:T.bg, position:"relative", overflow:"hidden", padding:"100px 5%", transition:"background 1.5s ease" }}>
+          <div style={{ position:"relative", zIndex:2, maxWidth:900, margin:"0 auto" }}>
+            <Reveal style={{ textAlign:"center", marginBottom:56 }}>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>PLAN MY TRIP</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:T.text, lineHeight:1.05, marginBottom:10 }}>Not sure where to go?</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", lineHeight:1.05, background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>Let Alvryn plan it for you.</div>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:16, color:T.desc||T.sub||"#555", lineHeight:1.7, maxWidth:520, margin:"20px auto 0" }}>
+                Just tell Alvryn your budget and days. Get a full trip plan — flight, bus, hotel and estimated costs — instantly.
+              </p>
+            </Reveal>
+            <div className="wa-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:40, alignItems:"flex-start" }}>
+              <Reveal>
+                <div style={{ background:T.card||"var(--bg-card)", backdropFilter:"blur(10px)", borderRadius:20, padding:"28px 24px", boxShadow:darkMode?"0 8px 30px rgba(0,0,0,0.4)":"0 8px 30px rgba(0,0,0,0.07)", border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.18)"}`, transition:"background 0.5s ease" }}>
+                  <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.desc||"#888", letterSpacing:"0.15em", marginBottom:12 }}>YOU TYPE</div>
+                  <div style={{ background:"rgba(201,168,76,0.07)", borderRadius:12, padding:"14px 16px", fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.text, lineHeight:1.6, border:"1px solid rgba(201,168,76,0.2)", marginBottom:20 }}>
+                    "I have ₹5000 and 2 days — suggest a trip from Bangalore"
+                  </div>
+                  <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.desc||"#888", letterSpacing:"0.15em", marginBottom:12 }}>ALVRYN SUGGESTS</div>
+                  <div style={{ borderRadius:14, overflow:"hidden", border:"1px solid rgba(201,168,76,0.2)" }}>
+                    <div style={{ background:"linear-gradient(135deg,#c9a84c,#f0d080)", padding:"12px 16px" }}>
+                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text }}>🌴 Destination: Goa</div>
+                    </div>
+                    <div style={{ padding:"16px", background:"rgba(255,255,255,0.95)" }}>
+                      {[
+                        ["✈️ Travel",  "Approx ₹2,400–₹2,800 round trip"],
+                        ["🏨 Stay",    "Approx ₹1,200–₹1,800 (1 night)"],
+                        ["🍽️ Extras", "Budget ₹700–₹1,000"],
+                        ["💰 Total",   "Approx ₹4,300–₹5,600"],
+                      ].map(([k,v])=>(
+                        <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"8px 0", borderBottom:"1px solid rgba(201,168,76,0.08)", fontFamily:"'DM Sans',sans-serif", fontSize:13 }}>
+                          <span style={{ color:T.desc||"#555" }}>{k}</span>
+                          <span style={{ color:T.text, fontWeight:600 }}>{v}</span>
+                        </div>
+                      ))}
+                      <div style={{ fontSize:11, color:"#bbb", marginTop:10, fontFamily:"'DM Sans',sans-serif" }}>Prices are estimates. Live prices shown on partner site.</div>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+              <Reveal delay={160}>
+                <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+                  {[
+                    { dest:"🌴 Goa",    budget:"₹4,000–₹6,000", days:"2–3 days", why:"Beaches, nightlife, great value from Bangalore" },
+                    { dest:"🌿 Coorg",  budget:"₹2,500–₹4,000", days:"1–2 days", why:"Coffee estates, waterfalls, peaceful getaway" },
+                    { dest:"🏔️ Ooty",   budget:"₹2,000–₹3,500", days:"1–2 days", why:"Hill station, tea gardens, cool weather" },
+                    { dest:"🌊 Pondicherry", budget:"₹3,000–₹5,000", days:"2 days", why:"French architecture, beaches, great food" },
+                  ].map((d,i)=>(
+                    <div key={i} style={{ padding:"18px 20px", background:T.card||"var(--bg-card-soft)", backdropFilter:"blur(10px)", borderRadius:16, border:`1px solid ${T.cardBorder||"rgba(201,168,76,0.15)"}`, boxShadow:darkMode?"0 4px 20px rgba(0,0,0,0.35)":"0 4px 14px rgba(0,0,0,0.04)", transition:"background 0.5s ease" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6 }}>
+                        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text }}>{d.dest}</div>
+                        <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:"#8B6914" }}>{d.budget}</div>
+                      </div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:T.desc||"#888", marginBottom:4 }}>{d.days}</div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||"#555", lineHeight:1.5 }}>{d.why}</div>
+                    </div>
+                  ))}
+                  <div style={{ padding:"14px 18px", background:"rgba(201,168,76,0.07)", borderRadius:14, border:"1px solid rgba(201,168,76,0.2)", fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||"#555" }}>
+                    💬 Also works on WhatsApp — just message us your budget and days.
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ══ TRUSTED PARTNERS ══ */}
+        <section style={{ background:"#faf8f4", position:"relative", overflow:"hidden", padding:"70px 5%", transition:"background 1.5s ease" }}>
+          <div style={{ position:"relative", zIndex:2, maxWidth:860, margin:"0 auto", textAlign:"center" }}>
+            <Reveal>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>OUR PARTNERS</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(22px,3.5vw,44px)", color:T.text, marginBottom:10 }}>Book with trusted platforms.</div>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:15, color:T.desc||T.sub||"#555", lineHeight:1.7, maxWidth:520, margin:"0 auto 40px" }}>
+                Alvryn helps you find the best options — bookings are completed securely on leading travel platforms.
+              </p>
+              <div style={{ display:"flex", gap:20, justifyContent:"center", flexWrap:"wrap", marginBottom:28 }}>
+                {[
+                  { name:"Aviasales",   icon:"✈️", desc:"Flights worldwide", color:"#e8f4ff" },
+                  { name:"RedBus",      icon:"🚌", desc:"Buses across India", color:"#fff3e8" },
+                  { name:"Booking.com", icon:"🏨", desc:"Hotels worldwide",  color:"#e8fff3" },
+                ].map(p=>(
+                  <div key={p.name} style={{ padding:"20px 28px", background:darkMode?"rgba(30,24,12,0.9)":p.color, borderRadius:16, border:darkMode?"1px solid rgba(201,168,76,0.2)":"1px solid rgba(0,0,0,0.06)", minWidth:160, flex:1, maxWidth:220, transition:"background 0.5s ease" }}>
+                    <div style={{ fontSize:28, marginBottom:8 }}>{p.icon}</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.text, marginBottom:4 }}>{p.name}</div>
+                    <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:T.desc||T.sub||"#666" }}>{p.desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:darkMode?"rgba(245,234,213,0.4)":"#aaa", lineHeight:1.7 }}>
+                Alvryn is a travel discovery platform. We may earn a commission from partner links at no extra cost to you.
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* BLOG SECTION */}
+        <section style={{ background:darkMode?"#0f0c06":"#f5f3ef", position:"relative", overflow:"hidden", padding:"100px 5%", transition:"background 0.5s ease" }}>
+          <div style={{ position:"relative", zIndex:2, maxWidth:960, margin:"0 auto" }}>
+            <Reveal style={{ marginBottom:56 }}>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:10, color:T.accent, letterSpacing:"0.22em", marginBottom:16 }}>TRAVEL GUIDE</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", color:T.text, lineHeight:1.05, marginBottom:10 }}>Tips, guides and</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(28px,4vw,56px)", lineHeight:1.05, background:T.grad, WebkitBackgroundClip:"text", backgroundClip:"text", WebkitTextFillColor:"transparent" }}>smarter travel.</div>
+            </Reveal>
+            <div className="feat-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:22 }}>
+              {[
+                { cat:"FLIGHT DEALS", icon:"✈️", color:"#6C63FF", title:"Cheapest flights from Bangalore to Mumbai", summary:"One of India's busiest routes. The cheapest fares — typically Rs.1,800 to Rs.3,500 — appear 3 to 6 weeks in advance. Tuesday and Wednesday departures are consistently cheaper than weekends. Early morning departures before 7 AM are almost always the most affordable on the same day.", tags:["Bangalore","Mumbai","Budget Tips"] },
+                { cat:"DESTINATION GUIDE", icon:"🏛️", color:"#EA580C", title:"Best time to visit Delhi — month by month", summary:"October to March is Delhi's golden window — cool mornings and pleasant afternoons. November brings Diwali and perfect 20 degree days. Avoid May to July when temperatures cross 45 degrees. Winter fog in December and January can delay flights, so book morning departures.", tags:["Delhi","Season Guide","Winter Travel"] },
+                { cat:"TIPS & TRICKS", icon:"💡", color:"#059669", title:"How to find the lowest flight prices in India", summary:"Book domestic flights 3 to 8 weeks early. Use incognito mode. Set fare alerts on TravelPayouts for your route. Tuesday afternoons are traditionally when airlines release sale fares. Avoid booking on Fridays and Sundays when demand peaks.", tags:["Deals","Booking Tips","Save Money"] },
+                { cat:"AIRLINE GUIDE", icon:"🛩️", color:"#0284C7", title:"Top domestic airlines in India — compared", summary:"IndiGo has the most routes and best on-time record at 78 percent. Air India offers the best legroom and a full meal. Akasa Air is often the cheapest on trunk routes. SpiceJet has the most affordable business class upgrade. For short hops under 90 minutes, price is the only real differentiator.", tags:["Airlines","IndiGo","Air India"] },
+                { cat:"BUS TRAVEL", icon:"🚌", color:"#7C3AED", title:"Best overnight buses from Bangalore — complete guide", summary:"VRL Travels, SRS Travels and Neeta Tours run premium Volvo AC Sleeper buses from Bangalore to Chennai, Hyderabad, Goa and Mumbai. Book on RedBus 5 to 10 days ahead for the best seats. Window seats in the lower berth sell out first. Always check your boarding point — it may differ from the main bus stand.", tags:["Buses","Bangalore","Overnight Travel"] },
+                { cat:"INTERNATIONAL", icon:"🌏", color:"#EA580C", title:"Cheap international flights from India — where to look", summary:"Dubai is India's most connected international destination with 200 plus weekly flights from 8 Indian cities. Singapore and Bangkok are the next cheapest. TravelPayouts aggregates fares from 700 plus airlines globally. Fly on Tuesdays or Wednesdays for up to 25 percent cheaper fares than weekends.", tags:["International","Dubai","Budget"] },
+                { cat:"TRAVEL TIPS", icon:"🎒", color:"#059669", title:"India's top 5 weekend getaways reachable by bus", summary:"Coorg from Bangalore (4 hours). Pondicherry from Chennai (3.5 hours). Hampi from Bangalore (8 hours overnight). Munnar from Kochi (4 hours). Manali from Delhi (14 hours overnight). All bookable on RedBus at affordable fares — no flights needed.", tags:["Weekend Trips","Buses","Budget Travel"] },
+                { cat:"BOOKING GUIDE", icon:"📱", color:"#6C63FF", title:"How to book flights on WhatsApp — Alvryn AI guide", summary:"Alvryn's WhatsApp assistant is live and free. Send 'flights bangalore to mumbai tomorrow' to plus 1-415-523-8886 after joining with code 'join meal-biggest'. The AI understands natural language, typos and Hindi-English mix. It shows 3 to 5 options with timing and price, then redirects you to book.", tags:["WhatsApp","How To","Alvryn AI"] },
+                { cat:"SEASON GUIDE", icon:"🌤️", color:"#EA580C", title:"Best time to book Goa flights — season guide", summary:"Peak season November to February offers perfect beach weather but fares are 40 to 60 percent higher — book 6 to 8 weeks ahead. Shoulder season October and March gives good weather at 20 to 30 percent lower fares. Off-season monsoon months offer the cheapest hotel rates if you can manage the rain.", tags:["Goa","Season","Beach Travel"] },
+              ].map((post,i)=>(
+                <Reveal key={i} delay={i*60}>
+                  <div style={{ background:T.card||"var(--bg-card)", backdropFilter:"blur(10px)", borderRadius:20, overflow:"hidden", boxShadow:"0 4px 18px rgba(0,0,0,0.06)", border:"1px solid rgba(201,168,76,0.12)", display:"flex", flexDirection:"column", transition:"transform 0.2s,box-shadow 0.2s" }}
+                    onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.boxShadow="0 12px 40px rgba(0,0,0,0.1)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="0 4px 18px rgba(0,0,0,0.06)";}}>
+                    <div style={{ background:`${post.color}12`, borderBottom:`2px solid ${post.color}22`, padding:"10px 18px", display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:16 }}>{post.icon}</span>
+                      <span style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:post.color, fontWeight:700, letterSpacing:"0.12em" }}>{post.cat}</span>
+                    </div>
+                    <div style={{ padding:"20px 20px 22px", flex:1, display:"flex", flexDirection:"column" }}>
+                      <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:17, color:T.text, marginBottom:12, lineHeight:1.35 }}>{post.title}</h3>
+                      <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.desc||T.sub||"#555", lineHeight:1.7, flex:1 }}>{post.summary}</p>
+                      <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginTop:16 }}>
+                        {post.tags.map(tag=>(<span key={tag} style={{ padding:"3px 10px", borderRadius:100, fontSize:11, background:`${post.color}10`, border:`1px solid ${post.color}25`, color:post.color, fontFamily:"'DM Sans',sans-serif", fontWeight:600 }}>{tag}</span>))}
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════
+            FINAL CTA
+        ══════════════════════════════════ */}
+        <section id="cta" style={{ minHeight:"60vh", background:T.bg, position:"relative", overflow:"hidden", padding:"110px 5%", display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center", transition:"background 1.5s ease" }}>
+          <div style={{ position:"relative", zIndex:2, maxWidth:640 }}>
+            <Reveal>
+              <div style={{ animation:"floatY 4s ease-in-out infinite", marginBottom:30 }}>
+                <AlvrynIcon size={72} animate/>
+              </div>
+              <BlurText text="Start planning your next trip." style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(32px,5vw,66px)", color:T.text, lineHeight:1.05, display:"block", marginBottom:24 }}/>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontSize:17, color:T.desc||T.sub||"#555", lineHeight:1.7, marginBottom:52 }}>
+                India's most intelligent travel booking platform. Best fares on flights and buses, instantly.
+              </p>
+              <div className="cta-row" style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
+                <button onClick={() => navigate("/register")} className="shine-btn"
+                  style={{ padding:"16px 44px", borderRadius:14, fontSize:16, fontWeight:600, fontFamily:"'DM Sans',sans-serif", color:"#fff", border:"none", cursor:"pointer",
+                    background:T.grad, backgroundSize:"200% 200%", animation:"gradShift 3s ease infinite",
+                    boxShadow:`0 12px 48px ${T.accent}44` }}>
+                  Create Free Account ✈
+                </button>
+                <button onClick={() => navigate("/login")}
+                  style={{ padding:"16px 36px", borderRadius:14, fontSize:16, fontWeight:500, fontFamily:"'DM Sans',sans-serif", color:T.text||"#0a0a0a",
+                    background:T.card||"var(--bg-card)", border:`1.5px solid ${T.cardBorder||"rgba(0,0,0,0.1)"}`, boxShadow:"0 4px 18px rgba(0,0,0,0.06)", cursor:"pointer" }}>
+                  Sign In →
+                </button>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ══ FOOTER ══ */}
+        <footer style={{ background:"#f5f5f3", borderTop:"1px solid rgba(0,0,0,0.06)", padding:"48px 5%" }}>
+          <div className="footer-grid" style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:32 }}>
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+                <AlvrynIcon size={34}/>
+                <div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:18, color:T.text||"#0a0a0a", letterSpacing:"0.1em" }}>ALVRYN</div>
+                  <div style={{ fontFamily:"'Space Mono',monospace", fontSize:7, color:T.accent, letterSpacing:"0.2em" }}>TRAVEL BEYOND BOUNDARIES</div>
+                </div>
+              </div>
+              <div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:"#aaa", marginBottom:5 }}>© 2026 Alvryn · Built with ☕ in Bangalore</div>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:"#bbb", lineHeight:1.5, maxWidth:320 }}>Alvryn is a travel discovery platform. We may earn a commission from partner links at no extra cost to you.</div>
+            </div>
+            </div>
+            <div style={{ display:"flex", gap:40, flexWrap:"wrap" }}>
+              <div>
+                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:"#bbb", letterSpacing:"0.15em", marginBottom:16 }}>COMPANY</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                  {[["About Us","about"],["Terms & Conditions","terms"],["Privacy Policy","privacy"],["Contact","contact"]].map(([l,k]) => (
+                    <span key={k} onClick={() => setModal(k)}
+                      style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||"#555", cursor:"pointer", transition:"color 0.2s" }}
+                      onMouseEnter={e=>e.target.style.color=T.accent}
+                      onMouseLeave={e=>e.target.style.color="#555"}>
+                      {l}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:"#bbb", letterSpacing:"0.15em", marginBottom:16 }}>TRAVEL</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                  {["Flights","Buses","WhatsApp Booking"].map(l => (
+                    <span key={l} onClick={() => { if(localStorage.getItem("token")) navigate("/search"); else navigate("/login"); }}
+                      style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||"#555", cursor:"pointer", transition:"color 0.2s" }}
+                      onMouseEnter={e=>e.target.style.color=T.accent}
+                      onMouseLeave={e=>e.target.style.color="#555"}>
+                      {l}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
-            <p style={{ fontSize:12,color:txtMut,lineHeight:1.7,maxWidth:200,fontFamily:"sans-serif" }}>
-              Built with ❤️ in Bangalore.<br/>India's AI travel discovery platform.
-            </p>
           </div>
-          {/* Product */}
-          <div>
-            <div style={{ fontSize:11,fontWeight:700,letterSpacing:"0.18em",color:gold,
-              marginBottom:16,fontFamily:"sans-serif" }}>PRODUCT</div>
-            {["Search Flights","Search Buses","AI Chat","My Bookings"].map(l=>(
-              <a key={l} className="alvFooterLink"
-                onClick={()=>navigate(l==="AI Chat"?"/ai":"/search")}
-                style={{ color:txt2,fontSize:13,cursor:"pointer",display:"block",
-                  marginBottom:8,textDecoration:"none",transition:"color 0.2s",
-                  fontFamily:"sans-serif" }}>{l}</a>
-            ))}
-          </div>
-          {/* Company */}
-          <div>
-            <div style={{ fontSize:11,fontWeight:700,letterSpacing:"0.18em",color:gold,
-              marginBottom:16,fontFamily:"sans-serif" }}>COMPANY</div>
-            {["About Us","Terms & Conditions","Privacy Policy","Contact"].map(l=>(
-              <a key={l} className="alvFooterLink"
-                style={{ color:txt2,fontSize:13,cursor:"pointer",display:"block",
-                  marginBottom:8,textDecoration:"none",transition:"color 0.2s",
-                  fontFamily:"sans-serif" }}>{l}</a>
-            ))}
-          </div>
-          {/* Partners */}
-          <div>
-            <div style={{ fontSize:11,fontWeight:700,letterSpacing:"0.18em",color:gold,
-              marginBottom:16,fontFamily:"sans-serif" }}>PARTNERS</div>
-            {[["Aviasales","https://aviasales.in"],["RedBus","https://redbus.in"],["Booking.com","https://booking.com"]].map(([l,u])=>(
-              <a key={l} href={u} target="_blank" rel="noreferrer" className="alvFooterLink"
-                style={{ color:txt2,fontSize:13,display:"block",marginBottom:8,
-                  textDecoration:"none",transition:"color 0.2s",fontFamily:"sans-serif" }}>{l}</a>
-            ))}
-          </div>
+        </footer>
+
+      </div>
+    </>
+  );
+}
+
+/* ─── SEARCH MOCKUP CARD ────────────────────────────────────────────────────── */
+function SearchMockup({ accent }) {
+  const queries = ["Flights BLR → GOA Friday under ₹3500","Bus Bangalore to Chennai tomorrow 6AM","Cheapest DEL to BOM next week"];
+  const [qi, setQi] = useState(0);
+  useEffect(() => { const t = setInterval(() => setQi(q => (q+1)%queries.length), 3400); return () => clearInterval(t); }, [queries.length]);
+  const results = [
+    { name:"SkyWings", code:"SW-204", time:"06:10→08:55", price:"₹3,240", tag:"BEST" },
+    { name:"BluJet",   code:"BJ-501", time:"09:30→12:15", price:"₹3,840", tag:"" },
+    { name:"AirFlow",  code:"AF-173", time:"14:20→17:05", price:"₹4,100", tag:"" },
+  ];
+  return (
+    <div style={{ width:460, background:"rgba(255,255,255,0.97)", borderRadius:22, boxShadow:"0 32px 80px rgba(0,0,0,0.10)", overflow:"hidden", border:"1px solid rgba(0,0,0,0.05)" }}>
+      <div style={{ background:"#f4f4f6", padding:"12px 16px", display:"flex", alignItems:"center", gap:7, borderBottom:"1px solid rgba(0,0,0,0.05)" }}>
+        {["#FF5F57","#FFBD2E","#28CA41"].map(c=><div key={c} style={{width:11,height:11,borderRadius:"50%",background:c}}/>)}
+        <div style={{ flex:1, background:"#f8f4ec", borderRadius:7, padding:"5px 14px", marginLeft:8, fontSize:11, color:"#bbb", fontFamily:"'DM Sans',sans-serif" }}>alvryn.in/search</div>
+      </div>
+      <div style={{ padding:"18px 18px 8px" }}>
+        <div style={{ background:"#f8f8f8", borderRadius:12, padding:"12px 15px", display:"flex", alignItems:"center", gap:10, border:`1.5px solid ${accent}33` }}>
+          <span>🔍</span>
+          <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:"#888", flex:1 }}>
+            {queries[qi]}<span style={{ animation:"blink 0.9s step-end infinite", color:accent }}>|</span>
+          </span>
         </div>
-        <div style={{ borderTop:`1px solid ${bd}`,paddingTop:24,textAlign:"center",
-          fontSize:12,color:txtMut,fontFamily:"sans-serif" }}>
-          <p style={{ marginBottom:6 }}>© 2026 Alvryn · alvryn.in · Built with love in Bangalore, India</p>
-          <p>Alvryn is a travel discovery platform. We may earn a commission from partner links at no extra cost to you.</p>
-        </div>
-      </footer>
+      </div>
+      <div style={{ padding:"8px 18px 18px", display:"flex", flexDirection:"column", gap:8 }}>
+        {results.map((f,i)=>(
+          <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 14px", borderRadius:11,
+            background:i===0?`${accent}0E`:"#fafafa", border:`1px solid ${i===0?accent+"26":"rgba(0,0,0,0.04)"}` }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:32, height:32, borderRadius:9, background:`${accent}14`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>✈️</div>
+              <div>
+                <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:600, fontSize:13, color:"#1a1410" }}>{f.name} <span style={{ fontWeight:400, color:"#999", fontSize:11 }}>{f.code}</span></div>
+                <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11.5, color:"#999" }}>{f.time}</div>
+              </div>
+            </div>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:800, fontSize:14, color:i===0?accent:"#111" }}>{f.price}</div>
+              {f.tag&&<div style={{ fontFamily:"'Space Mono',monospace", fontSize:8, background:accent, color:"#fff", padding:"2px 5px", borderRadius:4, marginTop:2 }}>{f.tag}</div>}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
