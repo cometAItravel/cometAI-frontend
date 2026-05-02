@@ -750,6 +750,16 @@ function SearchPage(){
   const subText={fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#5a4a3a"};
   const inp={background:"#fafaf8",borderRadius:12,padding:"12px 14px",border:"1.5px solid rgba(201,168,76,0.2)",transition:"border-color 0.2s"};
 
+  // ── Per-tab full-page background themes ───────────────────────────────────
+  const TAB_THEMES={
+    flight:{from:"#0c1445",to:"#0ea5e9",accent:"#38bdf8",text:"#fff",sub:"rgba(255,255,255,0.75)",emoji:"✈️",bg:"linear-gradient(135deg,#0c1445 0%,#1e3a8a 45%,#0284c7 100%)",headerBg:"linear-gradient(135deg,#0c1445,#1e3a8a)",tabCol:"#0284c7",activeLine:"#38bdf8"},
+    bus:   {from:"#052e16",to:"#16a34a",accent:"#4ade80",text:"#fff",sub:"rgba(255,255,255,0.75)",emoji:"🚌",bg:"linear-gradient(135deg,#052e16 0%,#14532d 45%,#16a34a 100%)",headerBg:"linear-gradient(135deg,#052e16,#166534)",tabCol:"#16a34a",activeLine:"#4ade80"},
+    hotel: {from:"#450a0a",to:"#dc2626",accent:"#f87171",text:"#fff",sub:"rgba(255,255,255,0.75)",emoji:"🏨",bg:"linear-gradient(135deg,#450a0a 0%,#991b1b 45%,#dc2626 100%)",headerBg:"linear-gradient(135deg,#450a0a,#991b1b)",tabCol:"#dc2626",activeLine:"#f87171"},
+    train: {from:"#2e1065",to:"#7c3aed",accent:"#a78bfa",text:"#fff",sub:"rgba(255,255,255,0.75)",emoji:"🚂",bg:"linear-gradient(135deg,#2e1065 0%,#4c1d95 45%,#7c3aed 100%)",headerBg:"linear-gradient(135deg,#2e1065,#4c1d95)",tabCol:"#7c3aed",activeLine:"#a78bfa"},
+    cab:   {from:"#78350f",to:"#c9a84c",accent:"#f0d080",text:"#fff",sub:"rgba(255,255,255,0.75)",emoji:"🚗",bg:"linear-gradient(135deg,#78350f 0%,#92400e 45%,#c9a84c 100%)",headerBg:"linear-gradient(135deg,#78350f,#92400e)",tabCol:"#c9a84c",activeLine:"#f0d080"},
+  };
+  const TT=TAB_THEMES[travelType]||TAB_THEMES.flight;
+
   return(
     <div style={{minHeight:"100vh",position:"relative",overflowX:"hidden",fontFamily:"'DM Sans',sans-serif",
       background:`linear-gradient(180deg,${TT.from}14 0%,#faf8f4 320px)`,
