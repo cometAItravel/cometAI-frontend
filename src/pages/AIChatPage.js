@@ -313,7 +313,10 @@ function ThinkingIndicator() {
 function TypewriterText({text, speed=18, onDone}) {
   const [displayed, setDisplayed] = React.useState("");
   const [done, setDone]           = React.useState(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onDoneRef = React.useRef(onDone);
+  const speedRef  = React.useRef(speed);
+  React.useEffect(() => { onDoneRef.current = onDone; });
+  React.useEffect(() => { speedRef.current  = speed;  });
   React.useEffect(() => {
     setDisplayed(""); setDone(false);
     if (!text) { setDone(true); return; }
@@ -321,10 +324,13 @@ function TypewriterText({text, speed=18, onDone}) {
     const t = setInterval(() => {
       i++;
       setDisplayed(text.slice(0, i));
-      if (i >= text.length) { clearInterval(t); setDone(true); if(onDone) onDone(); }
-    }, speed);
+      if (i >= text.length) {
+        clearInterval(t); setDone(true);
+        if(onDoneRef.current) onDoneRef.current();
+      }
+    }, speedRef.current);
     return () => clearInterval(t);
-  }, [text]); // text is the only meaningful dep; speed/onDone are stable
+  }, [text]);
   return (
     <span style={{whiteSpace:"pre-wrap"}}>
       {displayed}
