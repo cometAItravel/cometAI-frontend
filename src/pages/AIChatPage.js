@@ -326,6 +326,56 @@ function ThinkingIndicator(){
   );
 }
 
+
+// ── THINKING INDICATOR ───────────────────────────────────────────────────────
+function ThinkingIndicator() {
+  const icons = ["✈️","🚌","🏨","🚂","🗺️"];
+  const [idx, setIdx] = React.useState(0);
+  React.useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i+1) % icons.length), 450);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",
+      background:"rgba(255,255,255,0.85)",borderRadius:18,backdropFilter:"blur(8px)",
+      border:"1px solid rgba(201,168,76,0.18)",maxWidth:160,
+      animation:"fadeUp 0.3s both",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+      <span style={{fontSize:20,transition:"all 0.3s ease",
+        animation:"emojiSpin 0.9s ease infinite"}}>{icons[idx]}</span>
+      <div style={{display:"flex",gap:4,alignItems:"center"}}>
+        <span className="think-dot" style={{background:"#c9a84c"}}/>
+        <span className="think-dot" style={{background:"#c9a84c",animationDelay:"-0.16s"}}/>
+        <span className="think-dot" style={{background:"#c9a84c",animationDelay:"0"}}/>
+      </div>
+    </div>
+  );
+}
+
+// ── TYPEWRITER MESSAGE ────────────────────────────────────────────────────────
+function TypewriterText({text, speed=18, onDone}) {
+  const [displayed, setDisplayed] = React.useState("");
+  const [done, setDone]           = React.useState(false);
+  React.useEffect(() => {
+    setDisplayed(""); setDone(false);
+    if (!text) { setDone(true); return; }
+    let i = 0;
+    const t = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) { clearInterval(t); setDone(true); if(onDone) onDone(); }
+    }, speed);
+    return () => clearInterval(t);
+  }, [text]);
+  return (
+    <span style={{whiteSpace:"pre-wrap"}}>
+      {displayed}
+      {!done && <span style={{display:"inline-block",width:2,height:"1em",
+        background:"#c9a84c",marginLeft:1,verticalAlign:"text-bottom",
+        animation:"pulse 0.7s ease-in-out infinite"}}/>}
+    </span>
+  );
+}
+
 // ── FLIGHT CARD ─────────────────────────────────────────────────────────────────
 function FlightCard({f,i}){
   const LBL = {"Best Price":[C_STATIC.greenD,"rgba(22,163,74,0.13)"],"Fastest":["#60a5fa","rgba(96,165,250,0.13)"],"Best Overall":[C_STATIC.goldD,"rgba(201,168,76,0.2)"]};
@@ -566,11 +616,14 @@ function AiMsg({m}){
               📷 {m.image.caption}
             </div>}
           </div>
+        )}
         {/* Text */}
         {m.text&&(
           <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,color:C_STATIC.textPri,
-            lineHeight:1.8,marginBottom:m.cards?.length?16:0,whiteSpace:"pre-wrap"}}>
-            {m.text}
+            lineHeight:1.8,marginBottom:m.cards?.length?16:0}}>
+            {m.typewrite
+              ? <TypewriterText text={m.text} speed={16}/>
+              : <span style={{whiteSpace:"pre-wrap"}}>{m.text}</span>}
           </div>
         )}
         {/* Cards */}
@@ -870,7 +923,8 @@ export default function AIChatPage(){
   const [activeId,setActiveId] = useState(null);
   const [messages,setMessages] = useState([]);
   const [input,setInput]     = useState("");
-  const [loading,setLoading] = useState(false);
+  const [loading,setLoading]   = useState(false);
+  const [thinking,setThinking] = useState(false);
   const [sbOpen,setSbOpen]   = useState(typeof window!=="undefined" && window.innerWidth>768);
   const bottomRef   = useRef(null);
   const inputRef    = useRef(null);
@@ -1035,11 +1089,14 @@ export default function AIChatPage(){
         body:JSON.stringify({message:q,history:messages.slice(-6),sessionId:sessionIdRef.current}),
       });
       const data = await res.json();
+      // Ensure minimum thinking time of 1.2s (feels natural)
+      const elapsed = Date.now() - thinkStart;
+      if (elapsed < 1200) await new Promise(r => setTimeout(r, 1200 - elapsed));
       if (data.sessionId) { sessionIdRef.current = data.sessionId; sessionStorage.setItem("alvryn_sid", data.sessionId); }
       // ── Typing delay: 0.8-1.5s realistic thinking pause ──────────────────────
       await new Promise(r=>setTimeout(r, 1000 + Math.random()*600));
       setThinking(false);
-      const aMsg = {role:"assistant",id:Date.now()+1,text:data.text||"",cards:data.cards||[],cta:data.cta||null,quickReplies:data.quickReplies||[],tripSummary:data.tripSummary||null,showMindMap:data.showMindMap||false,sectionNum:data.sectionNum||null,totalSections:data.totalSections||null,image:data.image||null,showTextInput:data.showTextInput||null,_onSend:send,_typing:true};
+      const aMsg = {role:"assistant",id:Date.now()+1,typewrite:true,text:data.text||"",cards:data.cards||[],cta:data.cta||null,quickReplies:data.quickReplies||[],tripSummary:data.tripSummary||null,showMindMap:data.showMindMap||false,sectionNum:data.sectionNum||null,totalSections:data.totalSections||null,image:data.image||null,showTextInput:data.showTextInput||null,_onSend:send,_typing:true};
       const final = [...next,aMsg];
       setMessages(final);
       // ── Typewriter: reveal text char by char ───────────────────────────────
