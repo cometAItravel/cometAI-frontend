@@ -286,11 +286,11 @@ function useTypewriter(text, speed=18, skip=false){
 
 // ── Thinking / Loading Indicator ─────────────────────────────────────────────
 // ── THINKING INDICATOR ───────────────────────────────────────────────────────
+const THINK_ICONS = ["✈️","🚌","🏨","🚂","🗺️"];
 function ThinkingIndicator() {
-  const icons = ["✈️","🚌","🏨","🚂","🗺️"];
   const [idx, setIdx] = React.useState(0);
   React.useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i+1) % icons.length), 450);
+    const t = setInterval(() => setIdx(i => (i+1) % THINK_ICONS.length), 450);
     return () => clearInterval(t);
   }, []);
   return (
@@ -299,7 +299,7 @@ function ThinkingIndicator() {
       border:"1px solid rgba(201,168,76,0.18)",maxWidth:160,
       animation:"fadeUp 0.3s both",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
       <span style={{fontSize:20,transition:"all 0.3s ease",
-        animation:"emojiSpin 0.9s ease infinite"}}>{icons[idx]}</span>
+        animation:"emojiSpin 0.9s ease infinite"}}>{THINK_ICONS[idx]}</span>
       <div style={{display:"flex",gap:4,alignItems:"center"}}>
         <span className="think-dot" style={{background:"#c9a84c"}}/>
         <span className="think-dot" style={{background:"#c9a84c",animationDelay:"-0.16s"}}/>
@@ -313,6 +313,7 @@ function ThinkingIndicator() {
 function TypewriterText({text, speed=18, onDone}) {
   const [displayed, setDisplayed] = React.useState("");
   const [done, setDone]           = React.useState(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     setDisplayed(""); setDone(false);
     if (!text) { setDone(true); return; }
@@ -323,7 +324,7 @@ function TypewriterText({text, speed=18, onDone}) {
       if (i >= text.length) { clearInterval(t); setDone(true); if(onDone) onDone(); }
     }, speed);
     return () => clearInterval(t);
-  }, [text]);
+  }, [text]); // text is the only meaningful dep; speed/onDone are stable
   return (
     <span style={{whiteSpace:"pre-wrap"}}>
       {displayed}
