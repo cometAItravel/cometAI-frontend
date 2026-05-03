@@ -882,7 +882,8 @@ export default function AIChatPage(){
   const [messages,setMessages] = useState([]);
   const [input,setInput]     = useState("");
   const [loading,setLoading]   = useState(false);
-  const [thinking,setThinking] = useState(false);
+  const [thinking,setThinking]   = useState(false);
+  const [thinkEmoji,setThinkEmoji] = useState("✈️");
   const [sbOpen,setSbOpen]   = useState(typeof window!=="undefined" && window.innerWidth>768);
   const bottomRef   = useRef(null);
   const inputRef    = useRef(null);
@@ -1048,7 +1049,7 @@ export default function AIChatPage(){
       });
       const data = await res.json();
       // Ensure minimum thinking time of 1.2s (feels natural)
-      const elapsed = Date.now() - thinkStart;
+      const elapsed = Date.now() - thinkStartRef.current;
       if (elapsed < 1200) await new Promise(r => setTimeout(r, 1200 - elapsed));
       if (data.sessionId) { sessionIdRef.current = data.sessionId; sessionStorage.setItem("alvryn_sid", data.sessionId); }
       // ── Typing delay: 0.8-1.5s realistic thinking pause ──────────────────────
