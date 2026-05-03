@@ -285,48 +285,6 @@ function useTypewriter(text, speed=18, skip=false){
 }
 
 // ── Thinking / Loading Indicator ─────────────────────────────────────────────
-function ThinkingIndicator(){
-  const [frame,setFrame]=useState(0);
-  const steps=[
-    {icon:"✈️",label:"Checking flights…"},
-    {icon:"🚌",label:"Comparing buses…"},
-    {icon:"🏨",label:"Searching hotels…"},
-    {icon:"🚂",label:"Looking at trains…"},
-    {icon:"🌍",label:"Planning your trip…"},
-  ];
-  const [step,setStep]=useState(0);
-  useEffect(()=>{
-    const t=setInterval(()=>{setFrame(f=>(f+1)%5);setStep(s=>(s+1)%steps.length);},700);
-    return()=>clearInterval(t);
-  },[]);
-  return(
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 18px",
-      background:"rgba(255,255,255,0.92)",backdropFilter:"blur(12px)",
-      borderRadius:"18px 18px 18px 4px",
-      border:"1px solid rgba(201,168,76,0.2)",
-      boxShadow:"0 4px 20px rgba(0,0,0,0.08)",
-      animation:"fadeUp 0.3s both"}}>
-      <span style={{fontSize:22,display:"inline-block",
-        animation:"thinkBounce 0.7s ease-in-out infinite",
-        transformOrigin:"center"}}>{steps[step].icon}</span>
-      <div>
-        <div style={{fontSize:12,color:"#8B6914",fontFamily:"'DM Sans',sans-serif",fontWeight:600,
-          animation:"fadeUp 0.3s both",key:step}}>
-          {steps[step].label}
-        </div>
-        <div style={{display:"flex",gap:3,marginTop:4}}>
-          {[0,1,2,3].map(i=>(
-            <div key={i} style={{width:5,height:5,borderRadius:"50%",
-              background:i%2===0?"#c9a84c":"#4ade80",
-              animation:`pulse 1.1s ${i*0.18}s ease-in-out infinite`}}/>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
 // ── THINKING INDICATOR ───────────────────────────────────────────────────────
 function ThinkingIndicator() {
   const icons = ["✈️","🚌","🏨","🚂","🗺️"];
