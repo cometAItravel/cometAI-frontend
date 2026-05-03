@@ -883,6 +883,8 @@ export default function AIChatPage(){
   const [input,setInput]     = useState("");
   const [loading,setLoading]   = useState(false);
   const [thinking,setThinking]   = useState(false);
+  const thinkStartRef  = React.useRef(0);
+  const messagesEndRef = React.useRef(null);
   const [thinkEmoji,setThinkEmoji] = useState("✈️");
   const [sbOpen,setSbOpen]   = useState(typeof window!=="undefined" && window.innerWidth>768);
   const bottomRef   = useRef(null);
