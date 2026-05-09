@@ -399,17 +399,20 @@ function ShimmerText({ text, themeKey, onDone }) {
   const T = THEMES[themeKey];
   const [visibleCount, setVisibleCount] = useState(0);
   const words = text ? text.split(" ") : [];
+  const onDoneRef = useRef(onDone);
+  useEffect(() => { onDoneRef.current = onDone; });
 
   useEffect(() => {
     setVisibleCount(0);
-    if (!words.length) { if (onDone) onDone(); return; }
+    const wordCount = text ? text.split(" ").length : 0;
+    if (!wordCount) { if (onDoneRef.current) onDoneRef.current(); return; }
     let i = 0;
     const interval = setInterval(() => {
       i++;
       setVisibleCount(i);
-      if (i >= words.length) {
+      if (i >= wordCount) {
         clearInterval(interval);
-        if (onDone) onDone();
+        if (onDoneRef.current) onDoneRef.current();
       }
     }, 60);
     return () => clearInterval(interval);
