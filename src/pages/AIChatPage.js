@@ -924,7 +924,7 @@ export default function AIChatPage() {
             </div>
           )}
 
-          {/* Chat history — always visible regardless of theme state */}
+          {/* Chat history */}
           <div style={{ flex:1, overflowY:"auto", overflowX:"hidden", marginBottom:8 }}>
             {chats.length > 0 ? (
               <>
@@ -991,7 +991,7 @@ export default function AIChatPage() {
       {/* ══ MAIN AREA ════════════════════════════════════════════════════════ */}
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minWidth:0 }}>
 
-        {/* TOP BAR — sticky, always on screen */}
+        {/* TOP BAR */}
         <div style={{
           height:56, padding:"0 12px",
           display:"flex", alignItems:"center", justifyContent:"space-between",
@@ -1002,7 +1002,6 @@ export default function AIChatPage() {
         }}>
           {/* LEFT: hamburger + title */}
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            {/* HAMBURGER — always visible */}
             <button onClick={() => setSbOpen(s => !s)}
               style={{
                 width:40, height:40, borderRadius:10, background:"transparent",
@@ -1022,15 +1021,17 @@ export default function AIChatPage() {
             </div>
           </div>
 
-          {/* RIGHT: home icon + live badge + new */}
+          {/* RIGHT: search icon + live badge + new */}
           <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-            {/* HOME / SEARCH ICON */}
+            {/* FIX: removed duplicate height key */}
             <button onClick={() => navigate("/search")}
               title="Go to Flight Search"
-              style={{               width:38, height:38, borderRadius:10, background:`${T.accent}15`,
+              style={{
+                width:38, height:38, borderRadius:10, background:`${T.accent}15`,
                 border:`2px solid ${T.border}`, cursor:"pointer",
                 display:"flex", alignItems:"center", justifyContent:"center",
-                fontSize:18, flexShrink:0, lineHeight:1 }}>
+                fontSize:18, flexShrink:0, lineHeight:1,
+              }}>
               🔍
             </button>
 
@@ -1234,7 +1235,7 @@ export default function AIChatPage() {
           </div>
         </div>
 
-        {/* INPUT AREA — sticky at bottom */}
+        {/* INPUT AREA */}
         <div style={{
           padding:"10px 12px 14px",
           borderTop:`2px dashed ${T.border}`,
@@ -1279,7 +1280,6 @@ export default function AIChatPage() {
                   : "↑"}
               </button>
             </div>
-            {/* Disclaimer */}
             <div style={{ textAlign:"center", marginTop:5,
               fontFamily:"'Caveat',cursive", fontSize:11,
               color:T.aiText, opacity:0.38 }}>
