@@ -849,7 +849,7 @@ export default function AIChatPage() {
 
   // ── RENDER ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ display:"flex", height:"100vh", height:"100dvh", background:T.bg,
+    <div style={{ display:"flex", height:"100dvh", background:T.bg,
       overflow:"hidden", fontFamily:"'Caveat',cursive",
       transition:"background 0.4s ease" }}>
       <style>{CSS}</style>
