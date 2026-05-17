@@ -184,27 +184,27 @@ function AuroraBackground() {
 function FlightAnimation() {
   return (
     <div style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none", zIndex:0 }}>
-      {/* Slow drifting airplane */}
-      <div style={{ position:"absolute", top:"38%", left:0, animation:"flyAcross 18s ease-in-out infinite", animationDelay:"0s" }}>
-        <svg width="90" height="36" viewBox="0 0 90 36" fill="none" opacity="0.22">
+      <div style={{ position:"absolute", top:"35%", left:0, animation:"flyAcross 16s linear infinite" }}>
+        <svg width="110" height="44" viewBox="0 0 90 36" fill="none" opacity="0.75">
           <path d="M5 18 L55 6 L80 18 L55 30 Z" fill={GOLD}/>
           <path d="M55 18 L90 14 L90 22 Z" fill={GOLD}/>
-          <path d="M30 18 L50 8 L50 28 Z" fill={GOLD} opacity="0.6"/>
+          <path d="M30 18 L50 8 L50 28 Z" fill={GOLD} opacity="0.8"/>
         </svg>
       </div>
-      <div style={{ position:"absolute", top:"55%", left:0, animation:"flyAcross 26s ease-in-out infinite", animationDelay:"9s" }}>
-        <svg width="60" height="24" viewBox="0 0 90 36" fill="none" opacity="0.14">
+      <div style={{ position:"absolute", top:"58%", left:0, animation:"flyAcross 24s linear infinite", animationDelay:"8s" }}>
+        <svg width="70" height="28" viewBox="0 0 90 36" fill="none" opacity="0.45">
           <path d="M5 18 L55 6 L80 18 L55 30 Z" fill={GOLD}/>
           <path d="M55 18 L90 14 L90 22 Z" fill={GOLD}/>
         </svg>
       </div>
-      {/* Subtle cloud shapes */}
-      <div style={{ position:"absolute", top:"20%", right:"15%", width:180, height:50, borderRadius:40, background:GOLD, opacity:0.07, animation:"shimmerGold 8s ease-in-out infinite" }}/>
-      <div style={{ position:"absolute", top:"65%", left:"8%", width:120, height:35, borderRadius:30, background:GOLD, opacity:0.05, animation:"shimmerGold 11s ease-in-out infinite 3s" }}/>
-      {/* Flight path arc */}
-      <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%", opacity:0.12 }} viewBox="0 0 1000 300" preserveAspectRatio="none">
+      <div style={{ position:"absolute", top:"18%", right:"18%", width:200, height:55, borderRadius:40, background:GOLD, opacity:0.18, animation:"shimmerGold 8s ease-in-out infinite" }}/>
+      <div style={{ position:"absolute", top:"62%", left:"10%", width:140, height:38, borderRadius:30, background:GOLD, opacity:0.12, animation:"shimmerGold 11s ease-in-out infinite 3s" }}/>
+      <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%", opacity:0.35 }} viewBox="0 0 1000 300" preserveAspectRatio="none">
         <path d="M-50 250 Q 300 50 600 150 Q 800 220 1100 80" stroke={GOLD} strokeWidth="1.5" fill="none" strokeDasharray="12 8"/>
       </svg>
+      {[{x:"15%",y:"25%"},{x:"45%",y:"15%"},{x:"70%",y:"30%"},{x:"85%",y:"20%"},{x:"30%",y:"70%"},{x:"60%",y:"65%"}].map((s,i)=>(
+        <div key={i} style={{ position:"absolute", left:s.x, top:s.y, width:3, height:3, borderRadius:"50%", background:GOLD, opacity:0.4, animation:`shimmerGold ${4+i}s ease-in-out infinite ${i*0.5}s` }}/>
+      ))}
     </div>
   );
 }
