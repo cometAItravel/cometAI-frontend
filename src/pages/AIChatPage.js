@@ -642,6 +642,291 @@ function AlvrynLogo({ size=32, color="#c9a84c" }) {
   );
 }
 
+// ── PLANS MODAL ───────────────────────────────────────────────────────────────
+function PlansModal({ onClose, T }) {
+  const [hoveredPlan, setHoveredPlan] = useState(null);
+
+  const plans = [
+    {
+      id: "explorer",
+      tier: "ALVRYN Explorer",
+      badge: "Free",
+      badgeColor: "#22c55e",
+      icon: "🧭",
+      tagline: "Start your journey",
+      active: true,
+      features: [
+        { icon:"✈️", text:"Flight, bus, hotel & train search" },
+        { icon:"🗺️", text:"Up to 2 complete door-to-door trip plans/month" },
+        { icon:"💬", text:"AI travel chat with smart conversation" },
+        { icon:"🛡️", text:"AI Safety Insights — proactive for any destination" },
+        { icon:"📍", text:"AI Check-In via WhatsApp" },
+        { icon:"🧠", text:"Basic travel memory & preferences" },
+        { icon:"📚", text:"Unlimited basic travel Q&A" },
+        { icon:"🕐", text:"20 advanced AI responses/day" },
+      ],
+    },
+    {
+      id: "navigator",
+      tier: "ALVRYN Navigator",
+      badge: "Pro",
+      badgeColor: "#3b82f6",
+      icon: "🌍",
+      tagline: "For the serious traveller",
+      active: false,
+      comingSoon: true,
+      features: [
+        { icon:"♾️", text:"Unlimited complete trip plans" },
+        { icon:"📅", text:"Day-by-day itinerary generation" },
+        { icon:"🧠", text:"Extended AI memory across trips" },
+        { icon:"💰", text:"Smart budget optimizer" },
+        { icon:"🗺️", text:"Multi-city trip planning" },
+        { icon:"🛣️", text:"Safe Route Suggestions" },
+        { icon:"💾", text:"Save & revisit trip plans anytime" },
+        { icon:"⚡", text:"Priority AI responses" },
+        { icon:"📜", text:"Unlimited chat history" },
+      ],
+    },
+    {
+      id: "voyager",
+      tier: "ALVRYN Voyager",
+      badge: "Premium",
+      badgeColor: "#c9a84c",
+      icon: "🚀",
+      tagline: "Your personal travel companion",
+      active: false,
+      comingSoon: true,
+      mostPopular: true,
+      features: [
+        { icon:"🤖", text:"Most advanced AI for complex trip planning" },
+        { icon:"♾️", text:"Unlimited AI responses" },
+        { icon:"👥", text:"Group travel planner — split costs & itineraries" },
+        { icon:"🌏", text:"Multi-country route optimization" },
+        { icon:"⚠️", text:"Scam Awareness for any destination" },
+        { icon:"👩", text:"Women Traveler Mode" },
+        { icon:"💼", text:"Business traveler mode" },
+        { icon:"🌤️", text:"Weather & crowd optimization" },
+        { icon:"🚨", text:"Emergency Companion Mode (coming soon)" },
+        { icon:"👨‍👩‍👧", text:"Family Tracking (coming soon)" },
+      ],
+    },
+  ];
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position:"fixed", inset:0, zIndex:1000,
+        background:"rgba(0,0,0,0.75)",
+        backdropFilter:"blur(12px)",
+        display:"flex", alignItems:"center", justifyContent:"center",
+        padding:"20px 16px",
+        animation:"plansModalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+      }}>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width:"100%", maxWidth:860,
+          maxHeight:"90vh", overflowY:"auto",
+          background: T.sidebar,
+          borderRadius:24,
+          border:`1px solid ${T.accent}33`,
+          boxShadow:`0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px ${T.accent}22`,
+          animation:"plansSlideUp 0.35s cubic-bezier(0.34,1.56,0.64,1) both",
+          scrollbarWidth:"thin",
+        }}>
+
+        {/* Header */}
+        <div style={{
+          padding:"28px 28px 20px",
+          borderBottom:`1px solid ${T.accent}22`,
+          display:"flex", alignItems:"flex-start", justifyContent:"space-between",
+          position:"sticky", top:0, zIndex:10,
+          background:T.sidebar,
+          borderRadius:"24px 24px 0 0",
+        }}>
+          <div>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+              <AlvrynLogo size={28} color={T.accent}/>
+              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.accent, letterSpacing:"0.22em" }}>INTELLIGENT TRAVEL</div>
+            </div>
+            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:24, color:T.sbText, lineHeight:1.1 }}>
+              Choose Your Journey
+            </div>
+            <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.sbSubText, marginTop:4 }}>
+              Every traveller deserves the right companion.
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width:36, height:36, borderRadius:"50%",
+              background:"rgba(255,255,255,0.06)",
+              border:`1px solid ${T.sbBorder}`,
+              cursor:"pointer", color:T.sbSubText, fontSize:18,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              flexShrink:0, marginTop:4,
+              transition:"all 0.2s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = T.accentSoft; e.currentTarget.style.color = T.accent; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = T.sbSubText; }}>
+            ×
+          </button>
+        </div>
+
+        {/* Plans grid */}
+        <div style={{
+          display:"grid",
+          gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))",
+          gap:16,
+          padding:"20px 24px 28px",
+        }}>
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              onMouseEnter={() => setHoveredPlan(plan.id)}
+              onMouseLeave={() => setHoveredPlan(null)}
+              style={{
+                borderRadius:18,
+                border: plan.id === "voyager"
+                  ? `1.5px solid ${T.accent}66`
+                  : hoveredPlan === plan.id
+                  ? `1px solid ${T.accent}44`
+                  : `1px solid ${T.sbBorder}`,
+                background: plan.id === "voyager"
+                  ? `linear-gradient(160deg, rgba(201,168,76,0.08), rgba(201,168,76,0.03))`
+                  : "rgba(255,255,255,0.03)",
+                padding:"22px 20px 20px",
+                position:"relative",
+                transform: hoveredPlan === plan.id ? "translateY(-3px)" : "translateY(0)",
+                transition:"all 0.25s cubic-bezier(0.4,0,0.2,1)",
+                boxShadow: plan.id === "voyager"
+                  ? `0 8px 32px rgba(201,168,76,0.12)`
+                  : hoveredPlan === plan.id
+                  ? "0 8px 24px rgba(0,0,0,0.2)"
+                  : "none",
+              }}>
+
+              {/* Most Popular badge */}
+              {plan.mostPopular && (
+                <div style={{
+                  position:"absolute", top:-12, left:"50%", transform:"translateX(-50%)",
+                  background:`linear-gradient(135deg,#c9a84c,#f0d080)`,
+                  color:"#1a1008", fontFamily:"'Space Mono',monospace",
+                  fontSize:9, fontWeight:700, letterSpacing:"0.14em",
+                  padding:"4px 14px", borderRadius:20,
+                  whiteSpace:"nowrap",
+                }}>
+                  ✦ MOST POPULAR
+                </div>
+              )}
+
+              {/* Plan header */}
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:28, marginBottom:10 }}>{plan.icon}</div>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.sbText }}>
+                    {plan.tier}
+                  </div>
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                  <span style={{
+                    fontFamily:"'Space Mono',monospace", fontSize:9, fontWeight:700,
+                    letterSpacing:"0.1em", padding:"3px 10px", borderRadius:20,
+                    background: plan.active ? "rgba(34,197,94,0.15)" : plan.id === "navigator" ? "rgba(59,130,246,0.15)" : "rgba(201,168,76,0.15)",
+                    color: plan.active ? "#22c55e" : plan.id === "navigator" ? "#3b82f6" : "#c9a84c",
+                    border: `1px solid ${plan.active ? "rgba(34,197,94,0.3)" : plan.id === "navigator" ? "rgba(59,130,246,0.3)" : "rgba(201,168,76,0.3)"}`,
+                  }}>
+                    {plan.badge}
+                  </span>
+                  {plan.active && (
+                    <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:"#22c55e", fontWeight:600 }}>
+                      ● Active
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:T.sbSubText, fontStyle:"italic" }}>
+                  {plan.tagline}
+                </div>
+              </div>
+
+              {/* Coming Soon banner for Pro/Premium */}
+              {plan.comingSoon && (
+                <div style={{
+                  marginBottom:16, padding:"10px 14px", borderRadius:10,
+                  background:"rgba(201,168,76,0.06)",
+                  border:`1px solid ${T.accent}22`,
+                }}>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:13, color:T.accent, marginBottom:2 }}>
+                    ✦ Intelligent Travel Upgrades Are On The Way
+                  </div>
+                  <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:T.sbSubText, lineHeight:1.5 }}>
+                    Currently being crafted with precision. You'll be among the first to know.
+                  </div>
+                </div>
+              )}
+
+              {/* Features */}
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {plan.features.map((f, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
+                    <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>{f.icon}</span>
+                    <span style={{
+                      fontFamily:"'DM Sans',sans-serif", fontSize:12,
+                      color: plan.comingSoon ? T.sbSubText : T.sbText,
+                      lineHeight:1.5,
+                      opacity: plan.comingSoon ? 0.7 : 1,
+                    }}>
+                      {f.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <div style={{ marginTop:20 }}>
+                {plan.active ? (
+                  <div style={{
+                    padding:"10px 16px", borderRadius:10, textAlign:"center",
+                    background:"rgba(34,197,94,0.08)",
+                    border:"1px solid rgba(34,197,94,0.25)",
+                    fontFamily:"'DM Sans',sans-serif", fontSize:13,
+                    color:"#22c55e", fontWeight:600,
+                  }}>
+                    ✓ Your Current Plan
+                  </div>
+                ) : (
+                  <div style={{
+                    padding:"10px 16px", borderRadius:10, textAlign:"center",
+                    background:"rgba(255,255,255,0.04)",
+                    border:`1px solid ${T.sbBorder}`,
+                    fontFamily:"'DM Sans',sans-serif", fontSize:12,
+                    color:T.sbSubText,
+                  }}>
+                    Notify me when available →
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer note */}
+        <div style={{
+          padding:"0 24px 24px",
+          textAlign:"center",
+          fontFamily:"'DM Sans',sans-serif", fontSize:11,
+          color:T.sbSubText, lineHeight:1.7,
+          borderTop:`1px solid ${T.accent}11`,
+          paddingTop:16,
+        }}>
+          🛡️ We care more about your journey than just a ticket. &nbsp;·&nbsp; AI Safety Insights & Check-In included in all plans.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 //  MAIN AI CHAT PAGE
 // ══════════════════════════════════════════════════════════════════════════════
@@ -657,6 +942,7 @@ export default function AIChatPage() {
   const [thinkQuery, setThinkQuery] = useState("");
   const [sbOpen, setSbOpen]     = useState(false);
   const [showThemes, setShowThemes] = useState(false);
+  const [showPlans, setShowPlans]   = useState(false); // ← NEW
   const bottomRef    = useRef(null);
   const inputRef     = useRef(null);
   const textareaRef  = useRef(null);
@@ -791,7 +1077,6 @@ export default function AIChatPage() {
       });
       const data = await res.json();
 
-      // Ensure minimum thinking time of 2s for premium feel
       const elapsed = Date.now()-thinkStart.current;
       if (elapsed<2000) await new Promise(r=>setTimeout(r,2000-elapsed));
 
@@ -845,6 +1130,8 @@ export default function AIChatPage() {
     @keyframes spin{to{transform:rotate(360deg);}}
     @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
     @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+    @keyframes plansModalIn{from{opacity:0;}to{opacity:1;}}
+    @keyframes plansSlideUp{from{opacity:0;transform:translateY(30px) scale(0.97);}to{opacity:1;transform:translateY(0) scale(1);}}
     ::-webkit-scrollbar{width:3px;}
     ::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.3);border-radius:2px;}
     textarea::placeholder{font-family:'DM Sans',sans-serif!important;}
@@ -856,6 +1143,9 @@ export default function AIChatPage() {
   return (
     <div style={{ display:"flex", height:"100dvh", background:T.bg, overflow:"hidden", fontFamily:"'DM Sans',sans-serif", transition:"background 0.5s ease" }}>
       <style>{CSS}</style>
+
+      {/* Plans Modal */}
+      {showPlans && <PlansModal onClose={() => setShowPlans(false)} T={T}/>}
 
       {/* SIDEBAR OVERLAY */}
       {sbOpen && (
@@ -902,14 +1192,14 @@ export default function AIChatPage() {
             <span style={{ marginLeft:"auto", opacity:0.5 }}>{showThemes?"▲":"▼"}</span>
           </button>
 
-          {/* Theme Picker (inline, doesn't push chats) */}
+          {/* Theme Picker */}
           {showThemes && (
             <div style={{ marginBottom:12, padding:"10px", background:"rgba(255,255,255,0.03)", borderRadius:10, border:`1px solid ${T.sbBorder}` }}>
               <ThemePicker current={themeKey} onSelect={k=>{setThemeKey(k);}} T={T}/>
             </div>
           )}
 
-          {/* Chat History — always visible regardless of theme picker */}
+          {/* Chat History */}
           <div style={{ flex:1, overflowY:"auto", overflowX:"hidden", marginBottom:8 }}>
             {chats.length > 0 ? (
               <>
@@ -929,8 +1219,10 @@ export default function AIChatPage() {
             )}
           </div>
 
-          {/* User Info */}
+          {/* ── USER INFO SECTION ── */}
           <div style={{ borderTop:`1px solid ${T.sbBorder}`, paddingTop:12 }}>
+
+            {/* User avatar + name */}
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
               <div style={{ width:34, height:34, borderRadius:"50%", flexShrink:0, background:`linear-gradient(135deg,${T.accent},${T.accentDark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:700, color:"#fff" }}>
                 {user.name?.charAt(0)?.toUpperCase()||"U"}
@@ -940,6 +1232,8 @@ export default function AIChatPage() {
                 <div style={{ fontSize:10, color:T.sbSubText, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontFamily:"'DM Sans',sans-serif" }}>{user.email||""}</div>
               </div>
             </div>
+
+            {/* Nav shortcuts */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:5, marginBottom:8 }}>
               {[["🔍 Search","/search"],["👤 Profile","/profile"],["🏠 Home","/"],["🎫 Bookings","/bookings"]].map(([label,path])=>(
                 <button key={path} onClick={()=>navigate(path)}
@@ -950,6 +1244,34 @@ export default function AIChatPage() {
                 </button>
               ))}
             </div>
+
+            {/* ── PLANS BUTTON (NEW) ── */}
+            <button
+              onClick={() => setShowPlans(true)}
+              style={{
+                width:"100%", padding:"9px 12px", borderRadius:10,
+                background:"rgba(201,168,76,0.06)",
+                border:`1px solid ${T.accent}44`,
+                cursor:"pointer", marginBottom:8,
+                display:"flex", alignItems:"center", gap:8,
+                fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600,
+                color:T.accent, letterSpacing:"0.04em",
+                transition:"all 0.2s",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = T.accentSoft;
+                e.currentTarget.style.borderColor = `${T.accent}88`;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = "rgba(201,168,76,0.06)";
+                e.currentTarget.style.borderColor = `${T.accent}44`;
+              }}>
+              <span style={{ fontSize:14 }}>✨</span>
+              <span>ALVRYN Plans</span>
+              <span style={{ marginLeft:"auto", fontSize:10, opacity:0.6 }}>›</span>
+            </button>
+
+            {/* Sign Out */}
             <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("user");navigate("/login");}}
               style={{ width:"100%", padding:"8px", borderRadius:8, fontSize:12, fontWeight:500, cursor:"pointer", background:"rgba(239,68,68,0.06)", color:"rgba(239,68,68,0.7)", border:"1px solid rgba(239,68,68,0.2)", fontFamily:"'DM Sans',sans-serif" }}>
               Sign Out
@@ -971,7 +1293,6 @@ export default function AIChatPage() {
           transition:"background 0.4s ease",
         }}>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            {/* Hamburger — always visible */}
             <button onClick={()=>setSbOpen(s=>!s)}
               style={{ width:40, height:40, borderRadius:10, background:"transparent", border:`1px solid ${T.border}`, cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:5, padding:"10px", flexShrink:0, transition:"all 0.2s" }}
               onMouseEnter={e=>{e.currentTarget.style.background=T.accentSoft;}}
@@ -987,7 +1308,6 @@ export default function AIChatPage() {
           </div>
 
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-            {/* Search / Home icon */}
             <button onClick={()=>navigate("/search")} title="Search Flights & More"
               style={{ width:36, height:36, borderRadius:10, background:T.accentSoft, border:`1px solid ${T.border}`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0, transition:"all 0.2s" }}
               onMouseEnter={e=>{e.currentTarget.style.background=`${T.accent}25`;}}
@@ -995,7 +1315,6 @@ export default function AIChatPage() {
               🔍
             </button>
 
-            {/* Live indicator */}
             <div style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", borderRadius:20, border:`1px solid ${T.border}`, background:T.accentSoft }}>
               <div style={{ width:6, height:6, borderRadius:"50%", background:"#22c55e", animation:"pulse 2s infinite" }}/>
               <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:T.accent, letterSpacing:"0.06em", fontWeight:500 }}>AI LIVE</span>
@@ -1137,7 +1456,7 @@ export default function AIChatPage() {
           </div>
         </div>
 
-        {/* ── INPUT AREA — sticky at bottom ── */}
+        {/* ── INPUT AREA ── */}
         <div style={{ padding:"10px 16px 16px", borderTop:`1px solid ${T.border}`, flexShrink:0, background:T.navBg, backdropFilter:"blur(20px)", transition:"background 0.4s ease" }}>
           <div style={{ maxWidth:700, margin:"0 auto" }}>
             <div style={{ display:"flex", alignItems:"flex-end", gap:10, background:T.inputBg, borderRadius:16, padding:"10px 14px", border:`1px solid ${T.border}`, boxShadow:`0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5)`, backdropFilter:"blur(10px)", transition:"box-shadow 0.2s, border-color 0.2s" }}
@@ -1158,7 +1477,6 @@ export default function AIChatPage() {
               </button>
             </div>
 
-            {/* Disclaimer */}
             <div style={{ textAlign:"center", marginTop:6, fontFamily:"'DM Sans',sans-serif", fontSize:11, color:T.aiText, opacity:0.3, fontWeight:300, letterSpacing:"0.01em" }}>
               Alvryn AI can make mistakes — please double-check important details.
             </div>
