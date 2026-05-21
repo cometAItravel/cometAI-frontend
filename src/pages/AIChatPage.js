@@ -642,6 +642,191 @@ function AlvrynLogo({ size=32, color="#c9a84c" }) {
   );
 }
 
+// ── FEEDBACK BAR ─────────────────────────────────────────────────────────────
+function FeedbackBar({ message, prevUserMessage, T }) {
+  const [rating, setRating]       = useState(null); // 1 | -1 | null
+  const [showReason, setShowReason] = useState(false);
+  const [reason, setReason]       = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving]       = useState(false);
+
+  const submit = async (r, reasonText = "") => {
+    if (submitted || saving) return;
+    setSaving(true);
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${API}/feedback`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          message_id:   String(message.id),
+          user_message: prevUserMessage || "",
+          ai_response:  message.text || "",
+          rating:       r,
+          reason:       reasonText,
+        }),
+      });
+    } catch {}
+    setSaving(false);
+    setSubmitted(true);
+    setShowReason(false);
+  };
+
+  const handleThumbsUp = () => {
+    if (submitted) return;
+    setRating(1);
+    setShowReason(false);
+    submit(1);
+  };
+
+  const handleThumbsDown = () => {
+    if (submitted) return;
+    setRating(-1);
+    setShowReason(true);
+  };
+
+  const handleReasonSubmit = () => {
+    submit(-1, reason.trim());
+  };
+
+  const handleReasonSkip = () => {
+    submit(-1, "");
+  };
+
+  if (submitted) {
+    return (
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        marginTop: 10, opacity: 0.6,
+        fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: T.aiText,
+        animation: "fadeUp 0.3s both",
+      }}>
+        {rating === 1
+          ? <><span style={{ color: "#22c55e" }}>👍</span> Thanks for the feedback!</>
+          : <><span style={{ color: "#ef4444" }}>👎</span> Got it — we'll improve this.</>
+        }
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 10, animation: "fadeUp 0.3s both" }}>
+      {/* Thumbs row */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{
+          fontFamily: "'DM Sans',sans-serif", fontSize: 10,
+          color: T.aiText, opacity: 0.35, letterSpacing: "0.06em",
+        }}>
+          Was this helpful?
+        </span>
+        {/* Thumbs Up */}
+        <button
+          onClick={handleThumbsUp}
+          title="Helpful"
+          style={{
+            width: 28, height: 28, borderRadius: 8,
+            background: rating === 1 ? "rgba(34,197,94,0.12)" : "transparent",
+            border: rating === 1 ? "1px solid rgba(34,197,94,0.35)" : `1px solid ${T.border}`,
+            cursor: "pointer", fontSize: 13,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "all 0.18s", color: rating === 1 ? "#22c55e" : T.aiText,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(34,197,94,0.08)"; e.currentTarget.style.borderColor = "rgba(34,197,94,0.3)"; }}
+          onMouseLeave={e => {
+            if (rating !== 1) {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = T.border;
+            }
+          }}>
+          👍
+        </button>
+        {/* Thumbs Down */}
+        <button
+          onClick={handleThumbsDown}
+          title="Not helpful"
+          style={{
+            width: 28, height: 28, borderRadius: 8,
+            background: rating === -1 ? "rgba(239,68,68,0.10)" : "transparent",
+            border: rating === -1 ? "1px solid rgba(239,68,68,0.35)" : `1px solid ${T.border}`,
+            cursor: "pointer", fontSize: 13,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "all 0.18s", color: rating === -1 ? "#ef4444" : T.aiText,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)"; }}
+          onMouseLeave={e => {
+            if (rating !== -1) {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = T.border;
+            }
+          }}>
+          👎
+        </button>
+      </div>
+
+      {/* Reason box — appears after thumbs down */}
+      {showReason && (
+        <div style={{
+          marginTop: 10, padding: "12px 14px",
+          borderRadius: 12,
+          background: T.aiBubble,
+          border: `1px solid rgba(239,68,68,0.2)`,
+          animation: "fadeUp 0.25s cubic-bezier(0.34,1.56,0.64,1) both",
+        }}>
+          <div style={{
+            fontFamily: "'DM Sans',sans-serif", fontSize: 12,
+            color: T.aiText, marginBottom: 8, opacity: 0.7,
+          }}>
+            What went wrong? <span style={{ opacity: 0.5 }}>(optional)</span>
+          </div>
+          <textarea
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            placeholder="Wrong city info, bad suggestion, didn't understand my question..."
+            rows={2}
+            style={{
+              width: "100%", borderRadius: 8, resize: "none",
+              background: "transparent",
+              border: `1px solid ${T.border}`,
+              padding: "8px 10px",
+              fontFamily: "'DM Sans',sans-serif", fontSize: 12,
+              color: T.inputText, outline: "none",
+              lineHeight: 1.5,
+            }}
+          />
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <button
+              onClick={handleReasonSubmit}
+              disabled={saving}
+              style={{
+                padding: "6px 16px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+                background: `linear-gradient(135deg,${T.accent},${T.accentDark})`,
+                border: "none", color: "#fff", cursor: "pointer",
+                fontFamily: "'DM Sans',sans-serif",
+                opacity: saving ? 0.7 : 1,
+              }}>
+              {saving ? "Sending..." : "Send feedback"}
+            </button>
+            <button
+              onClick={handleReasonSkip}
+              style={{
+                padding: "6px 14px", borderRadius: 8, fontSize: 12,
+                background: "transparent",
+                border: `1px solid ${T.border}`,
+                color: T.aiText, cursor: "pointer",
+                fontFamily: "'DM Sans',sans-serif", opacity: 0.55,
+              }}>
+              Skip
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── PLANS MODAL ───────────────────────────────────────────────────────────────
 function PlansModal({ onClose, T }) {
   const [hoveredPlan, setHoveredPlan]   = useState(null);
@@ -1587,6 +1772,17 @@ export default function AIChatPage() {
                             </button>
                           ))}
                         </div>
+                      )}
+
+                      {/* FEEDBACK BAR */}
+                      {m.text && (
+                        <FeedbackBar
+                          message={m}
+                          prevUserMessage={
+                            messages[messages.findIndex(x => x.id === m.id) - 1]?.content || ""
+                          }
+                          T={T}
+                        />
                       )}
                     </div>
                   </div>
