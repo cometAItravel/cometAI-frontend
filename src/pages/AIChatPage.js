@@ -644,38 +644,108 @@ function AlvrynLogo({ size=32, color="#c9a84c" }) {
 
 // ── PLANS MODAL ───────────────────────────────────────────────────────────────
 function PlansModal({ onClose, T }) {
-  const [hoveredPlan, setHoveredPlan] = useState(null);
+  const [hoveredPlan, setHoveredPlan]   = useState(null);
+  const [notified, setNotified]         = useState({}); // { navigator: bool, voyager: bool }
+  const [notifying, setNotifying]       = useState({}); // loading state per plan
+  const [toast, setToast]               = useState(null); // { msg, type }
+
+  // Detect if current theme is "dark" so we adapt modal colours
+  const isDark = ["avengers","f1","wwe","galaxy"].includes(
+    localStorage.getItem("alvryn_theme") || "gold"
+  );
+
+  // Modal palette — always looks clean regardless of theme
+  const M = {
+    bg:        isDark ? "#12100e"          : "#ffffff",
+    bgCard:    isDark ? "#1c1810"          : "#faf8f4",
+    bgVoyager: isDark
+      ? "linear-gradient(160deg,rgba(201,168,76,0.12),rgba(201,168,76,0.04))"
+      : "linear-gradient(160deg,#fffdf5,#fdf6e3)",
+    headerBg:  isDark ? "#12100e"          : "#ffffff",
+    border:    isDark ? "rgba(201,168,76,0.18)" : "rgba(201,168,76,0.2)",
+    cardBorder:isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+    textPrimary: isDark ? "#f0e6cc"        : "#1a1410",
+    textSub:   isDark ? "#b8964a"          : "#5a4a3a",
+    textMuted: isDark ? "rgba(240,230,204,0.45)" : "#888",
+    featureText: isDark ? "#d4c4a0"        : "#3a2a1a",
+    closeBg:   isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+    closeColor:isDark ? "rgba(240,230,204,0.5)" : "#888",
+    notifyBg:  isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+    notifyBorder: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+    notifyText:isDark ? "rgba(240,230,204,0.5)" : "#777",
+    shadow:    isDark
+      ? "0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.15)"
+      : "0 40px 100px rgba(0,0,0,0.18), 0 0 0 1px rgba(201,168,76,0.12)",
+  };
+
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleNotify = async (planId) => {
+    if (notified[planId]) return;
+    setNotifying(prev => ({ ...prev, [planId]: true }));
+
+    // Get user email from localStorage
+    let email = "";
+    try { email = JSON.parse(localStorage.getItem("user") || "{}").email || ""; } catch {}
+
+    // Save notification request to backend (best-effort)
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${API}/waitlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({
+          email,
+          name: planId === "navigator" ? "ALVRYN Navigator Pro" : "ALVRYN Voyager Premium",
+          source: `plans_notify_${planId}`,
+        }),
+      });
+    } catch {}
+
+    setNotifying(prev => ({ ...prev, [planId]: false }));
+    setNotified(prev => ({ ...prev, [planId]: true }));
+    showToast(
+      email
+        ? `We'll notify you at ${email} as soon as ${planId === "navigator" ? "Navigator Pro" : "Voyager Premium"} launches. We're crafting something special for you! ✨`
+        : `You're on the list! We'll let you know the moment it's ready. ✨`,
+      "success"
+    );
+  };
 
   const plans = [
     {
       id: "explorer",
       tier: "ALVRYN Explorer",
       badge: "Free",
-      badgeColor: "#22c55e",
       icon: "🧭",
       tagline: "Start your journey",
       active: true,
+      accentColor: "#22c55e",
       features: [
         { icon:"✈️", text:"Flight, bus, hotel & train search" },
-        { icon:"🗺️", text:"Up to 2 complete door-to-door trip plans/month" },
+        { icon:"🗺️", text:"Up to 2 complete door-to-door trip plans per month" },
         { icon:"💬", text:"AI travel chat with smart conversation" },
         { icon:"🛡️", text:"AI Safety Insights — proactive for any destination" },
         { icon:"📍", text:"AI Check-In via WhatsApp" },
         { icon:"🧠", text:"Basic travel memory & preferences" },
         { icon:"📚", text:"Unlimited basic travel Q&A" },
-        { icon:"🕐", text:"20 advanced AI responses/day" },
+        { icon:"🕐", text:"20 advanced AI responses per day" },
       ],
     },
     {
       id: "navigator",
       tier: "ALVRYN Navigator",
       badge: "Pro",
-      badgeColor: "#3b82f6",
       icon: "🌍",
       tagline: "For the serious traveller",
       active: false,
       comingSoon: true,
+      accentColor: "#3b82f6",
       features: [
+        { icon:"✅", text:"Everything in ALVRYN Explorer — Free", inherited: true },
         { icon:"♾️", text:"Unlimited complete trip plans" },
         { icon:"📅", text:"Day-by-day itinerary generation" },
         { icon:"🧠", text:"Extended AI memory across trips" },
@@ -691,13 +761,14 @@ function PlansModal({ onClose, T }) {
       id: "voyager",
       tier: "ALVRYN Voyager",
       badge: "Premium",
-      badgeColor: "#c9a84c",
       icon: "🚀",
       tagline: "Your personal travel companion",
       active: false,
       comingSoon: true,
       mostPopular: true,
+      accentColor: "#c9a84c",
       features: [
+        { icon:"✅", text:"Everything in ALVRYN Navigator — Pro", inherited: true },
         { icon:"🤖", text:"Most advanced AI for complex trip planning" },
         { icon:"♾️", text:"Unlimited AI responses" },
         { icon:"👥", text:"Group travel planner — split costs & itineraries" },
@@ -717,43 +788,72 @@ function PlansModal({ onClose, T }) {
       onClick={onClose}
       style={{
         position:"fixed", inset:0, zIndex:1000,
-        background:"rgba(0,0,0,0.75)",
-        backdropFilter:"blur(12px)",
+        background:"rgba(0,0,0,0.6)",
+        backdropFilter:"blur(14px)",
         display:"flex", alignItems:"center", justifyContent:"center",
         padding:"20px 16px",
-        animation:"plansModalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+        animation:"plansModalIn 0.25s ease both",
       }}>
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position:"fixed", top:24, left:"50%", transform:"translateX(-50%)",
+          zIndex:1100, maxWidth:420, width:"90%",
+          background: toast.type === "success" ? "#1a3a1a" : "#3a1a1a",
+          border:`1px solid ${toast.type === "success" ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.4)"}`,
+          borderRadius:14, padding:"14px 20px",
+          boxShadow:"0 8px 32px rgba(0,0,0,0.4)",
+          animation:"plansSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1) both",
+          fontFamily:"'DM Sans',sans-serif", fontSize:13,
+          color: toast.type === "success" ? "#86efac" : "#fca5a5",
+          lineHeight:1.6, textAlign:"center",
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          width:"100%", maxWidth:860,
-          maxHeight:"90vh", overflowY:"auto",
-          background: T.sidebar,
+          width:"100%", maxWidth:900,
+          maxHeight:"92vh", overflowY:"auto",
+          background: M.bg,
           borderRadius:24,
-          border:`1px solid ${T.accent}33`,
-          boxShadow:`0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px ${T.accent}22`,
+          border:`1px solid ${M.border}`,
+          boxShadow: M.shadow,
           animation:"plansSlideUp 0.35s cubic-bezier(0.34,1.56,0.64,1) both",
           scrollbarWidth:"thin",
         }}>
 
-        {/* Header */}
+        {/* ── Header ── */}
         <div style={{
-          padding:"28px 28px 20px",
-          borderBottom:`1px solid ${T.accent}22`,
+          padding:"26px 28px 18px",
+          borderBottom:`1px solid ${M.border}`,
           display:"flex", alignItems:"flex-start", justifyContent:"space-between",
           position:"sticky", top:0, zIndex:10,
-          background:T.sidebar,
+          background: M.headerBg,
           borderRadius:"24px 24px 0 0",
+          backdropFilter:"blur(20px)",
         }}>
           <div>
             <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
-              <AlvrynLogo size={28} color={T.accent}/>
-              <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:T.accent, letterSpacing:"0.22em" }}>INTELLIGENT TRAVEL</div>
+              <AlvrynLogo size={26} color="#c9a84c"/>
+              <div style={{
+                fontFamily:"'Space Mono',monospace", fontSize:9,
+                color:"#c9a84c", letterSpacing:"0.22em",
+              }}>INTELLIGENT TRAVEL</div>
             </div>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:24, color:T.sbText, lineHeight:1.1 }}>
+            <div style={{
+              fontFamily:"'Cormorant Garamond',serif", fontWeight:600,
+              fontSize:26, color: M.textPrimary, lineHeight:1.1,
+            }}>
               Choose Your Journey
             </div>
-            <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:T.sbSubText, marginTop:4 }}>
+            <div style={{
+              fontFamily:"'DM Sans',sans-serif", fontSize:13,
+              color: M.textSub, marginTop:5,
+            }}>
               Every traveller deserves the right companion.
             </div>
           </div>
@@ -761,25 +861,24 @@ function PlansModal({ onClose, T }) {
             onClick={onClose}
             style={{
               width:36, height:36, borderRadius:"50%",
-              background:"rgba(255,255,255,0.06)",
-              border:`1px solid ${T.sbBorder}`,
-              cursor:"pointer", color:T.sbSubText, fontSize:18,
+              background: M.closeBg,
+              border:`1px solid ${M.cardBorder}`,
+              cursor:"pointer", color: M.closeColor, fontSize:20,
               display:"flex", alignItems:"center", justifyContent:"center",
-              flexShrink:0, marginTop:4,
-              transition:"all 0.2s",
+              flexShrink:0, marginTop:4, transition:"all 0.2s",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = T.accentSoft; e.currentTarget.style.color = T.accent; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = T.sbSubText; }}>
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(201,168,76,0.12)"; e.currentTarget.style.color = "#c9a84c"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = M.closeBg; e.currentTarget.style.color = M.closeColor; }}>
             ×
           </button>
         </div>
 
-        {/* Plans grid */}
+        {/* ── Plans grid ── */}
         <div style={{
           display:"grid",
-          gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))",
+          gridTemplateColumns:"repeat(auto-fit, minmax(260px, 1fr))",
           gap:16,
-          padding:"20px 24px 28px",
+          padding:"20px 24px 8px",
         }}>
           {plans.map((plan) => (
             <div
@@ -789,93 +888,123 @@ function PlansModal({ onClose, T }) {
               style={{
                 borderRadius:18,
                 border: plan.id === "voyager"
-                  ? `1.5px solid ${T.accent}66`
+                  ? `1.5px solid rgba(201,168,76,0.45)`
                   : hoveredPlan === plan.id
-                  ? `1px solid ${T.accent}44`
-                  : `1px solid ${T.sbBorder}`,
+                  ? `1px solid rgba(201,168,76,0.3)`
+                  : `1px solid ${M.cardBorder}`,
                 background: plan.id === "voyager"
-                  ? `linear-gradient(160deg, rgba(201,168,76,0.08), rgba(201,168,76,0.03))`
-                  : "rgba(255,255,255,0.03)",
+                  ? M.bgVoyager
+                  : M.bgCard,
                 padding:"22px 20px 20px",
                 position:"relative",
                 transform: hoveredPlan === plan.id ? "translateY(-3px)" : "translateY(0)",
                 transition:"all 0.25s cubic-bezier(0.4,0,0.2,1)",
                 boxShadow: plan.id === "voyager"
-                  ? `0 8px 32px rgba(201,168,76,0.12)`
+                  ? `0 8px 32px rgba(201,168,76,0.1), 0 2px 8px rgba(0,0,0,0.06)`
                   : hoveredPlan === plan.id
-                  ? "0 8px 24px rgba(0,0,0,0.2)"
-                  : "none",
+                  ? "0 8px 24px rgba(0,0,0,0.1)"
+                  : `0 2px 8px rgba(0,0,0,0.04)`,
               }}>
 
               {/* Most Popular badge */}
               {plan.mostPopular && (
                 <div style={{
                   position:"absolute", top:-12, left:"50%", transform:"translateX(-50%)",
-                  background:`linear-gradient(135deg,#c9a84c,#f0d080)`,
+                  background:"linear-gradient(135deg,#c9a84c,#f0d080)",
                   color:"#1a1008", fontFamily:"'Space Mono',monospace",
-                  fontSize:9, fontWeight:700, letterSpacing:"0.14em",
-                  padding:"4px 14px", borderRadius:20,
-                  whiteSpace:"nowrap",
+                  fontSize:8, fontWeight:700, letterSpacing:"0.14em",
+                  padding:"4px 14px", borderRadius:20, whiteSpace:"nowrap",
+                  boxShadow:"0 4px 12px rgba(201,168,76,0.35)",
                 }}>
                   ✦ MOST POPULAR
                 </div>
               )}
 
               {/* Plan header */}
-              <div style={{ marginBottom:16 }}>
-                <div style={{ fontSize:28, marginBottom:10 }}>{plan.icon}</div>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:T.sbText }}>
-                    {plan.tier}
-                  </div>
+              <div style={{ marginBottom:14 }}>
+                <div style={{ fontSize:26, marginBottom:8 }}>{plan.icon}</div>
+                <div style={{
+                  fontFamily:"'Cormorant Garamond',serif", fontWeight:700,
+                  fontSize:19, color: M.textPrimary, marginBottom:6,
+                }}>
+                  {plan.tier}
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
                   <span style={{
                     fontFamily:"'Space Mono',monospace", fontSize:9, fontWeight:700,
                     letterSpacing:"0.1em", padding:"3px 10px", borderRadius:20,
-                    background: plan.active ? "rgba(34,197,94,0.15)" : plan.id === "navigator" ? "rgba(59,130,246,0.15)" : "rgba(201,168,76,0.15)",
-                    color: plan.active ? "#22c55e" : plan.id === "navigator" ? "#3b82f6" : "#c9a84c",
-                    border: `1px solid ${plan.active ? "rgba(34,197,94,0.3)" : plan.id === "navigator" ? "rgba(59,130,246,0.3)" : "rgba(201,168,76,0.3)"}`,
+                    background: plan.id === "explorer"
+                      ? "rgba(34,197,94,0.12)"
+                      : plan.id === "navigator"
+                      ? "rgba(59,130,246,0.12)"
+                      : "rgba(201,168,76,0.15)",
+                    color: plan.id === "explorer" ? "#16a34a"
+                      : plan.id === "navigator" ? "#2563eb"
+                      : "#92701a",
+                    border: `1px solid ${
+                      plan.id === "explorer" ? "rgba(34,197,94,0.25)"
+                      : plan.id === "navigator" ? "rgba(59,130,246,0.25)"
+                      : "rgba(201,168,76,0.3)"}`,
                   }}>
                     {plan.badge}
                   </span>
                   {plan.active && (
-                    <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:"#22c55e", fontWeight:600 }}>
+                    <span style={{
+                      fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                      color:"#16a34a", fontWeight:600,
+                    }}>
                       ● Active
                     </span>
                   )}
                 </div>
-                <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:T.sbSubText, fontStyle:"italic" }}>
+                <div style={{
+                  fontFamily:"'DM Sans',sans-serif", fontSize:12,
+                  color: M.textSub, fontStyle:"italic",
+                }}>
                   {plan.tagline}
                 </div>
               </div>
 
-              {/* Coming Soon banner for Pro/Premium */}
+              {/* Coming Soon banner */}
               {plan.comingSoon && (
                 <div style={{
-                  marginBottom:16, padding:"10px 14px", borderRadius:10,
-                  background:"rgba(201,168,76,0.06)",
-                  border:`1px solid ${T.accent}22`,
+                  marginBottom:14, padding:"10px 14px", borderRadius:10,
+                  background: isDark ? "rgba(201,168,76,0.06)" : "rgba(201,168,76,0.08)",
+                  border:"1px solid rgba(201,168,76,0.2)",
                 }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:600, fontSize:13, color:T.accent, marginBottom:2 }}>
+                  <div style={{
+                    fontFamily:"'Cormorant Garamond',serif", fontWeight:600,
+                    fontSize:12, color:"#92701a", marginBottom:3,
+                  }}>
                     ✦ Intelligent Travel Upgrades Are On The Way
                   </div>
-                  <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:T.sbSubText, lineHeight:1.5 }}>
+                  <div style={{
+                    fontFamily:"'DM Sans',sans-serif", fontSize:11,
+                    color: M.textMuted, lineHeight:1.55,
+                  }}>
                     Currently being crafted with precision. You'll be among the first to know.
                   </div>
                 </div>
               )}
 
-              {/* Features */}
-              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {/* Features list */}
+              <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
                 {plan.features.map((f, i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
-                    <span style={{ fontSize:13, flexShrink:0, marginTop:1 }}>{f.icon}</span>
+                  <div key={i} style={{
+                    display:"flex", alignItems:"flex-start", gap:9,
+                    paddingBottom: f.inherited ? 8 : 0,
+                    borderBottom: f.inherited ? `1px dashed ${isDark ? "rgba(201,168,76,0.15)" : "rgba(0,0,0,0.08)"}` : "none",
+                    marginBottom: f.inherited ? 4 : 0,
+                  }}>
+                    <span style={{ fontSize:12, flexShrink:0, marginTop:1 }}>{f.icon}</span>
                     <span style={{
                       fontFamily:"'DM Sans',sans-serif", fontSize:12,
-                      color: plan.comingSoon ? T.sbSubText : T.sbText,
+                      color: f.inherited
+                        ? (isDark ? "rgba(201,168,76,0.7)" : "#8B6914")
+                        : M.featureText,
                       lineHeight:1.5,
-                      opacity: plan.comingSoon ? 0.7 : 1,
+                      fontWeight: f.inherited ? 600 : 400,
+                      fontStyle: f.inherited ? "italic" : "normal",
                     }}>
                       {f.text}
                     </span>
@@ -884,43 +1013,68 @@ function PlansModal({ onClose, T }) {
               </div>
 
               {/* CTA */}
-              <div style={{ marginTop:20 }}>
+              <div style={{ marginTop:18 }}>
                 {plan.active ? (
                   <div style={{
                     padding:"10px 16px", borderRadius:10, textAlign:"center",
-                    background:"rgba(34,197,94,0.08)",
-                    border:"1px solid rgba(34,197,94,0.25)",
+                    background: isDark ? "rgba(34,197,94,0.08)" : "rgba(34,197,94,0.07)",
+                    border:"1px solid rgba(34,197,94,0.22)",
                     fontFamily:"'DM Sans',sans-serif", fontSize:13,
-                    color:"#22c55e", fontWeight:600,
+                    color:"#16a34a", fontWeight:600,
                   }}>
                     ✓ Your Current Plan
                   </div>
-                ) : (
+                ) : notified[plan.id] ? (
                   <div style={{
                     padding:"10px 16px", borderRadius:10, textAlign:"center",
-                    background:"rgba(255,255,255,0.04)",
-                    border:`1px solid ${T.sbBorder}`,
+                    background: isDark ? "rgba(34,197,94,0.06)" : "rgba(34,197,94,0.06)",
+                    border:"1px solid rgba(34,197,94,0.2)",
                     fontFamily:"'DM Sans',sans-serif", fontSize:12,
-                    color:T.sbSubText,
+                    color:"#16a34a",
                   }}>
-                    Notify me when available →
+                    ✓ You're on the list!
                   </div>
+                ) : (
+                  <button
+                    onClick={() => handleNotify(plan.id)}
+                    disabled={notifying[plan.id]}
+                    style={{
+                      width:"100%", padding:"10px 16px", borderRadius:10,
+                      textAlign:"center", cursor:"pointer",
+                      background: M.notifyBg,
+                      border:`1px solid ${M.notifyBorder}`,
+                      fontFamily:"'DM Sans',sans-serif", fontSize:12,
+                      color: M.notifyText,
+                      transition:"all 0.2s",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = "rgba(201,168,76,0.1)";
+                      e.currentTarget.style.borderColor = "rgba(201,168,76,0.35)";
+                      e.currentTarget.style.color = "#92701a";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = M.notifyBg;
+                      e.currentTarget.style.borderColor = M.notifyBorder;
+                      e.currentTarget.style.color = M.notifyText;
+                    }}>
+                    {notifying[plan.id] ? "Saving..." : "Notify me when available →"}
+                  </button>
                 )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Footer note */}
+        {/* Footer */}
         <div style={{
-          padding:"0 24px 24px",
+          padding:"16px 24px 24px",
           textAlign:"center",
           fontFamily:"'DM Sans',sans-serif", fontSize:11,
-          color:T.sbSubText, lineHeight:1.7,
-          borderTop:`1px solid ${T.accent}11`,
-          paddingTop:16,
+          color: M.textMuted, lineHeight:1.7,
+          borderTop:`1px solid ${M.border}`,
+          marginTop:16,
         }}>
-          🛡️ We care more about your journey than just a ticket. &nbsp;·&nbsp; AI Safety Insights & Check-In included in all plans.
+          🛡️ We care more about your journey than just your ticket. &nbsp;·&nbsp; AI Safety Insights & Check-In are included in all plans, always free.
         </div>
       </div>
     </div>
