@@ -1164,4 +1164,4 @@ function PaymentModal({ flight, passengerName, passengers, cabinClass, onSuccess
       </div>
     </div>
   );
-} 
+}
