@@ -95,7 +95,6 @@ export default function UserProfile() {
 
   // Forgot password state (for users who forgot current password)
   const [fpScreen,  setFpScreen]  = useState("idle"); // idle | sent | verify | reset | done
-  const [fpLoading, setFpLoading] = useState(false);
   const [fpError,   setFpError]   = useState("");
   const [fpSuccess, setFpSuccess] = useState("");
   const [fpOtp,     setFpOtp]     = useState("");
@@ -141,55 +140,8 @@ export default function UserProfile() {
   }, [activeTab, token]);
 
   // ── FORGOT PASSWORD FUNCTIONS ────────────────────────────────────────────────
-  const sendFpOtp = async () => {
-    setFpLoading(true); setFpError(""); setFpSuccess("");
-    try {
-      const userEmail = profile.email;
-      const res  = await fetch(`${API}/forgot-password`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: userEmail }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setFpError(data.message || "Failed to send OTP"); setFpLoading(false); return; }
-      setFpScreen("verify");
-      setFpSuccess(`OTP sent to ${userEmail} — check your inbox!`);
-    } catch { setFpError("Connection error. Please try again."); }
-    setFpLoading(false);
-  };
 
-  const verifyFpOtp = async () => {
-    if (!fpOtp || fpOtp.length < 6) { setFpError("Enter the 6-digit OTP from your email."); return; }
-    setFpLoading(true); setFpError("");
-    try {
-      const res  = await fetch(`${API}/verify-otp`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: profile.email, otp: fpOtp }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setFpError(data.message || "Incorrect OTP"); setFpLoading(false); return; }
-      setFpToken(data.resetToken);
-      setFpScreen("reset");
-      setFpSuccess("");
-    } catch { setFpError("Connection error."); }
-    setFpLoading(false);
-  };
 
-  const resetFpPassword = async () => {
-    if (!fpNew || fpNew.length < 6) { setFpError("Password must be at least 6 characters."); return; }
-    if (fpNew !== fpNew2) { setFpError("Passwords don't match."); return; }
-    setFpLoading(true); setFpError("");
-    try {
-      const res  = await fetch(`${API}/reset-password`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resetToken: fpToken, newPassword: fpNew }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setFpError(data.message || "Reset failed"); setFpLoading(false); return; }
-      setFpScreen("done");
-      setFpNew(""); setFpNew2(""); setFpOtp("");
-    } catch { setFpError("Connection error."); }
-    setFpLoading(false);
-  };
 
   const flash = (type, text) => {
     setMsg({ type, text });
