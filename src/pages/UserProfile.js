@@ -97,10 +97,6 @@ export default function UserProfile() {
   const [fpScreen,  setFpScreen]  = useState("idle"); // idle | sent | verify | reset | done
   const [fpError,   setFpError]   = useState("");
   const [fpSuccess, setFpSuccess] = useState("");
-  const [fpOtp,     setFpOtp]     = useState("");
-  const [fpToken,   setFpToken]   = useState("");
-  const [fpNew,     setFpNew]     = useState("");
-  const [fpNew2,    setFpNew2]    = useState("");
 
   const token = localStorage.getItem("token");
 
