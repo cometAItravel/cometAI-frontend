@@ -6,6 +6,13 @@ const GOLD = "#c9a84c";
 const GOLD_DARK = "#8B6914";
 const GRAD = "linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)";
 
+const INDIA_IATA = new Set([
+  'BLR','BOM','DEL','MAA','HYD','CCU','GOI','PNQ','COK','AMD','JAI','LKO',
+  'VNS','PAT','IXC','GAU','BBI','CBE','IXM','IXE','MYQ','TRV','VTZ','IXR',
+  'BHO','SXR','IXJ','NAG','IDR','IXL','IXZ','ATQ','UDR','JDH','AGR','STV',
+  'HBX','IXG','TIR','VGA','CCJ','TRZ','DED','SLV','RPR',
+]);
+
 // ── FLIGHT CITIES ──────────────────────────────────────────────────────────────
 const FLIGHT_CITIES = [
   {code:"BLR",name:"Bangalore",full:"Kempegowda International",country:"India",top:true},
