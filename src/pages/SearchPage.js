@@ -1,38 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const API = "https://cometai-backend.onrender.com";
 const GOLD = "#c9a84c";
 const GOLD_DARK = "#8B6914";
 const GRAD = "linear-gradient(135deg,#c9a84c,#f0d080,#c9a84c)";
-const CREAM = "#faf8f4";
-
-// ── IATA CODES ─────────────────────────────────────────────────────────────────
-const CITY_TO_IATA = {
-  "bangalore":"BLR","bengaluru":"BLR","mumbai":"BOM","delhi":"DEL","chennai":"MAA",
-  "hyderabad":"HYD","kolkata":"CCU","goa":"GOI","pune":"PNQ","kochi":"COK",
-  "ahmedabad":"AMD","jaipur":"JAI","lucknow":"LKO","varanasi":"VNS","patna":"PAT",
-  "chandigarh":"IXC","guwahati":"GAU","bhubaneswar":"BBI","coimbatore":"CBE",
-  "madurai":"IXM","mangalore":"IXE","mysore":"MYQ","trivandrum":"TRV",
-  "visakhapatnam":"VTZ","ranchi":"IXR","bhopal":"BHO","srinagar":"SXR",
-  "jammu":"IXJ","nagpur":"NAG","indore":"IDR","leh":"IXL","port blair":"IXZ",
-  "amritsar":"ATQ","udaipur":"UDR","jodhpur":"JDH","agra":"AGR","hubli":"HBX",
-  "belgaum":"IXG","tirupati":"TIR","vijayawada":"VGA","kozhikode":"CCJ",
-  "trichy":"TRZ","dehradun":"DED","shimla":"SLV","surat":"STV",
-  "dubai":"DXB","singapore":"SIN","bangkok":"BKK","london":"LHR",
-  "new york":"JFK","kuala lumpur":"KUL","colombo":"CMB","paris":"CDG",
-  "tokyo":"NRT","sydney":"SYD","frankfurt":"FRA","amsterdam":"AMS",
-  "toronto":"YYZ","los angeles":"LAX","hong kong":"HKG","doha":"DOH",
-  "abu dhabi":"AUH","istanbul":"IST","bali":"DPS","kathmandu":"KTM",
-  "male":"MLE","phuket":"HKT","seoul":"ICN","melbourne":"MEL","muscat":"MCT",
-};
-
-const INDIA_IATA = new Set([
-  "BLR","BOM","DEL","MAA","HYD","CCU","GOI","PNQ","COK","AMD","JAI","LKO",
-  "VNS","PAT","IXC","GAU","BBI","CBE","IXM","IXE","MYQ","TRV","VTZ","IXR",
-  "BHO","SXR","IXJ","NAG","IDR","IXL","IXZ","ATQ","UDR","JDH","AGR","STV",
-  "HBX","IXG","TIR","VGA","CCJ","TRZ","DED","SLV","RPR",
-]);
 
 // ── FLIGHT CITIES ──────────────────────────────────────────────────────────────
 const FLIGHT_CITIES = [
@@ -316,9 +288,6 @@ const TABS = [
 
 const CLASSES = ["Economy","Premium Economy","Business","First Class"];
 
-function fmtTime(dt){ if(!dt)return"--:--"; return new Date(dt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",hour12:false}); }
-function fmtDate(dt){ if(!dt)return""; return new Date(dt).toLocaleDateString("en-IN",{day:"numeric",month:"short"}); }
-function calcDur(dep,arr){ if(!dep||!arr)return""; const d=(new Date(arr)-new Date(dep))/60000; return`${Math.floor(d/60)}h${d%60>0?" "+d%60+"m":""}`.trim(); }
 
 // ── ALVRYN ICON ────────────────────────────────────────────────────────────────
 function AlvrynIcon({size=36}){
@@ -803,12 +772,6 @@ export default function SearchPage(){
   const [showTrainToP,    setShowTrainToP]    = useState(false);
   const [showHotelP,      setShowHotelP]      = useState(false);
 
-  const [navScrolled, setNavScrolled] = useState(false);
-  useEffect(()=>{
-    const fn=()=>setNavScrolled(window.scrollY>30);
-    window.addEventListener("scroll",fn,{passive:true});
-    return()=>window.removeEventListener("scroll",fn);
-  },[]);
 
   // Keep backend alive
   useEffect(()=>{
