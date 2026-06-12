@@ -20,6 +20,7 @@ import AIChatPage from "./pages/AIChatPage";
 import UserProfile from "./pages/UserProfile";
 import SearchPage from "./pages/SearchPage";
 import LandingPage2 from "./pages/Landingpage2";
+
 const API = "https://cometai-backend.onrender.com";
 
 function track(eventType, details = "", source = "web") {
