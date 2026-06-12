@@ -18,6 +18,7 @@ import LandingPage from "./pages/LandingPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AIChatPage from "./pages/AIChatPage";
 import UserProfile from "./pages/UserProfile";
+import LandingPage2 from "./pages/LandingPage2";
 
 const API = "https://cometai-backend.onrender.com";
 
@@ -1321,6 +1322,7 @@ function App() {
         <Route path="/profile"  element={<UserProfile/>}/>
         <Route path="/admin"    element={<AdminDashboard/>}/>
         <Route path="/ai"       element={<AIChatPage/>}/>
+        <Route path="/new" element={<LandingPage2 />} />
       </Routes>
     </Router>
   );
