@@ -189,14 +189,7 @@ function buildBusLink(from,to,dateStr){
   if(dateStr){const d=new Date(dateStr);if(!isNaN(d)){const dd=String(d.getDate()).padStart(2,"0");const mm=String(d.getMonth()+1).padStart(2,"0");const yyyy=d.getFullYear();url+=`?doj=${dd}-${mm}-${yyyy}`;}}
   return url;
 }
-<<<<<<< HEAD
-function buildTrainLink(from,to,dateStr){
-  const f=encodeURIComponent(from||"");
-  const t=encodeURIComponent(to||"");
-  let url=`https://www.redbus.in/railways/train-search?fromCity=${f}&toCity=${t}`;
-  if(dateStr){const d=new Date(dateStr);if(!isNaN(d)){url+=`&doj=${String(d.getDate()).padStart(2,"0")}-${String(d.getMonth()+1).padStart(2,"0")}-${d.getFullYear()}`;}}
-  return url;
-=======
+
 function buildTrainLink(from, to, dateStr) {
   // Using IRCTC — RedBus railways URL format is unreliable
   const TC = {
@@ -226,7 +219,6 @@ function buildTrainLink(from, to, dateStr) {
     } catch {}
   }
   return `https://www.irctc.co.in/nget/train-search?fromStation=${fc}&toStation=${tc}&isCallFromDpDown=true${dateParam}&quota=GN&class=SL`;
->>>>>>> 1e079a924825a5b106c7dd7f060ab548fdd91aa0
 }
 function buildHotelLink(city,checkIn,checkOut,guests,rooms){
   let url=`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&group_adults=${guests||1}&no_rooms=${rooms||1}`;
@@ -1282,4 +1274,3 @@ export default function SearchPage(){
       </div>
     </div>
   );
-}

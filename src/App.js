@@ -18,12 +18,8 @@ import LandingPage from "./pages/LandingPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AIChatPage from "./pages/AIChatPage";
 import UserProfile from "./pages/UserProfile";
-<<<<<<< HEAD
-import LandingPage2 from "./pages/LandingPage2";
-=======
 import SearchPage from "./pages/SearchPage";
->>>>>>> 1e079a924825a5b106c7dd7f060ab548fdd91aa0
-
+import LandingPage2 from "./pages/Landingpage2";
 const API = "https://cometai-backend.onrender.com";
 
 function track(eventType, details = "", source = "web") {
