@@ -551,20 +551,20 @@ export default function LandingPage2() {
   const DEMO_MSGS = [
     { role:"user", text:"6 friends from Bangalore to Goa in August. Budget ₹15,000 per person. Two vegetarians. One arrives a day late. Prefer beaches." },
     { role:"ai", text:"Got it! Let me break this down for all 6 of you 🌴" },
-    { role:"ai", text:"✈️ Flights BLR→GOI: ₹3,500–4,500/person return
+    { role:"ai", text:`✈️ Flights BLR→GOI: ₹3,500–4,500/person return
 For 6 people = ₹21,000–27,000 total
 
-Book 4–6 weeks early for best fares!" },
-    { role:"ai", text:"🏨 South Goa hotels (beaches over nightlife):
-• Palolem / Agonda area
-• Budget: ₹800–1,800/night per room
-• For 6 = 2–3 rooms, ~₹5,400–7,200/night" },
+Book 4–6 weeks early for best fares!` },
+    { role:"ai", text:`🏨 South Goa hotels (beaches over nightlife):
+- Palolem / Agonda area
+- Budget: ₹800–1,800/night per room
+- For 6 = 2–3 rooms, ~₹5,400–7,200/night` },
     { role:"ai", text:"🥗 Vegetarian options: South Goa has great veg-friendly restaurants. Recommend Café Chocolatti, La Pizzeria Agonda." },
     { role:"ai", text:"👤 Late arrival plan: 5 friends fly together. 1 books separate ticket arriving next day — Goa taxi from airport ₹400–600." },
-    { role:"ai", text:"💰 Total budget per person: ₹11,500–14,500
+    { role:"ai", text:`💰 Total budget per person: ₹11,500–14,500
 ✅ Fits your ₹15,000 budget!
 
-Ready to book flights? 👇", card:true },
+Ready to book flights? 👇`, card:true },
   ];
 
   return (
@@ -1193,7 +1193,7 @@ Ready to book flights? 👇", card:true },
                 fontFamily:"'Cormorant Garamond',serif", fontWeight:100,
                 fontSize:"clamp(80px,15vw,200px)", color:"#fff", lineHeight:0.9,
                 opacity: Math.min(1, cabReveal/30),
-                transform:`translateY(${Math.max(0,(30-cabReveal)*3}px)`,
+                transform:`translateY(${Math.max(0,(30-cabReveal)*3)}px)`,
                 transition:"none",
                 letterSpacing:"0.08em",
               }}>
