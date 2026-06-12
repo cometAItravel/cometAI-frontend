@@ -189,12 +189,44 @@ function buildBusLink(from,to,dateStr){
   if(dateStr){const d=new Date(dateStr);if(!isNaN(d)){const dd=String(d.getDate()).padStart(2,"0");const mm=String(d.getMonth()+1).padStart(2,"0");const yyyy=d.getFullYear();url+=`?doj=${dd}-${mm}-${yyyy}`;}}
   return url;
 }
+<<<<<<< HEAD
 function buildTrainLink(from,to,dateStr){
   const f=encodeURIComponent(from||"");
   const t=encodeURIComponent(to||"");
   let url=`https://www.redbus.in/railways/train-search?fromCity=${f}&toCity=${t}`;
   if(dateStr){const d=new Date(dateStr);if(!isNaN(d)){url+=`&doj=${String(d.getDate()).padStart(2,"0")}-${String(d.getMonth()+1).padStart(2,"0")}-${d.getFullYear()}`;}}
   return url;
+=======
+function buildTrainLink(from, to, dateStr) {
+  // Using IRCTC — RedBus railways URL format is unreliable
+  const TC = {
+    "bangalore":"SBC","bengaluru":"SBC","yeshwanthpur":"YPR","mumbai":"CSTM",
+    "delhi":"NDLS","new delhi":"NDLS","chennai":"MAS","hyderabad":"SC",
+    "kolkata":"HWH","pune":"PUNE","kochi":"ERS","jaipur":"JP","varanasi":"BSB",
+    "trivandrum":"TVC","coimbatore":"CBE","madurai":"MDU","mysore":"MYS",
+    "nagpur":"NGP","bhopal":"BPL","patna":"PNBE","lucknow":"LKO","agra":"AGC",
+    "amritsar":"ASR","chandigarh":"CDG","guwahati":"GHY","ranchi":"RNC",
+    "visakhapatnam":"VSKP","vijayawada":"BZA","hubli":"UBL","mangalore":"MAQ",
+    "surat":"ST","ahmedabad":"ADI","indore":"INDB","dehradun":"DDN",
+    "hosur":"HOS","nagercoil":"NCJ","trichy":"TPJ","salem":"SA","erode":"ED",
+    "vellore":"KPD","pondicherry":"PDY","tirunelveli":"TEN","kanyakumari":"CAPE",
+  };
+  const fc = TC[from?.toLowerCase()] || (from||"").slice(0,4).toUpperCase();
+  const tc = TC[to?.toLowerCase()] || (to||"").slice(0,4).toUpperCase();
+  let dateParam = "";
+  if (dateStr) {
+    try {
+      const d = new Date(dateStr);
+      if (!isNaN(d)) {
+        const dd = String(d.getDate()).padStart(2,"0");
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const yyyy = d.getFullYear();
+        dateParam = `&journeyDate=${dd}-${mm}-${yyyy}`;
+      }
+    } catch {}
+  }
+  return `https://www.irctc.co.in/nget/train-search?fromStation=${fc}&toStation=${tc}&isCallFromDpDown=true${dateParam}&quota=GN&class=SL`;
+>>>>>>> 1e079a924825a5b106c7dd7f060ab548fdd91aa0
 }
 function buildHotelLink(city,checkIn,checkOut,guests,rooms){
   let url=`https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city)}&group_adults=${guests||1}&no_rooms=${rooms||1}`;
