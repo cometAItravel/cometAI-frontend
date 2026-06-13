@@ -19,7 +19,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AIChatPage from "./pages/AIChatPage";
 import UserProfile from "./pages/UserProfile";
 import SearchPage from "./pages/SearchPage";
-import LandingPage2 from "./pages/Landingpage2";
+import LandingPage2 from "./pages/LandingPage2";
 
 const API = "https://cometai-backend.onrender.com";
 
