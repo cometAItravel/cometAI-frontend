@@ -2043,10 +2043,7 @@ export default function AIChatPage() {
                   token={token}
                   T={T}
                   onDone={(num) => {
-  if (sectionNum === 6) {
-    setCheckinDone(true);
-  }
-
+  setCheckinDone(true);
   if (num) setWaNumber(num);
   setCheckinPrompt(null);
 }}
