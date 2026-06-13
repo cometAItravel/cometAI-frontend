@@ -267,7 +267,11 @@ export default function LandingPage2() {
         T(()=>{
           setIntroPhase(6);
           if(titleRef.current){
-            gsap.to(titleRef.current,{y:"-42vh",scale:0.28,opacity:0,duration:1.4,ease:"power3.inOut"});
+            if (titleRef.current) {
+  titleRef.current.style.transform = "translateY(-42vh) scale(0.28)";
+  titleRef.current.style.opacity = "0";
+  titleRef.current.style.transition = "all 1.4s cubic-bezier(0.76,0,0.24,1)";
+}
           }
         },7200);
         T(()=>setIntroPhase(7),8600);
