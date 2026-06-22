@@ -738,7 +738,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/"         element={<LandingPage/>}/>
+        <Route path="/old" element={<LandingPage />} />
         <Route path="/login"    element={<Login/>}/>
         <Route path="/register" element={<Register/>}/>
         <Route path="/search"   element={<SearchPage/>}/>
@@ -746,7 +746,7 @@ function App() {
         <Route path="/profile"  element={<UserProfile/>}/>
         <Route path="/admin"    element={<AdminDashboard/>}/>
         <Route path="/ai"       element={<AIChatPage/>}/>
-        <Route path="/new" element={<LandingPage2 />} />
+        <Route path="/" element={<LandingPage2 />} />
       </Routes>
     </Router>
   );

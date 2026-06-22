@@ -815,7 +815,7 @@ const TIPS=[
   {icon:"💡",title:"Book early, save big",desc:"Booking flights 3-6 weeks early saves up to 40% on most Indian routes."},
   {icon:"📅",title:"Best days to fly",desc:"Tuesday & Wednesday flights are typically 15-25% cheaper than weekends."},
   {icon:"🌙",title:"Overnight buses = savings",desc:"Take an overnight sleeper bus — saves one hotel night automatically!"},
-  {icon:"⚡",title:"Use Alvryn AI",desc:"Type naturally — AI plans your complete door-to-door trip instantly."},
+  {icon:"⚡",title:"Use ALVI",desc:"Type naturally — AI plans your complete door-to-door trip instantly."},
   {icon:"🔔",title:"Set price alerts",desc:"Track your route in AI Chat and get notified when prices drop."},
   {icon:"🎒",title:"Pack light = save more",desc:"Cabin baggage only saves ₹600-2,000 per flight on low-cost carriers."},
 ];
@@ -1110,7 +1110,7 @@ export default function SearchPage(){
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:600,color:"#1a1410",marginBottom:8}}>Cab Booking</div>
                 <div style={{fontSize:14,color:"#888",lineHeight:1.7,maxWidth:320,margin:"0 auto 20px"}}>Airport transfers and intercity cabs — coming very soon!</div>
                 <div style={{display:"inline-block",background:`rgba(201,168,76,0.1)`,border:`1px solid ${GOLD}55`,color:GOLD_DARK,padding:"8px 20px",borderRadius:20,fontSize:12,fontFamily:"'Space Mono',monospace",letterSpacing:"0.8px"}}>✦ Coming Soon</div>
-                <div style={{marginTop:16,fontSize:13,color:"#aaa"}}>Meanwhile, use <span style={{color:GOLD_DARK,cursor:"pointer",fontWeight:600}} onClick={()=>navigate("/ai")}>Alvryn AI</span> to plan your door-to-door trip!</div>
+                <div style={{marginTop:16,fontSize:13,color:"#aaa"}}>Meanwhile, use <span style={{color:GOLD_DARK,cursor:"pointer",fontWeight:600}} onClick={()=>navigate("/ai")}>ALVI</span> to plan your door-to-door trip!</div>
               </div>
             )}
           </div>
@@ -1120,7 +1120,7 @@ export default function SearchPage(){
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <span style={{fontSize:20}}>🤖</span>
               <div>
-                <div style={{fontSize:13,fontWeight:600,color:"#fff"}}>Plan with Alvryn AI — Complete door-to-door trip planning</div>
+                <div style={{fontSize:13,fontWeight:600,color:"#fff"}}>Plan with ALVI — Complete door-to-door trip planning</div>
                 <div style={{fontSize:11,color:"rgba(255,255,255,0.55)",marginTop:1}}>Any language · Any destination · Understands everything you say</div>
               </div>
             </div>
@@ -1262,7 +1262,7 @@ export default function SearchPage(){
           </div>
           <div style={{textAlign:"center",marginTop:28}}>
             <button onClick={()=>navigate("/ai")} style={{padding:"14px 36px",borderRadius:13,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"sc_gradShift 4s ease infinite",boxShadow:`0 8px 28px rgba(201,168,76,0.45)`}}>
-              Try Alvryn AI Free →
+              Try ALVI Free →
             </button>
           </div>
         </div>
