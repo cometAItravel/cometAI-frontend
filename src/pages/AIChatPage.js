@@ -1706,8 +1706,7 @@ export default function AIChatPage() {
   {/* ── END LEFT PANEL ── */}
 
   {/* ── CENTER CHAT — wrap existing 3 blocks in this div ── */}
-  <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minWidth:0 }}></div>
-        {/* ── STICKY TOP BAR ── */}
+  <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minWidth:0 }}>
         <div style={{
           height:58, padding:"0 16px",
           display:"flex", alignItems:"center", justifyContent:"space-between",
@@ -1961,12 +1960,11 @@ export default function AIChatPage() {
           <button onClick={()=>window.location.href="/search"} style={{padding:"7px 16px",borderRadius:8,background:"linear-gradient(135deg,#8B6914,#c9a84c)",border:"none",color:"#030303",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Open Search →</button>
         </div>
       </div>
-      {/* ── RIGHT PANEL ends here ── */}
-
+            {/* ── RIGHT PANEL ends here ── */}
     </div>
-    {/* ── MAIN AREA closes here ── */}
 
+    {/* ── MAIN AREA closes here ── */}
   </div>
   {/* ── outer container closes here ── */}
-  );
+);
 }
