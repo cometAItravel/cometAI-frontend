@@ -28,13 +28,83 @@ function flink(from, to, ddmm="", pax=1) {
   return `${base}/search/${fc}${ddmm}${tc}${pax}?marker=714667&sub_id=alvryn_ai`;
 }
 
-// ── THEMES ────────────────────────────────────────────────────────────────────
+// ── THEMES — COMPLETE with all properties ────────────────────────────────────
 const THEMES = [
-  { name: "Rose", bg: "#fff0f0", accent: "#e05c7a", chat: "#fce8ed" },
-  { name: "Midnight", bg: "#0d0d1a", accent: "#7b68ee", chat: "#1a1a2e" },
-  { name: "Forest", bg: "#f0f4f0", accent: "#2d6a4f", chat: "#e8f4ea" },
-  { name: "Sand", bg: "#faf6f0", accent: "#c9a84c", chat: "#f5efe6" },
-  { name: "Ocean", bg: "#f0f8ff", accent: "#0077b6", chat: "#e0f4ff" },
+  {
+    name:"Rose",
+    bg:"#fff0f0", accent:"#e05c7a", accentDark:"#b8395a",
+    accentSoft:"rgba(224,92,122,0.1)",
+    globeGlow:"rgba(224,92,122,0.4)", globeColor:"#e05c7a",
+    aiBubble:"#ffffff", cardBorder:"rgba(224,92,122,0.15)",
+    cardShadow:"0 2px 12px rgba(224,92,122,0.08)",
+    sidebar:"#1a0810", sbBorder:"rgba(224,92,122,0.18)",
+    sbText:"#f0d0d8", sbSubText:"rgba(240,208,216,0.5)",
+    navBg:"rgba(255,240,240,0.92)", border:"rgba(224,92,122,0.18)",
+    inputBg:"#ffffff", inputText:"#2a0a14", inkColor:"#2a0a14",
+    msgArea:"#fff0f0", aiText:"#2a0a14",
+    userBubble:"linear-gradient(135deg,#e05c7a,#b8395a)", userText:"#ffffff",
+    divider:"rgba(224,92,122,0.15)", shadow:"0 2px 8px rgba(224,92,122,0.12)",
+  },
+  {
+    name:"Midnight",
+    bg:"#0d0d1a", accent:"#7b68ee", accentDark:"#5a4acc",
+    accentSoft:"rgba(123,104,238,0.12)",
+    globeGlow:"rgba(123,104,238,0.5)", globeColor:"#7b68ee",
+    aiBubble:"rgba(255,255,255,0.05)", cardBorder:"rgba(123,104,238,0.18)",
+    cardShadow:"0 2px 12px rgba(0,0,0,0.35)",
+    sidebar:"#080810", sbBorder:"rgba(123,104,238,0.18)",
+    sbText:"#c8c0f0", sbSubText:"rgba(200,192,240,0.45)",
+    navBg:"rgba(13,13,26,0.94)", border:"rgba(123,104,238,0.18)",
+    inputBg:"rgba(255,255,255,0.06)", inputText:"#e0d8ff", inkColor:"#c8c0f0",
+    msgArea:"#0d0d1a", aiText:"#e0d8ff",
+    userBubble:"linear-gradient(135deg,#7b68ee,#5a4acc)", userText:"#ffffff",
+    divider:"rgba(123,104,238,0.15)", shadow:"0 2px 8px rgba(0,0,0,0.45)",
+  },
+  {
+    name:"Forest",
+    bg:"#f0f4f0", accent:"#2d6a4f", accentDark:"#1b4332",
+    accentSoft:"rgba(45,106,79,0.1)",
+    globeGlow:"rgba(45,106,79,0.4)", globeColor:"#2d6a4f",
+    aiBubble:"#ffffff", cardBorder:"rgba(45,106,79,0.15)",
+    cardShadow:"0 2px 12px rgba(45,106,79,0.08)",
+    sidebar:"#0a1a10", sbBorder:"rgba(45,106,79,0.2)",
+    sbText:"#c0d8c8", sbSubText:"rgba(192,216,200,0.5)",
+    navBg:"rgba(240,244,240,0.92)", border:"rgba(45,106,79,0.18)",
+    inputBg:"#ffffff", inputText:"#0a1a10", inkColor:"#0a1a10",
+    msgArea:"#f0f4f0", aiText:"#0a1a10",
+    userBubble:"linear-gradient(135deg,#2d6a4f,#1b4332)", userText:"#ffffff",
+    divider:"rgba(45,106,79,0.15)", shadow:"0 2px 8px rgba(45,106,79,0.1)",
+  },
+  {
+    name:"Sand",
+    bg:"#faf6f0", accent:"#c9a84c", accentDark:"#8B6914",
+    accentSoft:"rgba(201,168,76,0.1)",
+    globeGlow:"rgba(201,168,76,0.4)", globeColor:"#c9a84c",
+    aiBubble:"#ffffff", cardBorder:"rgba(201,168,76,0.18)",
+    cardShadow:"0 2px 12px rgba(201,168,76,0.08)",
+    sidebar:"#0a0604", sbBorder:"rgba(201,168,76,0.18)",
+    sbText:"#f0e6cc", sbSubText:"rgba(240,230,204,0.45)",
+    navBg:"rgba(250,246,240,0.94)", border:"rgba(201,168,76,0.18)",
+    inputBg:"#ffffff", inputText:"#1a1008", inkColor:"#1a1008",
+    msgArea:"#faf6f0", aiText:"#1a1008",
+    userBubble:"linear-gradient(135deg,#c9a84c,#8B6914)", userText:"#ffffff",
+    divider:"rgba(201,168,76,0.15)", shadow:"0 2px 8px rgba(201,168,76,0.1)",
+  },
+  {
+    name:"Ocean",
+    bg:"#f0f8ff", accent:"#0077b6", accentDark:"#005580",
+    accentSoft:"rgba(0,119,182,0.1)",
+    globeGlow:"rgba(0,119,182,0.4)", globeColor:"#0077b6",
+    aiBubble:"#ffffff", cardBorder:"rgba(0,119,182,0.15)",
+    cardShadow:"0 2px 12px rgba(0,119,182,0.08)",
+    sidebar:"#00111a", sbBorder:"rgba(0,119,182,0.2)",
+    sbText:"#c0d8e8", sbSubText:"rgba(192,216,232,0.5)",
+    navBg:"rgba(240,248,255,0.92)", border:"rgba(0,119,182,0.18)",
+    inputBg:"#ffffff", inputText:"#00111a", inkColor:"#00111a",
+    msgArea:"#f0f8ff", aiText:"#00111a",
+    userBubble:"linear-gradient(135deg,#0077b6,#005580)", userText:"#ffffff",
+    divider:"rgba(0,119,182,0.15)", shadow:"0 2px 8px rgba(0,119,182,0.1)",
+  },
 ];
 
 // ── SOUND ─────────────────────────────────────────────────────────────────────
@@ -1275,7 +1345,11 @@ function PlansModal({ onClose, T }) {
 // ══════════════════════════════════════════════════════════════════════════════
 export default function AIChatPage() {
   const navigate = useNavigate();
-  const [themeKey, setThemeKey] = useState(() => localStorage.getItem("alvryn_theme") || "gold");
+  const [themeKey, setThemeKey] = useState(() => {
+    const k = localStorage.getItem("alvryn_theme");
+    return (k && ["0","1","2","3","4"].includes(k)) ? k : "3";
+  });
+  const [chats, setChats] = useState([]);
   const [chats, setChats]       = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -1960,11 +2034,12 @@ export default function AIChatPage() {
           <button onClick={()=>window.location.href="/search"} style={{padding:"7px 16px",borderRadius:8,background:"linear-gradient(135deg,#8B6914,#c9a84c)",border:"none",color:"#030303",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Open Search →</button>
         </div>
       </div>
-            {/* ── RIGHT PANEL ends here ── */}
-    </div>
+      {/* ── RIGHT PANEL ends here ── */}
 
+    </div>
     {/* ── MAIN AREA closes here ── */}
+
   </div>
-  {/* ── outer container closes here ── */}
+
 );
 }
