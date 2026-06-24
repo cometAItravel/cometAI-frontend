@@ -1349,7 +1349,6 @@ export default function AIChatPage() {
     const k = localStorage.getItem("alvryn_theme");
     return (k && ["0","1","2","3","4"].includes(k)) ? k : "3";
   });
-  const [chats, setChats] = useState([]);
   const [chats, setChats]       = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
