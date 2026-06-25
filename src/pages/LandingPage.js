@@ -631,7 +631,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="nav-btns" style={{ display:"flex", gap:8, alignItems:"center" }}>
-            <button onClick={() => navigate("/login")} className="nav-signin"
+            <button onClick={() => navigate("/go/login")} className="nav-signin"
               style={{ padding:"8px 16px", borderRadius:10, fontSize:13, fontWeight:500, fontFamily:"'DM Sans',sans-serif", background:"transparent", color:T.text, border:"1.5px solid rgba(0,0,0,0.12)", cursor:"pointer", transition:"all 0.2s", whiteSpace:"nowrap" }}>
               Sign In
             </button>
@@ -639,7 +639,7 @@ export default function LandingPage() {
               style={{ padding:"8px 14px", borderRadius:10, fontSize:13, fontWeight:600, fontFamily:"'DM Sans',sans-serif", cursor:"pointer", background:"rgba(201,168,76,0.1)", border:"1.5px solid rgba(201,168,76,0.35)", color:"#8B6914", whiteSpace:"nowrap" }}>
               🤖 AI Chat
             </button>
-            <button onClick={() => navigate("/register")} className="shine-btn nav-started"
+            <button onClick={() => navigate("/go/register")} className="shine-btn nav-started"
               style={{ padding:"8px 18px", borderRadius:10, fontSize:13, fontWeight:700, fontFamily:"'DM Sans',sans-serif", color:"#fff", border:"none", background:T.grad, boxShadow:`0 4px 20px ${T.accent}44`, whiteSpace:"nowrap" }}>
               Get Started
             </button>
@@ -717,7 +717,7 @@ export default function LandingPage() {
                       background:T.card||"var(--bg-card)", border:`1.5px solid ${T.cardBorder||"rgba(0,0,0,0.1)"}`, boxShadow:"0 4px 18px rgba(0,0,0,0.07)" }}>
                     Book a Bus 🚌
                   </button>
-                  <button onClick={() => navigate("/register")}
+                  <button onClick={() => navigate("/go/register")}
                     style={{ padding:"15px 26px", borderRadius:14, fontSize:15, fontWeight:500, fontFamily:"'DM Sans',sans-serif", color:T.desc||"#888",
                       background:"transparent", border:"1.5px solid rgba(0,0,0,0.09)", cursor:"pointer" }}>
                     Create Account →
@@ -854,7 +854,7 @@ export default function LandingPage() {
                 <span>🔐</span>
                 <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||"#555" }}>
                   Free account needed — takes 30 seconds.{" "}
-                  <span onClick={() => navigate("/register")} style={{ color:T.accent, cursor:"pointer", fontWeight:600, textDecoration:"underline" }}>Sign up free →</span>
+                  <span onClick={() => navigate("/go/register")} style={{ color:T.accent, cursor:"pointer", fontWeight:600, textDecoration:"underline" }}>Sign up free →</span>
                 </span>
               </div>
             </Reveal>
@@ -1253,13 +1253,13 @@ export default function LandingPage() {
                 India's most intelligent travel booking platform. Best fares on flights and buses, instantly.
               </p>
               <div className="cta-row" style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
-                <button onClick={() => navigate("/register")} className="shine-btn"
+                <button onClick={() => navigate("/go/register")} className="shine-btn"
                   style={{ padding:"16px 44px", borderRadius:14, fontSize:16, fontWeight:600, fontFamily:"'DM Sans',sans-serif", color:"#fff", border:"none", cursor:"pointer",
                     background:T.grad, backgroundSize:"200% 200%", animation:"gradShift 3s ease infinite",
                     boxShadow:`0 12px 48px ${T.accent}44` }}>
                   Create Free Account ✈
                 </button>
-                <button onClick={() => navigate("/login")}
+                <button onClick={() => navigate("/go/login")}
                   style={{ padding:"16px 36px", borderRadius:14, fontSize:16, fontWeight:500, fontFamily:"'DM Sans',sans-serif", color:T.text||"#0a0a0a",
                     background:T.card||"var(--bg-card)", border:`1.5px solid ${T.cardBorder||"rgba(0,0,0,0.1)"}`, boxShadow:"0 4px 18px rgba(0,0,0,0.06)", cursor:"pointer" }}>
                   Sign In →
@@ -1303,7 +1303,7 @@ export default function LandingPage() {
                 <div style={{ fontFamily:"'Space Mono',monospace", fontSize:9, color:"#bbb", letterSpacing:"0.15em", marginBottom:16 }}>TRAVEL</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
                   {["Flights","Buses","WhatsApp Booking"].map(l => (
-                    <span key={l} onClick={() => { if(localStorage.getItem("token")) navigate("/search"); else navigate("/login"); }}
+                    <span key={l} onClick={() => { if(localStorage.getItem("token")) navigate("/go/search"); else navigate("/go/login"); }}
                       style={{ fontFamily:"'DM Sans',sans-serif", fontSize:14, color:T.desc||"#555", cursor:"pointer", transition:"color 0.2s" }}
                       onMouseEnter={e=>e.target.style.color=T.accent}
                       onMouseLeave={e=>e.target.style.color="#555"}>

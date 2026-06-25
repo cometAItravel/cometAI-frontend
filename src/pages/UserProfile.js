@@ -101,7 +101,7 @@ export default function UserProfile() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!token) { navigate("/login"); }
+    if (!token) { navigate("/go/login"); }
   }, [token, navigate]);
 
   useEffect(() => {
@@ -258,10 +258,10 @@ export default function UserProfile() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => navigate("/search")} style={{ padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 700, fontFamily: "'Cormorant Garamond',serif", letterSpacing: "0.05em", cursor: "pointer", color: "#1a1410", border: "none", background: GRAD, backgroundSize: "200% 200%", animation: "gradShift 3s ease infinite" }}>
+          <button onClick={() => navigate("/go/search")} style={{ padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 700, fontFamily: "'Cormorant Garamond',serif", letterSpacing: "0.05em", cursor: "pointer", color: "#1a1410", border: "none", background: GRAD, backgroundSize: "200% 200%", animation: "gradShift 3s ease infinite" }}>
             Search ✈
           </button>
-          <button onClick={() => { localStorage.removeItem("token"); localStorage.removeItem("user"); navigate("/login"); }}
+          <button onClick={() => { localStorage.removeItem("token"); localStorage.removeItem("user"); navigate("/go/login"); }}
             style={{ padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600, fontFamily: "'DM Sans',sans-serif", cursor: "pointer", background: "#fff0f0", color: "#cc2222", border: "1.5px solid rgba(200,34,34,0.25)" }}>
             Sign Out
           </button>
@@ -619,7 +619,7 @@ export default function UserProfile() {
                 <div style={{ textAlign: "center", padding: "48px 20px" }}>
                   <div style={{ fontSize: 56, marginBottom: 16 }}>🎫</div>
                   <div style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 600, fontSize: 20, color: "#888", marginBottom: 12 }}>No bookings yet</div>
-                  <button onClick={() => navigate("/search")} style={btn}>Search Flights ✈</button>
+                  <button onClick={() => navigate("/go/search")} style={btn}>Search Flights ✈</button>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

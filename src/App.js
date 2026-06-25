@@ -20,6 +20,7 @@ import AIChatPage from "./pages/AIChatPage";
 import UserProfile from "./pages/UserProfile";
 import SearchPage from "./pages/SearchPage";
 import LandingPage2 from "./pages/Landingpage2";
+import AlvrynHomePage from "./pages/AlvrynHomePage";
 
 const API = "https://cometai-backend.onrender.com";
 
@@ -738,15 +739,15 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/old" element={<LandingPage />} />
-        <Route path="/login"    element={<Login/>}/>
-        <Route path="/register" element={<Register/>}/>
-        <Route path="/search"   element={<SearchPage/>}/>
-        <Route path="/bookings" element={<MyBookings/>}/>
-        <Route path="/profile"  element={<UserProfile/>}/>
-        <Route path="/admin"    element={<AdminDashboard/>}/>
-        <Route path="/ai"       element={<AIChatPage/>}/>
-        <Route path="/" element={<LandingPage2 />} />
+<Route path="/"         element={<AlvrynHomePage />} />
+<Route path="/go"       element={<LandingPage2 />} />
+<Route path="/go/search" element={<SearchPage />} />
+<Route path="/go/ai"    element={<AIChatPage />} />
+<Route path="/go/login" element={<Login />} />
+<Route path="/go/register" element={<Register />} />
+<Route path="/go/profile" element={<UserProfile />} />
+<Route path="/go/bookings" element={<MyBookings />} />
+<Route path="/old"      element={<LandingPage />} />
       </Routes>
     </Router>
   );

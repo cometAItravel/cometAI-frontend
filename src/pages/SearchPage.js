@@ -965,9 +965,9 @@ export default function SearchPage(){
             </div>
           </div>
           <div style={{display:"flex",gap:8}}>
-            <button onClick={()=>navigate("/ai")} style={{padding:"8px 16px",background:"rgba(201,168,76,0.2)",border:"1.5px solid rgba(201,168,76,0.45)",borderRadius:10,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",backdropFilter:"blur(8px)"}}>🤖 AI Chat</button>
-            <button onClick={()=>navigate("/profile")} style={{padding:"8px 14px",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:10,color:"rgba(255,255,255,0.88)",fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer",backdropFilter:"blur(8px)"}}>Profile</button>
-            <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("user");navigate("/login");}} style={{padding:"8px 14px",background:"rgba(200,50,50,0.12)",border:"1px solid rgba(200,70,70,0.28)",borderRadius:10,color:"rgba(255,130,130,0.88)",fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer",backdropFilter:"blur(8px)"}}>Sign Out</button>
+            <button onClick={()=>navigate("/go/ai")} style={{padding:"8px 16px",background:"rgba(201,168,76,0.2)",border:"1.5px solid rgba(201,168,76,0.45)",borderRadius:10,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,cursor:"pointer",backdropFilter:"blur(8px)"}}>🤖 AI Chat</button>
+            <button onClick={()=>navigate("/go/profile")} style={{padding:"8px 14px",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:10,color:"rgba(255,255,255,0.88)",fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer",backdropFilter:"blur(8px)"}}>Profile</button>
+            <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("user");navigate("/go/login");}} style={{padding:"8px 14px",background:"rgba(200,50,50,0.12)",border:"1px solid rgba(200,70,70,0.28)",borderRadius:10,color:"rgba(255,130,130,0.88)",fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer",backdropFilter:"blur(8px)"}}>Sign Out</button>
           </div>
         </nav>
 
@@ -1110,13 +1110,13 @@ export default function SearchPage(){
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:600,color:"#1a1410",marginBottom:8}}>Cab Booking</div>
                 <div style={{fontSize:14,color:"#888",lineHeight:1.7,maxWidth:320,margin:"0 auto 20px"}}>Airport transfers and intercity cabs — coming very soon!</div>
                 <div style={{display:"inline-block",background:`rgba(201,168,76,0.1)`,border:`1px solid ${GOLD}55`,color:GOLD_DARK,padding:"8px 20px",borderRadius:20,fontSize:12,fontFamily:"'Space Mono',monospace",letterSpacing:"0.8px"}}>✦ Coming Soon</div>
-                <div style={{marginTop:16,fontSize:13,color:"#aaa"}}>Meanwhile, use <span style={{color:GOLD_DARK,cursor:"pointer",fontWeight:600}} onClick={()=>navigate("/ai")}>ALVI</span> to plan your door-to-door trip!</div>
+                <div style={{marginTop:16,fontSize:13,color:"#aaa"}}>Meanwhile, use <span style={{color:GOLD_DARK,cursor:"pointer",fontWeight:600}} onClick={()=>navigate("/go/ai")}>ALVI</span> to plan your door-to-door trip!</div>
               </div>
             )}
           </div>
 
           {/* AI BANNER */}
-          <div onClick={()=>navigate("/ai")} style={{marginTop:14,background:"rgba(255,255,255,0.14)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:14,padding:"13px 18px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.2s",marginBottom:40}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.22)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.14)"}>
+          <div onClick={()=>navigate("/go/ai")} style={{marginTop:14,background:"rgba(255,255,255,0.14)",backdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.22)",borderRadius:14,padding:"13px 18px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",transition:"all 0.2s",marginBottom:40}} onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.22)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.14)"}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <span style={{fontSize:20}}>🤖</span>
               <div>
@@ -1261,7 +1261,7 @@ export default function SearchPage(){
             ))}
           </div>
           <div style={{textAlign:"center",marginTop:28}}>
-            <button onClick={()=>navigate("/ai")} style={{padding:"14px 36px",borderRadius:13,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"sc_gradShift 4s ease infinite",boxShadow:`0 8px 28px rgba(201,168,76,0.45)`}}>
+            <button onClick={()=>navigate("/go/ai")} style={{padding:"14px 36px",borderRadius:13,fontSize:15,fontWeight:700,fontFamily:"'Cormorant Garamond',serif",letterSpacing:"0.06em",color:"#1a1410",border:"none",cursor:"pointer",background:GRAD,backgroundSize:"200% 200%",animation:"sc_gradShift 4s ease infinite",boxShadow:`0 8px 28px rgba(201,168,76,0.45)`}}>
               Try ALVI Free →
             </button>
           </div>

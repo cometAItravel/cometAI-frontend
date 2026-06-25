@@ -1375,7 +1375,7 @@ export default function AIChatPage() {
   let user = {};
   try { user = JSON.parse(localStorage.getItem("user") || "{}"); } catch {}
 
-  useEffect(() => { if (!token) navigate("/login"); }, [token, navigate]);
+  useEffect(() => { if (!token) navigate("/go/login"); }, [token, navigate]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, thinking]);
   useEffect(() => { localStorage.setItem("alvryn_theme", themeKey); }, [themeKey]);
 
@@ -1753,7 +1753,7 @@ export default function AIChatPage() {
             </button>
 
             {/* Sign Out */}
-            <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("user");navigate("/login");}}
+            <button onClick={()=>{localStorage.removeItem("token");localStorage.removeItem("user");navigate("/go/login");}}
               style={{ width:"100%", padding:"8px", borderRadius:8, fontSize:12, fontWeight:500, cursor:"pointer", background:"rgba(239,68,68,0.06)", color:"rgba(239,68,68,0.7)", border:"1px solid rgba(239,68,68,0.2)", fontFamily:"'DM Sans',sans-serif" }}>
               Sign Out
             </button>
@@ -1804,7 +1804,7 @@ export default function AIChatPage() {
           </div>
 
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-            <button onClick={()=>navigate("/search")} title="Search Flights & More"
+            <button onClick={()=>navigate("/go/search")} title="Search Flights & More"
               style={{ width:36, height:36, borderRadius:10, background:T.accentSoft, border:`1px solid ${T.border}`, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0, transition:"all 0.2s" }}
               onMouseEnter={e=>{e.currentTarget.style.background=`${T.accent}25`;}}
               onMouseLeave={e=>{e.currentTarget.style.background=T.accentSoft;}}>
@@ -2030,7 +2030,7 @@ export default function AIChatPage() {
         </div>
         <div style={{marginTop:"auto",padding:"12px",borderRadius:10,background:"rgba(0,0,0,0.03)",border:"1px solid rgba(0,0,0,0.07)",textAlign:"center"}}>
           <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:"rgba(0,0,0,0.35)",marginBottom:6}}>Need search?</div>
-          <button onClick={()=>window.location.href="/search"} style={{padding:"7px 16px",borderRadius:8,background:"linear-gradient(135deg,#8B6914,#c9a84c)",border:"none",color:"#030303",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Open Search →</button>
+          <button onClick={()=>window.location.href="/go/search"} style={{padding:"7px 16px",borderRadius:8,background:"linear-gradient(135deg,#8B6914,#c9a84c)",border:"none",color:"#030303",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Open Search →</button>
         </div>
       </div>
       {/* ── RIGHT PANEL ends here ── */}
