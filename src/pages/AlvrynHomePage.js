@@ -302,11 +302,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
             <button onClick={()=>setModal({title:"About Alvryn",content:ABOUT})} style={{padding:"14px 36px",borderRadius:100,background:"transparent",border:"1px solid rgba(255,255,255,0.14)",color:"rgba(255,255,255,0.6)",fontFamily:"'DM Sans',sans-serif",fontSize:15,cursor:"pointer",transition:"all 0.3s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color="#fff";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.6)";}}>Our story</button>
           </div>
         </div>
-        {/* Scroll indicator */}
-        <div style={{position:"absolute",bottom:40,left:"50%",transform:"translateX(-50%)",display:"flex",flexDirection:"column",alignItems:"center",gap:8,animation:"fadeUp 1s 1.2s both"}}>
-          <div style={{width:1,height:48,background:"linear-gradient(180deg,rgba(201,168,76,0),rgba(201,168,76,0.5))"}}/>
-          <span style={{fontFamily:"'Space Mono',monospace",fontSize:8,color:"rgba(255,255,255,0.18)",letterSpacing:"0.22em"}}>SCROLL</span>
-        </div>
+
       </section>
 
       {/* ══ PRODUCTS ══ */}
