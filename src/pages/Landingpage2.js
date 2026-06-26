@@ -35,6 +35,7 @@ body{overflow-x:hidden;font-family:'DM Sans',sans-serif;}
 .lift{transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);}
 .lift:hover{transform:translateY(-6px);box-shadow:0 24px 60px rgba(0,0,0,0.18);}
 @media(max-width:900px){.hide-m{display:none!important;}.g2{grid-template-columns:1fr!important;}.g3{grid-template-columns:1fr!important;}}
+@media(max-width:600px){.nb-center{display:none!important;}.btn-primary{padding:10px 18px!important;font-size:13px!important;}.sp-nav-logo span{display:none!important;}}
 `;
 
 /* MARK — two strokes only, perfectly minimal */
@@ -327,7 +328,7 @@ export default function LandingPage2(){
           ))}
         </div>
         {/* Center: ALVRYN brand — absolutely centered */}
-        <div style={{position:"absolute",left:"50%",transform:"translateX(-50%)",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}} onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}>
+        <div className="nb-center" style={{position:"absolute",left:"50%",transform:"translateX(-50%)",display:"flex",alignItems:"center",gap:8,cursor:"pointer"}} onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}>
           <AlvrynMark size={22} glow/>
           <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:300,fontSize:15,color:"#fff",letterSpacing:"0.22em"}}>ALVRYN</span>
         </div>

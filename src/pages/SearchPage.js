@@ -1011,7 +1011,7 @@ export default function SearchPage(){
                   </button>
                 ))}
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:10,alignItems:"center",marginBottom:14}}>
+              <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:14}} className="sp-fto">
                 <div>
                   <label style={lbl}>From</label>
                   <div className="sp_citybtn" onClick={()=>setShowFromP(true)} style={{...box,cursor:"pointer"}}>

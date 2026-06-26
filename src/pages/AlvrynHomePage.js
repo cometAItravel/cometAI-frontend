@@ -195,6 +195,8 @@ export default function AlvrynHomePage(){
   const [navScrolled,setNavScrolled]=useState(false);
   const [menuOpen,setMenuOpen]=useState(false);
 
+  useEffect(()=>{ document.title = "Alvryn — Technology for the Human Experience"; },[]);
+
   useEffect(()=>{
     const fn=()=>setNavScrolled(window.scrollY>60);
     window.addEventListener("scroll",fn,{passive:true});
