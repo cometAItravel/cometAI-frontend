@@ -22,6 +22,7 @@ import SearchPage from "./pages/SearchPage";
 import LandingPage2 from "./pages/Landingpage2";
 import AlvrynHomePage from "./pages/AlvrynHomePage";
 import { Navigate } from "react-router-dom";
+import PlansPage from "./pages/PlansPage";
 
 const API = "https://cometai-backend.onrender.com";
 
@@ -749,6 +750,7 @@ function App() {
 <Route path="/go/profile" element={<UserProfile />} />
 <Route path="/go/bookings" element={<MyBookings />} />
 <Route path="/old"      element={<LandingPage />} />
+<Route path="/go/plans" element={<PlansPage />} />
 
 <Route path="/ai"       element={<Navigate to="/go/ai"       replace />} />
 <Route path="/search"   element={<Navigate to="/go/search"   replace />} />
