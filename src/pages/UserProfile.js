@@ -93,6 +93,8 @@ export default function UserProfile() {
   const [bookings, setBookings] = useState([]);
   const [planData, setPlanData] = useState({ plan:"explorer", messagesUsed:0, messagesLimit:20, remaining:20, isProUser:false });
 
+ const token = localStorage.getItem("token");
+ 
 useEffect(() => {
   if (!token) return;
   fetch(`${API}/my-plan`, { headers:{ Authorization:`Bearer ${token}` } })
@@ -108,7 +110,6 @@ useEffect(() => {
   const [fpError,   setFpError]   = useState("");
   const [fpSuccess, setFpSuccess] = useState("");
 
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) { navigate("/go/login"); }
