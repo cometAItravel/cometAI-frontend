@@ -423,5 +423,5 @@ If you're a journalist, researcher or potential partner, include a brief descrip
         </div>
       </footer>
     </>
-  );
+  ); 
 }
