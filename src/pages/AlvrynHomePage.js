@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars, react-hooks/exhaustive-deps */
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 /* ─── CSS ─────────────────────────────────────────────────────────────────── */
@@ -275,11 +275,110 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
   cursor:pointer; transition:all 0.3s ease;
 }
 #replay-btn:hover{ background:rgba(255,255,255,0.12); color:#ffffff; }
+
+/* ══ MODAL ══ */
+.modal-overlay{
+  position:fixed; inset:0; z-index:200;
+  background:rgba(10,10,10,0.75);
+  backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  animation: modalFadeIn 0.3s ease both;
+}
+@keyframes modalFadeIn{ from{ opacity:0; } to{ opacity:1; } }
+.modal-card{
+  background:#ffffff; border-radius:4px;
+  max-width:600px; width:100%; max-height:80vh; overflow-y:auto;
+  padding:56px 48px; position:relative;
+  animation: modalSlideUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes modalSlideUp{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+.modal-close{
+  position:absolute; top:24px; right:24px;
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(10,10,10,0.05); border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(10,10,10,0.5); font-size:16px;
+  transition:all 0.2s ease;
+}
+.modal-close:hover{ background:rgba(10,10,10,0.1); color:var(--ink); }
+.modal-label{
+  font-family:var(--sans); font-size:10px; font-weight:600; letter-spacing:0.18em;
+  color:var(--amber); margin-bottom:14px;
+}
+.modal-card h2{
+  font-family:var(--display); font-weight:600; font-size:28px;
+  letter-spacing:-0.01em; color:var(--ink); margin-bottom:24px;
+}
+.modal-body{
+  font-family:var(--sans); font-size:14px; line-height:1.85;
+  color:rgba(10,10,10,0.6); white-space:pre-line;
+}
 `;
 
 /* ─── MAIN ────────────────────────────────────────────────────────────────── */
 export default function AlvrynHomePage() {
   const navigate = useNavigate();
+  const [modal, setModal] = useState(null);
+
+  const ABOUT = `Alvryn is a technology company focused on building intelligent products that extend what's possible in everyday human experience. We don't build tools. We build companions — for travel, for life, for the moments in between.
+
+Our work begins with a simple question: what does the person on the other side of this screen actually need? That question drives every product decision we make.
+
+Alvryn was founded on the belief that the best technology quietly earns trust. It doesn't demand attention. It doesn't overwhelm with features. It shows up when you need it, understands what you mean, and stays out of the way when you don't.
+
+We are a small team with a long-term vision. We move carefully, build with intention, and measure success by how genuinely useful our products are to the people who use them.`;
+
+  const PRIVACY = `Alvryn is committed to handling your information with the same care we put into every product we build. We collect only what is necessary to provide and improve our services. We do not sell your data, we do not share it with advertisers, and we do not use it to build profiles for third parties.
+
+Information you provide when creating an account is used solely to personalize your experience within Alvryn products. Conversations and trip data are stored securely and are never used to target you with advertising.
+
+You may request access to your data or request its permanent deletion at any time by contacting us at hellothealvryn@gmail.com. We will respond within 30 days. All data in transit and at rest is protected using industry-standard encryption.
+
+We use functional cookies only — for session management and basic analytics that help us understand how to improve our products. We do not use third-party advertising cookies.
+
+This policy applies to all products under the Alvryn umbrella. We will notify you of any material changes via email or in-product notice before they take effect.`;
+
+  const TERMS = `By accessing or using any Alvryn product, you agree to these terms. If you do not agree, please do not use our services.
+
+Alvryn products are designed for personal, lawful use. You may not use our products to engage in illegal activity, harm others, or attempt to reverse-engineer or disrupt our systems.
+
+Alvryn Go connects you with third-party booking partners including Aviasales, RedBus, Booking.com and IRCTC. We act as an AI travel planning assistant, not a travel agency. Prices shown are indicative. Alvryn is not responsible for bookings, cancellations or disputes with third-party partners.
+
+Alvryn Solace is an AI companion product. It is not a substitute for professional mental health care. If you are experiencing a crisis, please contact a qualified professional or emergency services.
+
+Content generated by Alvryn AI products may occasionally be inaccurate. Always verify important information independently. We continuously work to improve accuracy and reliability.
+
+These terms are governed by Indian law. Any disputes shall be resolved under the jurisdiction of Indian courts. We reserve the right to update these terms with reasonable notice.`;
+
+  const CONTACT = `We read every message. Response times are typically within 48 hours.
+
+General enquiries and privacy questions: hellothealvryn@gmail.com
+
+We don't have a support phone line. Email is the fastest way to reach us, and it gives us a record of your issue so we can solve it properly.
+
+If you're a journalist, researcher or potential partner, include a brief description of who you are and what you're looking for. We'll get back to you.`;
+
+  const MODAL_CONTENT = {
+    about: { title: "About Alvryn", body: ABOUT },
+    privacy: { title: "Privacy Policy", body: PRIVACY },
+    terms: { title: "Terms of Use", body: TERMS },
+    contact: { title: "Contact", body: CONTACT },
+  };
+
+  function Modal({ id, onClose }) {
+    const { title, body } = MODAL_CONTENT[id];
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+          <div className="modal-label">ALVRYN</div>
+          <h2>{title}</h2>
+          <div className="modal-body">{body}</div>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     document.title = "Alvryn — Technology for the Human Experience";
@@ -573,6 +672,7 @@ export default function AlvrynHomePage() {
   return (
     <>
       <style>{CSS}</style>
+      {modal && <Modal id={modal} onClose={() => setModal(null)} />}
 
       <div id="panel"></div>
       <div id="wordmark-wrap">
@@ -718,7 +818,10 @@ export default function AlvrynHomePage() {
               </div>
               <div className="footer-col">
                 <div className="head">COMPANY</div>
-                <span>About</span><span>Privacy Policy</span><span>Terms of Use</span><span>Contact</span>
+                <button onClick={() => setModal('about')}>About</button>
+                <button onClick={() => setModal('privacy')}>Privacy Policy</button>
+                <button onClick={() => setModal('terms')}>Terms of Use</button>
+                <button onClick={() => setModal('contact')}>Contact</button>
               </div>
               <div className="footer-col">
                 <div className="head">GET IN TOUCH</div>
