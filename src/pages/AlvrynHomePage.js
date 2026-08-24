@@ -314,6 +314,45 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
   font-family:var(--sans); font-size:14px; line-height:1.85;
   color:rgba(10,10,10,0.6); white-space:pre-line;
 }
+
+/* ══ RESPONSIVE — tablet ══ */
+@media(max-width:860px){
+  .product-band{ padding:90px 6%; }
+  .philosophy{ padding:120px 6%; }
+  .vision{ padding:120px 6% 90px; }
+  .closing{ margin:40px auto 140px; padding:44px 32px; }
+}
+
+/* ══ RESPONSIVE — phone ══ */
+@media(max-width:600px){
+  .thesis{ padding:100px 6% 80px; min-height:90vh; }
+  .product-band{ padding:70px 6%; }
+  .philosophy{ padding:90px 6%; }
+  .vision{ padding:90px 6% 70px; }
+  .closing{ margin:30px auto 100px; padding:36px 24px; }
+  .footer-cols{ gap:32px; }
+  .footer-word{ margin-bottom:40px; }
+
+  /* Nav: tighter gaps so links fit inside the narrower header dip */
+  .nav-group{ gap:14px; }
+  .nav-group a, .nav-group button{ font-size:11px; }
+  .nav-spacer{ width:100px !important; }
+
+  #corner-nav-links{ gap:12px; left:56px; }
+  #corner-nav-links a, #corner-nav-links button{ font-size:11px; }
+
+  /* Modal: full-width feeling, less padding, taller scroll area */
+  .modal-card{ padding:36px 24px; max-height:85vh; }
+  .modal-card h2{ font-size:22px; }
+  .modal-close{ top:16px; right:16px; }
+
+  .product-art{ max-width:260px; }
+}
+
+@media(max-width:380px){
+  .nav-group{ gap:10px; }
+  #corner-nav-links{ gap:8px; left:48px; }
+}
 `;
 
 /* ─── MAIN ────────────────────────────────────────────────────────────────── */
@@ -457,7 +496,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       W = document.documentElement.clientWidth; H = window.innerHeight;
       edgeH = 6;
       dipH = Math.max(46, Math.min(0.062 * W, 62));
-      dipHalfW = Math.max(130, Math.min(0.14 * W, 200));
+      dipHalfW = Math.max(90, Math.min(0.14 * W, 200, W * 0.42));
       cx = W / 2;
       initialPath = panelPath(H, H, dipHalfW, W);
       finalPath = panelPath(edgeH, dipH, dipHalfW, W);
@@ -585,10 +624,17 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       const links = document.getElementById('corner-nav-links');
       trigger.classList.add('active');
       function open() { links.classList.add('active'); }
-      function close(e) { if (links.contains(e.relatedTarget)) return; links.classList.remove('active'); }
+      function close(e) { if (e && links.contains(e.relatedTarget)) return; links.classList.remove('active'); }
       trigger.addEventListener('mouseenter', open);
       trigger.addEventListener('mouseleave', close);
       links.addEventListener('mouseleave', (e) => { if (trigger.contains(e.relatedTarget)) return; links.classList.remove('active'); });
+
+      // Touch devices have no hover — tap the icon area to toggle instead.
+      let tapOpen = false;
+      trigger.addEventListener('click', () => {
+        tapOpen = !tapOpen;
+        if (tapOpen) open(); else close();
+      });
     }
 
     function armHoverNav() {
@@ -597,7 +643,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       const trigger = document.getElementById('nav-trigger');
       const navLinks = document.getElementById('nav-links');
       trigger.style.pointerEvents = 'auto';
-      const hoverHalfW = Math.min(0.30 * W, 420);
+      const hoverHalfW = Math.min(0.30 * W, 420, W * 0.44);
       const hoverDipH = dipH + 4;
       const hoverPath = panelPath(edgeH, hoverDipH, hoverHalfW, W);
       navLinks.style.height = hoverDipH + 'px';
