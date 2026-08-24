@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 /* ─── CSS ─────────────────────────────────────────────────────────────────── */
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&display=swap');
-@import url('https://use.typekit.net/ogq4cgz.css');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Poiret+One&display=swap');
 
 :root{
   --ink:#0a0a0a;
@@ -44,7 +43,7 @@ body{
 }
 #wordmark{
   font-weight:500;
-  font-family:"anisette-std", serif;
+  font-family:'Poiret One', sans-serif;
   letter-spacing:0.14em;
   font-size: clamp(18px, 3vw, 25px);
   color:#ffffff;
@@ -66,7 +65,7 @@ body{
 
 .extract-clone{
   position:fixed; z-index:104;
-  font-family:"anisette-std", serif;
+  font-family:'Poiret One', sans-serif;
   font-weight:500;
   color:#ffffff;
   pointer-events:none;
@@ -487,13 +486,15 @@ If you're a journalist, researcher or potential partner, include a brief descrip
     }
 
     function runIntro() {
+      settled = false;
       panel = document.getElementById('panel');
       wordWrap = document.getElementById('wordmark-wrap');
       word = document.getElementById('wordmark');
       const content = document.getElementById('content');
       const greeting = document.getElementById('greeting');
 
-      W = document.documentElement.clientWidth; H = window.innerHeight;
+      W = document.documentElement.clientWidth;
+      H = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
       edgeH = 6;
       dipH = Math.max(46, Math.min(0.062 * W, 62));
       dipHalfW = Math.max(90, Math.min(0.14 * W, 200, W * 0.42));
@@ -551,6 +552,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
         armHoverNav();
         showGreeting();
         armExtractionOnScroll();
+        settled = true;
       }, settledAt + 250);
     }
 
@@ -700,10 +702,48 @@ If you're a journalist, researcher or potential partner, include a brief descrip
 
     const replayBtn = document.getElementById('replay-btn');
     replayBtn?.addEventListener('click', runIntro);
-    runIntro();
+
+    // Mobile browsers (especially iOS Safari) resize the viewport as the
+    // address bar collapses right around page load — measuring before that
+    // settles throws off every shape/position calculation. A short delay
+    // lets the real viewport size stabilize first.
+    const startTimer = setTimeout(runIntro, 200);
+
+    // If the viewport still changes after things have settled (address bar
+    // collapsing mid-scroll is the common case), quietly correct the header
+    // shape and wordmark position instead of leaving them stranded.
+    let settled = false;
+    let resizeTimer;
+    function handleResize() {
+      if (!settled || !panel || !wordWrap || !word) return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        W = document.documentElement.clientWidth;
+        H = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+        edgeH = 6;
+        dipH = Math.max(46, Math.min(0.062 * W, 62));
+        dipHalfW = Math.max(90, Math.min(0.14 * W, 200, W * 0.42));
+        cx = W / 2;
+        finalPath = panelPath(edgeH, dipH, dipHalfW, W);
+
+        panel.style.transition = 'none';
+        panel.style.clipPath = finalPath;
+
+        const finalCenterY = dipH * 0.42;
+        const deltaY = finalCenterY - (H / 2);
+        wordWrap.style.transition = 'none';
+        wordWrap.style.transform = 'translateY(' + deltaY + 'px)';
+      }, 150);
+    }
+    window.addEventListener('resize', handleResize);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', handleResize);
 
     return () => {
       replayBtn?.removeEventListener('click', runIntro);
+      clearTimeout(startTimer);
+      clearTimeout(resizeTimer);
+      window.removeEventListener('resize', handleResize);
+      if (window.visualViewport) window.visualViewport.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -811,11 +851,12 @@ If you're a journalist, researcher or potential partner, include a brief descrip
               <p className="desc">A companion built for presence, not productivity. Voice conversations, real memory, quiet attention.</p>
               <a href="https://solace.alvryn.in" target="_blank" rel="noopener noreferrer">Join the waitlist →</a>
             </div>
-            <svg className="product-art" viewBox="0 0 300 300" fill="none">
-              <path d="M 60 190 C 60 100, 130 40, 230 62 C 285 75, 300 145, 265 200" stroke="#5B6EE8" strokeWidth="2" fill="none" strokeLinecap="round"/>
-              <path d="M 115 185 C 115 135, 150 105, 200 114 C 235 120, 245 160, 225 190" stroke="#0a0a0a" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.55"/>
-              <circle cx="163" cy="152" r="4" fill="#5B6EE8"/>
-            </svg>
+            <div className="product-art" style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
+              <svg viewBox="0 0 64 64" style={{width:'56%', height:'56%'}}>
+                <path d="M18 46 V26 C18 21.5 21.5 18 26 18 C30.5 18 34 21.5 34 26 V46" fill="none" stroke="#5B6EE8" strokeLinecap="round" strokeWidth="6"/>
+                <path d="M30 46 V30 C30 26.1 33.1 23 37 23 C40.9 23 44 26.1 44 30 V46" fill="none" stroke="#5B6EE8" strokeLinecap="round" strokeWidth="6"/>
+              </svg>
+            </div>
           </div>
         </section>
 
