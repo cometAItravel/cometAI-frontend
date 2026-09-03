@@ -19,27 +19,39 @@ const CSS = `
   --display: 'Bricolage Grotesque', sans-serif;
 }
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
-html{ overflow-x:hidden; scroll-behavior:smooth; }
+html{ scroll-behavior:smooth; }
 body{
   background:var(--paper);
   color:var(--ink);
   font-family:var(--sans);
-  overflow-x:hidden;
+  /* No overflow-x here on purpose — setting it on html/body is a known
+     iOS Safari bug that breaks position:fixed elements, causing them to
+     scroll away instead of staying pinned. Prevent stray horizontal
+     overflow at the source (elements themselves) instead. */
+  max-width:100vw;
 }
 
-/* ══ INTRO PANEL ══ */
-#panel{
-  position:fixed; top:0; left:0; right:0; bottom:0;
-  background:#000000; z-index:100;
-  transition: clip-path 1.5s cubic-bezier(0.65,0,0.35,1);
-  will-change: clip-path;
+/* ══ INTRO PANEL — rendered as a direct SVG path, not CSS clip-path.
+   clip-path:path() has patchy support in mobile/in-app browsers, where
+   it silently fails and shows an unclipped black box. Drawing the shape
+   directly and tweening its coordinates in JS works everywhere. ══ */
+#panel-wrap{
+  position:fixed; top:0; left:0; right:0; bottom:0; z-index:100;
+  pointer-events:none;
 }
+#panel-svg{ width:100%; height:100%; display:block; }
 #wordmark-wrap{
   position:fixed; top:0; left:0; right:0; bottom:0; z-index:101;
   display:flex; align-items:center; justify-content:center;
   pointer-events:none;
   transition: transform 1.5s cubic-bezier(0.65,0,0.35,1);
   will-change: transform;
+  /* Forces a stable GPU compositing layer — without this, fixed-position
+     elements can intermittently vanish during momentum scrolling on iOS. */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 #wordmark{
   font-weight:500;
@@ -359,6 +371,35 @@ export default function AlvrynHomePage() {
   const navigate = useNavigate();
   const [modal, setModal] = useState(null);
 
+  // ══ PRELAUNCH COUNTDOWN GATE — additive, does not touch anything below ══
+  // Target: September 30, 2026, 00:00:00 IST. Once this passes, the gate
+  // hides itself permanently for that visitor and the real page underneath
+  // (completely unchanged) becomes visible. To disable the gate entirely
+  // (e.g. after launch, or for local testing), just set GATE_ENABLED to false.
+  const GATE_ENABLED = true;
+  const GATE_TARGET = new Date("2026-09-30T00:00:00+05:30").getTime();
+  const [gateTimeLeft, setGateTimeLeft] = useState(GATE_TARGET - Date.now());
+
+  useEffect(() => {
+    if (!GATE_ENABLED) return;
+    const tick = () => setGateTimeLeft(GATE_TARGET - Date.now());
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const gateActive = GATE_ENABLED && gateTimeLeft > 0;
+
+  function formatCountdown(ms) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return { days, hours, minutes, seconds };
+  }
+  // ══ END GATE STATE ══
+
   const ABOUT = `Alvryn is a technology company focused on building intelligent products that extend what's possible in everyday human experience. We don't build tools. We build companions — for travel, for life, for the moments in between.
 
 Our work begins with a simple question: what does the person on the other side of this screen actually need? That question drives every product decision we make.
@@ -454,20 +495,47 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       });
     }
 
-    let panel, wordWrap, word, W, H, edgeH, dipH, dipHalfW, cx, initialPath, finalPath;
+    let panelPathEl, panelWrap, wordWrap, word, W, H, edgeH, dipH, dipHalfW, cx, initialPath, finalPath;
     let navArmed = false;
     let extracted = false;
 
     function panelPath(edgeHeight, dipDepth, halfW, width) {
       const c = cx;
-      return "path('M 0 0 " +
+      return "M 0 0 " +
         "L " + width + " 0 " +
         "L " + width + " " + edgeHeight + " " +
         "L " + (c + halfW) + " " + edgeHeight + " " +
         "C " + (c + halfW * 0.7) + " " + edgeHeight + ", " + (c + halfW * 0.45) + " " + dipDepth + ", " + (c + halfW * 0.32) + " " + dipDepth + " " +
         "L " + (c - halfW * 0.32) + " " + dipDepth + " " +
         "C " + (c - halfW * 0.45) + " " + dipDepth + ", " + (c - halfW * 0.7) + " " + edgeHeight + ", " + (c - halfW) + " " + edgeHeight + " " +
-        "L 0 " + edgeHeight + " Z')";
+        "L 0 " + edgeHeight + " Z";
+    }
+
+    function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+    // Draws the shape directly and animates it by tweening the underlying
+    // numbers frame by frame — no CSS clip-path involved anywhere, so this
+    // works the same on every browser instead of depending on clip-path
+    // support (which many in-app/mobile browsers lack).
+    let activeTween = null;
+    function tweenPanel(fromParams, toParams, duration, onDone) {
+      if (activeTween) cancelAnimationFrame(activeTween);
+      const start = performance.now();
+      function frame(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const e = easeInOutCubic(t);
+        const eh = fromParams.edgeH + (toParams.edgeH - fromParams.edgeH) * e;
+        const dh = fromParams.dipH + (toParams.dipH - fromParams.dipH) * e;
+        const dw = fromParams.dipHalfW + (toParams.dipHalfW - fromParams.dipHalfW) * e;
+        panelPathEl.setAttribute('d', panelPath(eh, dh, dw, toParams.width));
+        if (t < 1) {
+          activeTween = requestAnimationFrame(frame);
+        } else {
+          activeTween = null;
+          if (onDone) onDone();
+        }
+      }
+      activeTween = requestAnimationFrame(frame);
     }
 
     function resetExtraction() {
@@ -479,15 +547,16 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       cornerNavTrigger.classList.remove('active');
       cornerNavLinks.classList.remove('active');
       document.querySelectorAll('.extract-clone').forEach((el) => el.remove());
-      panel.style.opacity = '1';
+      panelWrap.style.opacity = '1';
       wordWrap.style.opacity = '1';
-      panel.style.pointerEvents = '';
+      panelWrap.style.pointerEvents = '';
       document.getElementById('nav-trigger').style.pointerEvents = 'auto';
     }
 
     function runIntro() {
       settled = false;
-      panel = document.getElementById('panel');
+      panelPathEl = document.getElementById('panel-path');
+      panelWrap = document.getElementById('panel-wrap');
       wordWrap = document.getElementById('wordmark-wrap');
       word = document.getElementById('wordmark');
       const content = document.getElementById('content');
@@ -504,8 +573,8 @@ If you're a journalist, researcher or potential partner, include a brief descrip
 
       resetExtraction();
 
-      panel.style.transition = 'none';
-      panel.style.clipPath = initialPath;
+      if (activeTween) cancelAnimationFrame(activeTween);
+      panelPathEl.setAttribute('d', initialPath);
       wordWrap.style.transition = 'none';
       wordWrap.style.transform = 'translateY(0)';
       word.style.transition = 'none';
@@ -517,9 +586,8 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       document.getElementById('scroll-cue').classList.remove('in');
       window.scrollTo(0, 0);
 
-      void panel.offsetWidth;
+      void wordWrap.offsetWidth;
 
-      panel.style.transition = 'clip-path 1.5s cubic-bezier(0.65,0,0.35,1)';
       wordWrap.style.transition = 'transform 1.5s cubic-bezier(0.65,0,0.35,1)';
 
       const initialCenterY = H / 2;
@@ -539,12 +607,17 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       const pause = 450;
       const liftAt = wipeFinishesAt + pause;
 
+      const liftDuration = 1500;
+
       setTimeout(() => {
-        panel.style.clipPath = finalPath;
+        tweenPanel(
+          { edgeH: H, dipH: H, dipHalfW },
+          { edgeH, dipH, dipHalfW, width: W },
+          liftDuration
+        );
         wordWrap.style.transform = 'translateY(' + deltaY + 'px)';
       }, liftAt);
 
-      const liftDuration = 1500;
       const settledAt = liftAt + liftDuration;
 
       setTimeout(() => {
@@ -647,21 +720,26 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       trigger.style.pointerEvents = 'auto';
       const hoverHalfW = Math.min(0.30 * W, 420, W * 0.44);
       const hoverDipH = dipH + 4;
-      const hoverPath = panelPath(edgeH, hoverDipH, hoverHalfW, W);
       navLinks.style.height = hoverDipH + 'px';
 
       const actualWordWidth = word.getBoundingClientRect().width;
       document.querySelector('.nav-spacer').style.width = (actualWordWidth + 56) + 'px';
 
       function openNav() {
-        panel.style.transition = 'clip-path 0.7s cubic-bezier(0.16,1,0.3,1)';
-        panel.style.clipPath = hoverPath;
+        tweenPanel(
+          { edgeH, dipH, dipHalfW },
+          { edgeH, dipH: hoverDipH, dipHalfW: hoverHalfW, width: W },
+          400
+        );
         navLinks.classList.add('active');
         navLinks.style.opacity = '1';
       }
       function closeNav() {
-        panel.style.transition = 'clip-path 0.6s cubic-bezier(0.16,1,0.3,1)';
-        panel.style.clipPath = finalPath;
+        tweenPanel(
+          { edgeH, dipH: hoverDipH, dipHalfW: hoverHalfW },
+          { edgeH, dipH, dipHalfW, width: W },
+          350
+        );
         navLinks.classList.remove('active');
         navLinks.style.opacity = '0';
       }
@@ -715,9 +793,10 @@ If you're a journalist, researcher or potential partner, include a brief descrip
     let settled = false;
     let resizeTimer;
     function handleResize() {
-      if (!settled || !panel || !wordWrap || !word) return;
+      if (!settled || !panelPathEl || !wordWrap || !word) return;
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
+        if (activeTween) cancelAnimationFrame(activeTween);
         W = document.documentElement.clientWidth;
         H = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
         edgeH = 6;
@@ -725,9 +804,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
         dipHalfW = Math.max(90, Math.min(0.14 * W, 200, W * 0.42));
         cx = W / 2;
         finalPath = panelPath(edgeH, dipH, dipHalfW, W);
-
-        panel.style.transition = 'none';
-        panel.style.clipPath = finalPath;
+        panelPathEl.setAttribute('d', finalPath);
 
         const finalCenterY = dipH * 0.42;
         const deltaY = finalCenterY - (H / 2);
@@ -755,12 +832,52 @@ If you're a journalist, researcher or potential partner, include a brief descrip
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // ══ GATE RENDER — returns early, existing page return below is untouched ══
+  if (gateActive) {
+    const t = formatCountdown(gateTimeLeft);
+    const pad = (n) => String(n).padStart(2, '0');
+    return (
+      <>
+        <style>{`
+          .gate-wrap{
+            position:fixed; inset:0; z-index:500; background:#ffffff;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            text-align:center; padding:24px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          }
+          .gate-eyebrow{ font-size:11px; font-weight:600; letter-spacing:0.2em; color:rgba(10,10,10,0.4); text-transform:uppercase; margin-bottom:24px; }
+          .gate-title{ font-family:'Bricolage Grotesque', sans-serif; font-weight:600; font-size:clamp(28px,5vw,48px); color:#0a0a0a; line-height:1.2; margin-bottom:16px; }
+          .gate-sub{ font-size:14px; color:rgba(10,10,10,0.5); max-width:340px; margin-bottom:44px; }
+          .gate-countdown{ display:flex; gap:20px; }
+          .gate-unit{ text-align:center; }
+          .gate-unit .num{ font-family:'Bricolage Grotesque', sans-serif; font-weight:600; font-size:clamp(24px,4vw,36px); color:#0a0a0a; }
+          .gate-unit .label{ font-size:10px; letter-spacing:0.1em; color:rgba(10,10,10,0.4); text-transform:uppercase; margin-top:6px; }
+        `}</style>
+        <div className="gate-wrap">
+          <div className="gate-eyebrow">Alvryn</div>
+          <div className="gate-title">Something opens<br/>September 30.</div>
+          <p className="gate-sub">You will know when it's time.</p>
+          <div className="gate-countdown">
+            <div className="gate-unit"><div className="num">{pad(t.days)}</div><div className="label">Days</div></div>
+            <div className="gate-unit"><div className="num">{pad(t.hours)}</div><div className="label">Hrs</div></div>
+            <div className="gate-unit"><div className="num">{pad(t.minutes)}</div><div className="label">Min</div></div>
+            <div className="gate-unit"><div className="num">{pad(t.seconds)}</div><div className="label">Sec</div></div>
+          </div>
+        </div>
+      </>
+    );
+  }
+  // ══ END GATE RENDER ══
+
   return (
     <>
       <style>{CSS}</style>
       {modal && <Modal id={modal} onClose={() => setModal(null)} />}
 
-      <div id="panel"></div>
+      <div id="panel-wrap">
+        <svg id="panel-svg">
+          <path id="panel-path" fill="#0a0a0a"></path>
+        </svg>
+      </div>
       <div id="wordmark-wrap">
         <div id="wordmark">
           <span data-letter="A">A</span><span data-letter="L">L</span><span data-letter="V">V</span><span data-letter="R">R</span><span data-letter="Y">Y</span><span data-letter="N">N</span>
