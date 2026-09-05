@@ -398,6 +398,28 @@ export default function AlvrynHomePage() {
     const seconds = totalSeconds % 60;
     return { days, hours, minutes, seconds };
   }
+
+  const [gateInterested, setGateInterested] = useState(
+    typeof window !== 'undefined' && localStorage.getItem('solace_interested') === 'true'
+  );
+  function handleGateInterested() {
+    if (gateInterested) return;
+    setGateInterested(true);
+    localStorage.setItem('solace_interested', 'true');
+    let sessionId = localStorage.getItem('solace_session_id');
+    if (!sessionId) {
+      sessionId = 'sid_' + Math.random().toString(36).slice(2) + Date.now();
+      localStorage.setItem('solace_session_id', sessionId);
+    }
+    // Same backend/table as Solace's own gate — one shared interest count
+    // regardless of which site someone clicked from. Requires alvryn.in
+    // to be added to the backend's CORS allow-list (see note below).
+    fetch("https://alvryn-solace-backend.onrender.com/prelaunch/interested", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    }).catch(() => { /* already recorded locally — fine if this fails silently */ });
+  }
   // ══ END GATE STATE ══
 
   const ABOUT = `Alvryn is a technology company focused on building intelligent products that extend what's possible in everyday human experience. We don't build tools. We build companions — for travel, for life, for the moments in between.
@@ -851,6 +873,15 @@ If you're a journalist, researcher or potential partner, include a brief descrip
           .gate-unit{ text-align:center; }
           .gate-unit .num{ font-family:'Bricolage Grotesque', sans-serif; font-weight:600; font-size:clamp(24px,4vw,36px); color:#0a0a0a; }
           .gate-unit .label{ font-size:10px; letter-spacing:0.1em; color:rgba(10,10,10,0.4); text-transform:uppercase; margin-top:6px; }
+          .gate-interested-btn{
+            display:inline-flex; align-items:center; gap:8px; margin-top:40px;
+            font-family:-apple-system, sans-serif; font-size:12px; color:rgba(10,10,10,0.55);
+            background:none; border:1px solid rgba(10,10,10,0.3); border-radius:100px; padding:10px 20px;
+            cursor:pointer; transition:opacity 0.3s ease;
+          }
+          .gate-interested-btn:hover{ opacity:0.75; }
+          .gate-interested-btn.recorded{ opacity:1; border-color:#c9a84c; color:#c9a84c; cursor:default; }
+          .gate-interested-btn svg{ width:14px; height:14px; }
         `}</style>
         <div className="gate-wrap">
           <div className="gate-eyebrow">Alvryn</div>
@@ -862,6 +893,10 @@ If you're a journalist, researcher or potential partner, include a brief descrip
             <div className="gate-unit"><div className="num">{pad(t.minutes)}</div><div className="label">Min</div></div>
             <div className="gate-unit"><div className="num">{pad(t.seconds)}</div><div className="label">Sec</div></div>
           </div>
+          <button className={"gate-interested-btn" + (gateInterested ? " recorded" : "")} onClick={handleGateInterested}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2 L14.5 9 L22 9.5 L16 14.5 L18 22 L12 17.5 L6 22 L8 14.5 L2 9.5 L9.5 9 Z"/></svg>
+            <span>{gateInterested ? "You're on the list" : "I'm interested"}</span>
+          </button>
         </div>
       </>
     );
