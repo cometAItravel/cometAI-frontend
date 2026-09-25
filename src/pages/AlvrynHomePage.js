@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars, react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 /* ─── CSS ─────────────────────────────────────────────────────────────────── */
 const CSS = `
@@ -190,44 +189,72 @@ body{
 .glyph.amber{ opacity:0.65; }
 @keyframes float{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-7px);} }
 
-.product-band{ padding: 130px 6%; display:flex; align-items:center; justify-content:center; }
-.product-band.go{ background:var(--paper); }
-.product-band.solace{ background:#F6F7FE; }
-.product-inner{
-  max-width:1080px; width:100%; display:grid; grid-template-columns:1.1fr 0.9fr;
-  gap:70px; align-items:center;
+/* ══ WORKFORCE — worker card grid ══ */
+.workers-section{ padding:130px 6%; background:var(--paper); }
+.workers-inner{ max-width:1080px; margin:0 auto; }
+.workers-head{ margin-bottom:56px; text-align:center; }
+.workers-head .label{
+  font-size:11px; font-weight:600; letter-spacing:0.16em; color:var(--blue);
+  margin-bottom:20px; text-transform:uppercase;
 }
-.product-band.solace .product-inner{ direction:rtl; }
-.product-band.solace .product-inner > *{ direction:ltr; }
-@media(max-width:860px){ .product-inner{ grid-template-columns:1fr; } .product-band.solace .product-inner{ direction:ltr; } }
-
-.product-text .label{
-  font-size:11px; font-weight:600; letter-spacing:0.16em; margin-bottom:24px;
-  display:flex; align-items:center; gap:10px;
-}
-.product-band.go .label{ color:var(--amber); }
-.product-band.solace .label{ color:var(--blue); }
-.product-text .tag{
-  font-size:9px; font-weight:500; letter-spacing:0.1em; color:rgba(10,10,10,0.4);
-  border:1px solid rgba(10,10,10,0.14); padding:3px 9px; border-radius:100px;
-}
-.product-text h2{
+.workers-head h2{
   font-family:var(--display); font-weight:600; font-size: clamp(28px, 3.6vw, 46px);
-  line-height:1.2; letter-spacing:-0.015em; color:var(--ink); margin-bottom:22px; max-width:460px;
+  letter-spacing:-0.015em; color:var(--ink); max-width:640px; margin:0 auto 18px;
 }
-.product-band.go .accent{ color:var(--amber); }
-.product-band.solace .accent{ color:var(--blue); }
-.product-text p.desc{
-  font-size:15px; line-height:1.75; color:rgba(10,10,10,0.5); max-width:400px; margin-bottom:34px;
+.workers-head p{
+  font-size:15px; line-height:1.7; color:rgba(10,10,10,0.5); max-width:480px; margin:0 auto;
 }
-.product-text a{
-  font-family:var(--sans); font-size:14px; font-weight:600; text-decoration:none;
-  display:inline-flex; align-items:center; gap:8px; cursor:pointer; background:none; border:none;
-}
-.product-band.go a{ color:var(--amber); }
-.product-band.solace a{ color:var(--blue); }
 
-.product-art{ width:100%; aspect-ratio:1/1; max-width:420px; margin:0 auto; }
+.worker-grid{
+  display:grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap:20px;
+}
+@media(max-width:960px){ .worker-grid{ grid-template-columns:1fr 1fr; } }
+@media(max-width:600px){ .worker-grid{ grid-template-columns:1fr; } }
+
+.worker-card{
+  border:1px solid rgba(10,10,10,0.1); border-radius:8px;
+  padding:34px 28px; min-height:250px;
+  display:flex; flex-direction:column; justify-content:flex-start;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.worker-card.active{
+  border-color:var(--blue-line);
+  background: linear-gradient(165deg, var(--blue-dim), transparent 65%);
+  box-shadow: 0 20px 50px -30px rgba(91,110,232,0.35);
+}
+.worker-card.building{ opacity:0.6; }
+
+.worker-tag{
+  align-self:flex-start; font-size:9px; font-weight:700; letter-spacing:0.14em;
+  padding:5px 11px; border-radius:100px; margin-bottom:24px; text-transform:uppercase;
+}
+.worker-card.active .worker-tag{ background:var(--blue); color:#ffffff; }
+.worker-card.building .worker-tag{ background:rgba(10,10,10,0.07); color:rgba(10,10,10,0.45); }
+
+.worker-card h3{
+  font-family:var(--display); font-weight:600; font-size:19px;
+  color:var(--ink); margin-bottom:10px; letter-spacing:-0.005em;
+}
+.worker-card p{
+  font-size:13.5px; line-height:1.65; color:rgba(10,10,10,0.5); margin-bottom:22px; flex-grow:1;
+}
+.worker-card a{
+  font-family:var(--sans); font-size:13px; font-weight:600; color:var(--blue);
+  text-decoration:none; display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+}
+.worker-card.building .worker-card-cta{ display:none; }
+
+.how-it-works{
+  margin-top:70px; padding-top:56px; border-top:1px solid rgba(10,10,10,0.08);
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+  gap:10px; text-align:center;
+}
+.how-it-works .step{
+  font-family:var(--sans); font-size:13px; font-weight:500; color:rgba(10,10,10,0.55);
+  background:rgba(10,10,10,0.035); border:1px solid rgba(10,10,10,0.07);
+  padding:9px 16px; border-radius:100px; white-space:nowrap;
+}
+.how-it-works .arrow{ color:rgba(10,10,10,0.25); font-size:13px; }
 
 .philosophy{
   background:var(--ink); color:#ffffff; padding:180px 6%; position:relative; overflow:hidden;
@@ -251,14 +278,42 @@ body{
 }
 
 .closing{
-  max-width:640px; margin: 60px auto 200px; border:1px solid rgba(10,10,10,0.14);
-  border-top:2px solid; border-image: linear-gradient(90deg, var(--amber), var(--blue)) 1;
+  max-width:640px; margin: 60px auto 120px; border:1px solid rgba(10,10,10,0.14);
+  border-top:2px solid; border-image: linear-gradient(90deg, var(--blue), var(--amber)) 1;
   padding: 56px 48px; text-align:center;
 }
 .closing p{
   font-family:var(--display); font-weight:500; font-size: clamp(18px, 2vw, 23px);
   line-height:1.5; letter-spacing:-0.005em; color:var(--ink);
 }
+
+/* ══ GET IN TOUCH — final CTA before footer ══ */
+.get-in-touch{
+  padding: 40px 6% 200px; text-align:center;
+}
+.get-in-touch-inner{
+  max-width:560px; margin:0 auto; border:1px solid rgba(10,10,10,0.12);
+  border-radius:10px; padding:64px 44px; background: linear-gradient(180deg, rgba(91,110,232,0.04), transparent 70%);
+}
+.get-in-touch .eyebrow{
+  font-size:11px; font-weight:600; letter-spacing:0.16em; color:var(--blue);
+  text-transform:uppercase; margin-bottom:22px;
+}
+.get-in-touch h2{
+  font-family:var(--display); font-weight:600; font-size: clamp(24px, 3vw, 34px);
+  letter-spacing:-0.01em; color:var(--ink); margin-bottom:18px; line-height:1.3;
+}
+.get-in-touch p{
+  font-size:14.5px; line-height:1.7; color:rgba(10,10,10,0.55); max-width:420px; margin:0 auto 34px;
+}
+.get-in-touch-btn{
+  font-family:var(--sans); font-size:14px; font-weight:600; color:#ffffff;
+  background:var(--ink); border:none; border-radius:100px; padding:15px 34px;
+  cursor:pointer; display:inline-flex; align-items:center; gap:9px;
+  transition: transform 0.3s ease, background 0.3s ease;
+  text-decoration:none;
+}
+.get-in-touch-btn:hover{ background:var(--blue); transform:translateY(-2px); }
 
 footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
 .footer-inner{ max-width:1200px; margin:0 auto; }
@@ -274,6 +329,8 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
   transition:color 0.25s ease; background:none; border:none; text-align:left; padding:0;
 }
 .footer-col a:hover, .footer-col button:hover{ color:#ffffff; }
+.footer-col .static-item{ cursor:default; }
+.footer-col .static-item:hover{ color:rgba(255,255,255,0.55); }
 .footer-bottom{
   border-top:1px solid rgba(255,255,255,0.08); padding-top:28px;
   display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;
@@ -315,7 +372,7 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
 .modal-close:hover{ background:rgba(10,10,10,0.1); color:var(--ink); }
 .modal-label{
   font-family:var(--sans); font-size:10px; font-weight:600; letter-spacing:0.18em;
-  color:var(--amber); margin-bottom:14px;
+  color:var(--blue); margin-bottom:14px;
 }
 .modal-card h2{
   font-family:var(--display); font-weight:600; font-size:28px;
@@ -328,19 +385,25 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
 
 /* ══ RESPONSIVE — tablet ══ */
 @media(max-width:860px){
-  .product-band{ padding:90px 6%; }
+  .workers-section{ padding:90px 6%; }
   .philosophy{ padding:120px 6%; }
   .vision{ padding:120px 6% 90px; }
-  .closing{ margin:40px auto 140px; padding:44px 32px; }
+  .closing{ margin:40px auto 100px; padding:44px 32px; }
+  .get-in-touch{ padding:20px 6% 140px; }
+  .get-in-touch-inner{ padding:48px 32px; }
 }
 
 /* ══ RESPONSIVE — phone ══ */
 @media(max-width:600px){
   .thesis{ padding:100px 6% 80px; min-height:90vh; }
-  .product-band{ padding:70px 6%; }
+  .workers-section{ padding:70px 6%; }
+  .workers-head{ margin-bottom:40px; }
+  .how-it-works{ margin-top:44px; padding-top:36px; }
   .philosophy{ padding:90px 6%; }
   .vision{ padding:90px 6% 70px; }
-  .closing{ margin:30px auto 100px; padding:36px 24px; }
+  .closing{ margin:30px auto 70px; padding:36px 24px; }
+  .get-in-touch{ padding:10px 6% 100px; }
+  .get-in-touch-inner{ padding:40px 24px; }
   .footer-cols{ gap:32px; }
   .footer-word{ margin-bottom:40px; }
 
@@ -356,8 +419,6 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
   .modal-card{ padding:36px 24px; max-height:85vh; }
   .modal-card h2{ font-size:22px; }
   .modal-close{ top:16px; right:16px; }
-
-  .product-art{ max-width:260px; }
 }
 
 @media(max-width:380px){
@@ -368,10 +429,9 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
 
 /* ─── MAIN ────────────────────────────────────────────────────────────────── */
 export default function AlvrynHomePage() {
-  const navigate = useNavigate();
   const [modal, setModal] = useState(null);
 
-    // ══ MAINTENANCE MODE — replaces the countdown gate ══
+  // ══ MAINTENANCE MODE — replaces the countdown gate ══
   const MAINTENANCE_ENABLED = true;
   const BYPASS_SECRET = "alvryn2026access";
   const [maintBypass, setMaintBypass] = useState(false);
@@ -387,17 +447,19 @@ export default function AlvrynHomePage() {
   const maintenanceActive = MAINTENANCE_ENABLED && !maintBypass;
   // ══ END MAINTENANCE STATE ══
 
-  const ABOUT = `Alvryn is a technology company focused on building intelligent products that extend what's possible in everyday human experience. We don't build tools. We build companions — for travel, for life, for the moments in between.
+  const ABOUT = `Alvryn is a technology company building digital workers for business operations.
 
-Our work begins with a simple question: what does the person on the other side of this screen actually need? That question drives every product decision we make.
+We don't build tools people have to operate all day. We build software that takes over the process itself — reading documents, checking them against the rules that matter, and only bringing in a person when a real decision needs to be made.
 
-Alvryn was founded on the belief that the best technology quietly earns trust. It doesn't demand attention. It doesn't overwhelm with features. It shows up when you need it, understands what you mean, and stays out of the way when you don't.
+Our first worker handles invoice and accounts payable operations: reading incoming invoices, matching them against purchase orders, flagging anything that doesn't line up, and routing exceptions to the right person — instead of a team doing that by hand every day.
 
-We are a small team with a long-term vision. We move carefully, build with intention, and measure success by how genuinely useful our products are to the people who use them.`;
+Alvryn was founded on the belief that repetitive back-office work is exactly the kind of work software should be doing, with people making the decisions that actually require judgment. We move deliberately — starting with one process done extremely well, rather than a long list of half-built features.
 
-  const PRIVACY = `Alvryn is committed to handling your information with the same care we put into every product we build. We collect only what is necessary to provide and improve our services. We do not sell your data, we do not share it with advertisers, and we do not use it to build profiles for third parties.
+We are a small team with a long-term vision: one company, one platform, and over time, many digital workers.`;
 
-Information you provide when creating an account is used solely to personalize your experience within Alvryn products. Conversations and trip data are stored securely and are never used to target you with advertising.
+  const PRIVACY = `Alvryn is committed to handling your information and your business data with the same care we put into every product we build. We collect only what is necessary to provide and improve our services. We do not sell your data, we do not share it with advertisers, and we do not use it to build profiles for third parties.
+
+Documents and data submitted for processing — such as invoices, purchase orders, or related business records — are used solely to perform the workflow you've asked Alvryn to handle. They are stored securely and are never used to train models without your explicit consent.
 
 You may request access to your data or request its permanent deletion at any time by contacting us at hellothealvryn@gmail.com. We will respond within 30 days. All data in transit and at rest is protected using industry-standard encryption.
 
@@ -407,19 +469,19 @@ This policy applies to all products under the Alvryn umbrella. We will notify yo
 
   const TERMS = `By accessing or using any Alvryn product, you agree to these terms. If you do not agree, please do not use our services.
 
-Alvryn products are designed for personal, lawful use. You may not use our products to engage in illegal activity, harm others, or attempt to reverse-engineer or disrupt our systems.
+Alvryn products are designed for legitimate business use. You may not use our products to engage in illegal activity, harm others, or attempt to reverse-engineer or disrupt our systems.
 
-Alvryn Go connects you with third-party booking partners including Aviasales, RedBus, Booking.com and IRCTC. We act as an AI travel planning assistant, not a travel agency. Prices shown are indicative. Alvryn is not responsible for bookings, cancellations or disputes with third-party partners.
+Alvryn Workforce provides software that assists with business operations, including document processing and workflow automation. It is designed to reduce manual work, not to replace human judgment. Any output — including matches, mismatches, or recommended actions — should be reviewed by an authorized person before being acted on, particularly where payments, approvals, or legal obligations are involved.
 
-Alvryn Solace is an AI companion product. It is not a substitute for professional mental health care. If you are experiencing a crisis, please contact a qualified professional or emergency services.
-
-Content generated by Alvryn AI products may occasionally be inaccurate. Always verify important information independently. We continuously work to improve accuracy and reliability.
+Content generated or extracted by Alvryn's automated systems may occasionally be inaccurate or incomplete. Always verify important information independently before relying on it. We continuously work to improve accuracy and reliability.
 
 These terms are governed by Indian law. Any disputes shall be resolved under the jurisdiction of Indian courts. We reserve the right to update these terms with reasonable notice.`;
 
   const CONTACT = `We read every message. Response times are typically within 48 hours.
 
 General enquiries and privacy questions: hellothealvryn@gmail.com
+
+If you're a business dealing with meaningful invoice or document volume and want to explore Alvryn Workforce early, tell us a little about your current process when you write in — it helps us understand if and how we can help.
 
 We don't have a support phone line. Email is the fastest way to reach us, and it gives us a record of your issue so we can solve it properly.
 
@@ -447,7 +509,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
   }
 
   useEffect(() => {
-    document.title = "Alvryn — Technology for the Human Experience";
+    document.title = "Alvryn Workforce — Digital Workers for Business Operations";
   }, []);
 
   useEffect(() => {
@@ -463,9 +525,9 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       '<svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.4"><path d="M5 12 C 9 6, 15 6, 19 12"/></svg>',
       '<svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.4"><polygon points="12,5 19,18 5,18"/></svg>',
       '<svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.4"><circle cx="12" cy="12" r="3"/></svg>',
-      '<svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.4"><path d="M12 2 C15 5, 16 10, 15 15 L9 15 C8 10, 9 5, 12 2 Z"/><circle cx="12" cy="9" r="1.4"/><path d="M9 15 L6 19 L9 17 Z"/><path d="M15 15 L18 19 L15 17 Z"/><path d="M10.5 16 L10.5 20 M13.5 16 L13.5 20"/></svg>',
-      '<svg viewBox="0 0 24 24" fill="none" stroke="#D9743C" stroke-width="1.5" class="amber-glyph"><ellipse cx="12" cy="13" rx="9" ry="2.6"/><path d="M8 13 C8 8, 16 8, 16 13"/><circle cx="12" cy="9" r="1.1" fill="#D9743C"/></svg>',
-      '<svg viewBox="0 0 24 24" fill="none" stroke="#5B6EE8" stroke-width="1.4" class="blue-glyph"><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-20 12 12)"/><circle cx="19.5" cy="9.3" r="1.3" fill="#5B6EE8" stroke="none"/></svg>',
+      '<svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.4"><path d="M6 8 L18 8 M6 12 L18 12 M6 16 L13 16"/></svg>',
+      '<svg viewBox="0 0 24 24" fill="none" stroke="#D9743C" stroke-width="1.5" class="amber-glyph"><rect x="5" y="6" width="14" height="12" rx="1.5"/><path d="M5 10 L19 10"/></svg>',
+      '<svg viewBox="0 0 24 24" fill="none" stroke="#5B6EE8" stroke-width="1.4" class="blue-glyph"><path d="M4 12 L9 17 L20 6"/></svg>',
       '<svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.4"><path d="M12 4 L13 10 L19 11 L13 12 L12 18 L11 12 L5 11 L11 10 Z"/></svg>',
       '<svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.4"><polygon points="12,3 20,8 20,16 12,21 4,16 4,8"/></svg>'
     ];
@@ -819,7 +881,9 @@ If you're a journalist, researcher or potential partner, include a brief descrip
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-    // ══ MAINTENANCE RENDER — returns early, existing page return below is untouched ══
+  const CONTACT_MAILTO = "mailto:hellothealvryn@gmail.com?subject=Alvryn%20Workforce%20%E2%80%94%20Invoice%20Operations&body=Hi%20Alvryn%20team%2C%0A%0AWe'd%20like%20to%20learn%20more%20about%20Invoice%20Operations.%0A%0ACompany%3A%0AApprox.%20invoices%2Fmonth%3A%0ACurrent%20process%3A%0A";
+
+  // ══ MAINTENANCE RENDER — returns early, existing page return below is untouched ══
   if (maintenanceActive) {
     return (
       <div style={{
@@ -877,7 +941,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       <div id="corner-nav-trigger"></div>
       <div id="corner-nav-links">
         <button onClick={() => scrollToId('top')}>Home</button>
-        <button onClick={() => scrollToId('products')}>Products</button>
+        <button onClick={() => scrollToId('products')}>Workforce</button>
         <button onClick={() => scrollToId('about')}>About</button>
         <button onClick={() => scrollToId('vision')}>Vision</button>
         <button aria-label="Search">
@@ -889,7 +953,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       <div id="nav-links">
         <div className="nav-group">
           <button onClick={() => scrollToId('top')}>Home</button>
-          <button onClick={() => scrollToId('products')}>Products</button>
+          <button onClick={() => scrollToId('products')}>Workforce</button>
         </div>
         <div className="nav-spacer"></div>
         <div className="nav-group">
@@ -906,7 +970,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       <div id="content">
 
         <section className="thesis">
-          <h1>Software that notices you first.<span className="sub">Not the other way around.</span></h1>
+          <h1>Software that does the work.<span className="sub">Not just tracks it.</span></h1>
           <div className="scroll-cue" id="scroll-cue"><div className="drip"></div></div>
         </section>
 
@@ -914,36 +978,45 @@ If you're a journalist, researcher or potential partner, include a brief descrip
           <div className="motion-track" id="motion-track"></div>
         </div>
 
-        <section className="product-band go" id="products">
-          <div className="product-inner">
-            <div className="product-text">
-              <div className="label">ALVRYN GO <span className="tag">LIVE</span></div>
-              <h2>Plans how you <span className="accent">move</span> through the world.</h2>
-              <p className="desc">Flights, trains, buses, hotels — planned in one conversation. No tabs, no spreadsheets, no second-guessing.</p>
-              <a onClick={() => navigate("/go")}>Open Alvryn Go →</a>
+        <section className="workers-section" id="products">
+          <div className="workers-inner">
+            <div className="workers-head">
+              <div className="label">Alvryn Workforce</div>
+              <h2>Digital workers for business operations.</h2>
+              <p>Each worker takes over one repetitive process end-to-end — reading, checking, and flagging what actually needs a person.</p>
             </div>
-            <svg className="product-art" viewBox="0 0 300 300" fill="none">
-              <circle cx="46" cy="230" r="5" fill="#D9743C"/>
-              <circle cx="250" cy="60" r="5" fill="#D9743C"/>
-              <path d="M 46 230 C 90 210, 100 140, 150 130 C 210 118, 220 80, 250 60" stroke="#D9743C" strokeWidth="1.6" strokeDasharray="1 9" strokeLinecap="round" fill="none"/>
-              <circle cx="150" cy="150" r="120" stroke="#D9743C" strokeWidth="1" opacity="0.15" fill="none"/>
-            </svg>
-          </div>
-        </section>
 
-        <section className="product-band solace">
-          <div className="product-inner">
-            <div className="product-text">
-              <div className="label">ALVRYN SOLACE <span className="tag">IN DEVELOPMENT</span></div>
-              <h2>Learns to <span className="accent">notice</span> what you don't say.</h2>
-              <p className="desc">A companion built for presence, not productivity. Voice conversations, real memory, quiet attention.</p>
-              <a href="https://solace.alvryn.in" target="_blank" rel="noopener noreferrer">Join the waitlist →</a>
+            <div className="worker-grid">
+              <div className="worker-card active">
+                <div className="worker-tag">Active</div>
+                <h3>Invoice Operations</h3>
+                <p>Reads incoming invoices, matches them against purchase orders, checks suppliers and totals, and flags exceptions for approval — before anything is recorded.</p>
+                <a className="worker-card-cta" onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>See how it works →</a>
+              </div>
+              <div className="worker-card building">
+                <div className="worker-tag">Building</div>
+                <h3>Procurement Operations</h3>
+                <p>Purchase order creation, supplier communication and approval routing.</p>
+              </div>
+              <div className="worker-card building">
+                <div className="worker-tag">Building</div>
+                <h3>HR Onboarding</h3>
+                <p>Document collection, verification and onboarding workflows for new hires.</p>
+              </div>
+              <div className="worker-card building">
+                <div className="worker-tag">Building</div>
+                <h3>Logistics Operations</h3>
+                <p>Shipping documents, delivery confirmations and reconciliation.</p>
+              </div>
             </div>
-            <div className="product-art" style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
-              <svg viewBox="0 0 64 64" style={{width:'56%', height:'56%'}}>
-                <path d="M18 46 V26 C18 21.5 21.5 18 26 18 C30.5 18 34 21.5 34 26 V46" fill="none" stroke="#5B6EE8" strokeLinecap="round" strokeWidth="6"/>
-                <path d="M30 46 V30 C30 26.1 33.1 23 37 23 C40.9 23 44 26.1 44 30 V46" fill="none" stroke="#5B6EE8" strokeLinecap="round" strokeWidth="6"/>
-              </svg>
+
+            <div className="how-it-works" id="how-it-works">
+              <span className="step">Invoice received</span><span className="arrow">→</span>
+              <span className="step">Data extracted</span><span className="arrow">→</span>
+              <span className="step">Matched to PO</span><span className="arrow">→</span>
+              <span className="step">Exceptions flagged</span><span className="arrow">→</span>
+              <span className="step">Human approves</span><span className="arrow">→</span>
+              <span className="step">Recorded</span>
             </div>
           </div>
         </section>
@@ -961,35 +1034,49 @@ If you're a journalist, researcher or potential partner, include a brief descrip
             <line x1="250" y1="380" x2="700" y2="400" stroke="#ffffff" strokeWidth="0.5" opacity="0.1"/>
             <line x1="700" y1="400" x2="950" y2="360" stroke="#ffffff" strokeWidth="0.5" opacity="0.1"/>
           </svg>
-          <p>Presence isn't a feature.<br/>It's the <span className="tint">only feature</span> that matters.</p>
+          <p>The work still gets done.<br/>You just <span className="tint">stop having to do it yourself</span>.</p>
         </section>
 
         <section className="vision" id="vision">
           <svg className="vision-horizon" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMax slice">
             <defs>
               <radialGradient id="sunGlow" cx="50%" cy="100%" r="70%">
-                <stop offset="0%" stopColor="#D9743C" stopOpacity="0.16"/>
-                <stop offset="100%" stopColor="#5B6EE8" stopOpacity="0"/>
+                <stop offset="0%" stopColor="#5B6EE8" stopOpacity="0.16"/>
+                <stop offset="100%" stopColor="#D9743C" stopOpacity="0"/>
               </radialGradient>
             </defs>
             <rect x="0" y="0" width="1200" height="260" fill="url(#sunGlow)"/>
             <line x1="0" y1="220" x2="1200" y2="220" stroke="#0a0a0a" strokeWidth="1" opacity="0.1"/>
           </svg>
-          <h2>Every product we build starts the same way:<br/>someone, somewhere, needed to feel less alone.</h2>
+          <h2>Every business we work with starts the same way:<br/>one process too repetitive for a person, too important to get wrong.</h2>
         </section>
 
         <div className="closing">
-          <p>One rule guides everything we build:<br/>never let someone feel unseen.</p>
+          <p>One rule guides everything we build:<br/>never automate a decision without a human able to see it.</p>
         </div>
+
+        <section className="get-in-touch" id="contact">
+          <div className="get-in-touch-inner">
+            <div className="eyebrow">Currently onboarding</div>
+            <h2>We're working with a small number of companies right now.</h2>
+            <p>If invoice processing is quietly costing your team hours every week, we'd like to hear about it — and show you what we're building.</p>
+            <a className="get-in-touch-btn" href={CONTACT_MAILTO}>
+              Get in touch
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </section>
 
         <footer>
           <div className="footer-inner">
             <div className="footer-word">ALVRYN</div>
             <div className="footer-cols">
               <div className="footer-col">
-                <div className="head">PRODUCTS</div>
-                <button onClick={() => navigate("/go")}>Alvryn Go — Live</button>
-                <a href="https://solace.alvryn.in" target="_blank" rel="noopener noreferrer">Alvryn Solace — Soon</a>
+                <div className="head">WORKFORCE</div>
+                <button onClick={() => scrollToId('products')}>Invoice Operations — Active</button>
+                <span className="static-item">Procurement — Building</span>
+                <span className="static-item">HR Onboarding — Building</span>
+                <span className="static-item">Logistics — Building</span>
               </div>
               <div className="footer-col">
                 <div className="head">COMPANY</div>
