@@ -513,6 +513,14 @@ If you're a journalist, researcher or potential partner, include a brief descrip
   }, []);
 
   useEffect(() => {
+    // Guard: while the maintenance screen is showing, none of the elements
+    // this effect looks for (#motion-track, #panel-path, #wordmark, etc.)
+    // exist in the DOM yet — this effect only has real work to do once the
+    // actual page is mounted. Depending on maintenanceActive (instead of []
+    // ) means this effect correctly re-runs the moment maintenance clears,
+    // rather than running once too early and silently finding nothing.
+    if (maintenanceActive) return;
+
     // ── Motion strip glyphs ──
     const glyphSVGs = [
       '<svg viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="1.4"><path d="M4 16 C4 8, 12 4, 20 8"/></svg>',
@@ -871,7 +879,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
       window.removeEventListener('resize', handleResize);
       if (window.visualViewport) window.visualViewport.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [maintenanceActive]);
 
   const scrollToId = (id) => {
     if (id === 'top') {
