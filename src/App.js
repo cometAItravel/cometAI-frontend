@@ -729,6 +729,31 @@ function TrainPanel() {
   );
 }
 
+// ── NOINDEX WRAPPER ────────────────────────────────────────────────────────────
+// Adds <meta name="robots" content="noindex, follow"> to <head> only while a
+// wrapped route is mounted, and removes it again on unmount. This is scoped
+// per-route (not a change to public/index.html) precisely because this whole
+// app — including the real, indexed homepage at "/" — shares one static
+// index.html. A blanket noindex in that file would also hide the homepage;
+// this wrapper keeps the effect local to Go's and the legacy page's routes.
+// "follow" (rather than "nofollow") is intentional: it still lets Google's
+// crawler follow any links these pages contain, it just won't list the page
+// itself in search results. Reversible any time — delete this component (and
+// stop wrapping routes with it) to make Go/old pages indexable again; it does
+// not affect the pages' actual functionality at all.
+function NoIndexPage({ children }) {
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex, follow";
+    document.head.appendChild(meta);
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
+  return children;
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 //  APP ROUTER
 // ══════════════════════════════════════════════════════════════════════════════
@@ -742,15 +767,15 @@ function App() {
     <Router>
       <Routes>
 <Route path="/"         element={<AlvrynHomePage />} />
-<Route path="/go"       element={<LandingPage2 />} />
-<Route path="/go/search" element={<SearchPage />} />
-<Route path="/go/ai"    element={<AIChatPage />} />
-<Route path="/go/login" element={<Login />} />
-<Route path="/go/register" element={<Register />} />
-<Route path="/go/profile" element={<UserProfile />} />
-<Route path="/go/bookings" element={<MyBookings />} />
-<Route path="/old"      element={<LandingPage />} />
-<Route path="/go/plans" element={<PlansPage />} />
+<Route path="/go"       element={<NoIndexPage><LandingPage2 /></NoIndexPage>} />
+<Route path="/go/search" element={<NoIndexPage><SearchPage /></NoIndexPage>} />
+<Route path="/go/ai"    element={<NoIndexPage><AIChatPage /></NoIndexPage>} />
+<Route path="/go/login" element={<NoIndexPage><Login /></NoIndexPage>} />
+<Route path="/go/register" element={<NoIndexPage><Register /></NoIndexPage>} />
+<Route path="/go/profile" element={<NoIndexPage><UserProfile /></NoIndexPage>} />
+<Route path="/go/bookings" element={<NoIndexPage><MyBookings /></NoIndexPage>} />
+<Route path="/old"      element={<NoIndexPage><LandingPage /></NoIndexPage>} />
+<Route path="/go/plans" element={<NoIndexPage><PlansPage /></NoIndexPage>} />
 
 <Route path="/ai"       element={<Navigate to="/go/ai"       replace />} />
 <Route path="/search"   element={<Navigate to="/go/search"   replace />} />

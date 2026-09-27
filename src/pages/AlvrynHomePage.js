@@ -432,7 +432,11 @@ export default function AlvrynHomePage() {
   const [modal, setModal] = useState(null);
 
   // ══ MAINTENANCE MODE — replaces the countdown gate ══
-  const MAINTENANCE_ENABLED = true;
+  // Off: the real Workforce homepage is now live to everyone, not just
+  // visitors with the ?access= bypass link. Go and Solace are unaffected —
+  // Go was never gated by this (it's just hidden from search via noindex),
+  // and Solace keeps its own separate maintenance flag on its own site.
+  const MAINTENANCE_ENABLED = false;
   const BYPASS_SECRET = "alvryn2026access";
   const [maintBypass, setMaintBypass] = useState(false);
 
