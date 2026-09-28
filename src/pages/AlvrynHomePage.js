@@ -1003,7 +1003,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
                 <div className="worker-tag">Active</div>
                 <h3>Invoice Operations</h3>
                 <p>Reads incoming invoices, matches them against purchase orders, checks suppliers and totals, and flags exceptions for approval — before anything is recorded.</p>
-                <a className="worker-card-cta" onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>See how it works →</a>
+                 <a className="worker-card-cta" href="/invoice-operations">Run a sample invoice →</a>
               </div>
               <div className="worker-card building">
                 <div className="worker-tag">Building</div>
