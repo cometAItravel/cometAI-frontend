@@ -21,7 +21,6 @@ import UserProfile from "./pages/UserProfile";
 import SearchPage from "./pages/SearchPage";
 import LandingPage2 from "./pages/Landingpage2";
 import AlvrynHomePage from "./pages/AlvrynHomePage";
-import InvoiceOperationsPage from "./pages/InvoiceOperationsPage";
 import { Navigate } from "react-router-dom";
 import PlansPage from "./pages/PlansPage";
 
@@ -768,8 +767,6 @@ function App() {
     <Router>
       <Routes>
 <Route path="/"         element={<AlvrynHomePage />} />
-<Route path="/invoice-operations" element={<InvoiceOperationsPage />} />
-<Route path="/invoice-operations" element={<InvoiceOperationsPage />} />
 <Route path="/go"       element={<NoIndexPage><LandingPage2 /></NoIndexPage>} />
 <Route path="/go/search" element={<NoIndexPage><SearchPage /></NoIndexPage>} />
 <Route path="/go/ai"    element={<NoIndexPage><AIChatPage /></NoIndexPage>} />
