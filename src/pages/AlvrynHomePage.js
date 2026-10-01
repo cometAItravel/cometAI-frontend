@@ -893,7 +893,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const CONTACT_MAILTO = "mailto:hellothealvryn@gmail.com?subject=Alvryn%20Workforce%20%E2%80%94%20Invoice%20Operations&body=Hi%20Alvryn%20team%2C%0A%0AWe'd%20like%20to%20learn%20more%20about%20Invoice%20Operations.%0A%0ACompany%3A%0AApprox.%20invoices%2Fmonth%3A%0ACurrent%20process%3A%0A";
+  const CONTACT_MAILTO = "https://workforce.alvryn.in/early-access";
 
   // ══ MAINTENANCE RENDER — returns early, existing page return below is untouched ══
   if (maintenanceActive) {
@@ -1003,7 +1003,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
                 <div className="worker-tag">Active</div>
                 <h3>Invoice Operations</h3>
                 <p>Reads incoming invoices, matches them against purchase orders, checks suppliers and totals, and flags exceptions for approval — before anything is recorded.</p>
-                 <a className="worker-card-cta" href="https://workforce.alvryn.in">Run a sample invoice →</a>
+                <a className="worker-card-cta" href="/invoice-operations">Run a sample invoice →</a>
               </div>
               <div className="worker-card building">
                 <div className="worker-tag">Building</div>
