@@ -741,26 +741,60 @@ function TrainPanel() {
 // itself in search results. Reversible any time — delete this component (and
 // stop wrapping routes with it) to make Go/old pages indexable again; it does
 // not affect the pages' actual functionality at all.
-function NoIndexPage({ title, children }) {
+// GO_MAINTENANCE_ENABLED gates every /go/* and /old route behind a plain
+// maintenance screen, the same treatment Solace already has. This goes
+// further than noindex: it blocks real visitors too, not just search
+// engines. To bring Go back for actual visitors later, set this to false —
+// nothing else about Go's code changes, this is purely a gate in front of it.
+const GO_MAINTENANCE_ENABLED = true;
+const GO_BYPASS_SECRET = "alvryn2026access";
+
+function GoRoute({ title, children }) {
+  const [bypass, setBypass] = useState(
+    localStorage.getItem("alvryn_go_maint_bypass") === "true"
+  );
+
   useEffect(() => {
+    // Always set noindex + the correct title, whether or not maintenance is
+    // showing — so a stray crawl never shows the wrong title or lists the
+    // page, even for someone with the bypass link.
     const meta = document.createElement("meta");
     meta.name = "robots";
     meta.content = "noindex, follow";
     document.head.appendChild(meta);
-
-    // Every route sharing one static index.html means Go's pages otherwise
-    // inherit the homepage's title/description in search snippets (this is
-    // what caused /go/search to show "Alvryn Workforce..." in results even
-    // though the page itself is correct) — setting it explicitly per route
-    // fixes that without touching the shared index.html.
     const previousTitle = document.title;
     if (title) document.title = title;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("access") === GO_BYPASS_SECRET) {
+      localStorage.setItem("alvryn_go_maint_bypass", "true");
+      setBypass(true);
+    }
 
     return () => {
       document.head.removeChild(meta);
       document.title = previousTitle;
     };
   }, [title]);
+
+  if (GO_MAINTENANCE_ENABLED && !bypass) {
+    return (
+      <div style={{
+        position: "fixed", inset: 0, background: "#ffffff", color: "#0a0a0a",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        textAlign: "center", padding: 24, fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", opacity: 0.4, marginBottom: 24 }}>Alvryn Go</div>
+        <div style={{ fontWeight: 300, fontSize: "clamp(26px,5vw,44px)", lineHeight: 1.3, marginBottom: 16, maxWidth: 520 }}>
+          We're currently down for maintenance.
+        </div>
+        <p style={{ fontSize: 14, opacity: 0.5, maxWidth: 380, lineHeight: 1.6 }}>
+          Alvryn Go is temporarily unavailable while we work on something behind the scenes. Please check back soon.
+        </p>
+      </div>
+    );
+  }
+
   return children;
 }
 
@@ -777,15 +811,15 @@ function App() {
     <Router>
       <Routes>
 <Route path="/"         element={<AlvrynHomePage />} />
-<Route path="/go"       element={<NoIndexPage title="Alvryn Go — AI Travel Planning"><LandingPage2 /></NoIndexPage>} />
-<Route path="/go/search" element={<NoIndexPage title="Search Flights, Buses, Hotels & Trains — Alvryn Go"><SearchPage /></NoIndexPage>} />
-<Route path="/go/ai"    element={<NoIndexPage title="AI Chat — Alvryn Go"><AIChatPage /></NoIndexPage>} />
-<Route path="/go/login" element={<NoIndexPage title="Sign In — Alvryn Go"><Login /></NoIndexPage>} />
-<Route path="/go/register" element={<NoIndexPage title="Create Account — Alvryn Go"><Register /></NoIndexPage>} />
-<Route path="/go/profile" element={<NoIndexPage title="Your Profile — Alvryn Go"><UserProfile /></NoIndexPage>} />
-<Route path="/go/bookings" element={<NoIndexPage title="Your Bookings — Alvryn Go"><MyBookings /></NoIndexPage>} />
-<Route path="/old"      element={<NoIndexPage title="Alvryn"><LandingPage /></NoIndexPage>} />
-<Route path="/go/plans" element={<NoIndexPage title="Plans — Alvryn Go"><PlansPage /></NoIndexPage>} />
+<Route path="/go"       element={<GoRoute title="Alvryn Go — AI Travel Planning"><LandingPage2 /></GoRoute>} />
+<Route path="/go/search" element={<GoRoute title="Search Flights, Buses, Hotels & Trains — Alvryn Go"><SearchPage /></GoRoute>} />
+<Route path="/go/ai"    element={<GoRoute title="AI Chat — Alvryn Go"><AIChatPage /></GoRoute>} />
+<Route path="/go/login" element={<GoRoute title="Sign In — Alvryn Go"><Login /></GoRoute>} />
+<Route path="/go/register" element={<GoRoute title="Create Account — Alvryn Go"><Register /></GoRoute>} />
+<Route path="/go/profile" element={<GoRoute title="Your Profile — Alvryn Go"><UserProfile /></GoRoute>} />
+<Route path="/go/bookings" element={<GoRoute title="Your Bookings — Alvryn Go"><MyBookings /></GoRoute>} />
+<Route path="/old"      element={<GoRoute title="Alvryn"><LandingPage /></GoRoute>} />
+<Route path="/go/plans" element={<GoRoute title="Plans — Alvryn Go"><PlansPage /></GoRoute>} />
 
 <Route path="/ai"       element={<Navigate to="/go/ai"       replace />} />
 <Route path="/search"   element={<Navigate to="/go/search"   replace />} />
