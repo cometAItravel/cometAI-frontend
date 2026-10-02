@@ -741,16 +741,26 @@ function TrainPanel() {
 // itself in search results. Reversible any time — delete this component (and
 // stop wrapping routes with it) to make Go/old pages indexable again; it does
 // not affect the pages' actual functionality at all.
-function NoIndexPage({ children }) {
+function NoIndexPage({ title, children }) {
   useEffect(() => {
     const meta = document.createElement("meta");
     meta.name = "robots";
     meta.content = "noindex, follow";
     document.head.appendChild(meta);
+
+    // Every route sharing one static index.html means Go's pages otherwise
+    // inherit the homepage's title/description in search snippets (this is
+    // what caused /go/search to show "Alvryn Workforce..." in results even
+    // though the page itself is correct) — setting it explicitly per route
+    // fixes that without touching the shared index.html.
+    const previousTitle = document.title;
+    if (title) document.title = title;
+
     return () => {
       document.head.removeChild(meta);
+      document.title = previousTitle;
     };
-  }, []);
+  }, [title]);
   return children;
 }
 
@@ -767,15 +777,15 @@ function App() {
     <Router>
       <Routes>
 <Route path="/"         element={<AlvrynHomePage />} />
-<Route path="/go"       element={<NoIndexPage><LandingPage2 /></NoIndexPage>} />
-<Route path="/go/search" element={<NoIndexPage><SearchPage /></NoIndexPage>} />
-<Route path="/go/ai"    element={<NoIndexPage><AIChatPage /></NoIndexPage>} />
-<Route path="/go/login" element={<NoIndexPage><Login /></NoIndexPage>} />
-<Route path="/go/register" element={<NoIndexPage><Register /></NoIndexPage>} />
-<Route path="/go/profile" element={<NoIndexPage><UserProfile /></NoIndexPage>} />
-<Route path="/go/bookings" element={<NoIndexPage><MyBookings /></NoIndexPage>} />
-<Route path="/old"      element={<NoIndexPage><LandingPage /></NoIndexPage>} />
-<Route path="/go/plans" element={<NoIndexPage><PlansPage /></NoIndexPage>} />
+<Route path="/go"       element={<NoIndexPage title="Alvryn Go — AI Travel Planning"><LandingPage2 /></NoIndexPage>} />
+<Route path="/go/search" element={<NoIndexPage title="Search Flights, Buses, Hotels & Trains — Alvryn Go"><SearchPage /></NoIndexPage>} />
+<Route path="/go/ai"    element={<NoIndexPage title="AI Chat — Alvryn Go"><AIChatPage /></NoIndexPage>} />
+<Route path="/go/login" element={<NoIndexPage title="Sign In — Alvryn Go"><Login /></NoIndexPage>} />
+<Route path="/go/register" element={<NoIndexPage title="Create Account — Alvryn Go"><Register /></NoIndexPage>} />
+<Route path="/go/profile" element={<NoIndexPage title="Your Profile — Alvryn Go"><UserProfile /></NoIndexPage>} />
+<Route path="/go/bookings" element={<NoIndexPage title="Your Bookings — Alvryn Go"><MyBookings /></NoIndexPage>} />
+<Route path="/old"      element={<NoIndexPage title="Alvryn"><LandingPage /></NoIndexPage>} />
+<Route path="/go/plans" element={<NoIndexPage title="Plans — Alvryn Go"><PlansPage /></NoIndexPage>} />
 
 <Route path="/ai"       element={<Navigate to="/go/ai"       replace />} />
 <Route path="/search"   element={<Navigate to="/go/search"   replace />} />
@@ -783,6 +793,11 @@ function App() {
 <Route path="/register" element={<Navigate to="/go/register" replace />} />
 <Route path="/profile"  element={<Navigate to="/go/profile"  replace />} />
 <Route path="/bookings" element={<Navigate to="/go/bookings" replace />} />
+
+{/* Safety net: any unmatched or stale URL (e.g. the old /solace link that
+    used to live on this app before it moved to solace.alvryn.in) redirects
+    home instead of rendering a blank page. Always keep this last. */}
+<Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
