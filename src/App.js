@@ -21,6 +21,9 @@ import UserProfile from "./pages/UserProfile";
 import SearchPage from "./pages/SearchPage";
 import LandingPage2 from "./pages/Landingpage2";
 import AlvrynHomePage from "./pages/AlvrynHomePage";
+import ProductPage from "./ProductExperience";
+import { ApplicationPrivacy, ACCESS_STYLES } from "./EarlyAccessExperience";
+import { ProductNavigation, ProductFooter, PRODUCT_STYLES } from "./ProductExperience";
 import { Navigate } from "react-router-dom";
 import PlansPage from "./pages/PlansPage";
 
@@ -811,7 +814,14 @@ function App() {
     <Router>
       <Routes>
 <Route path="/"         element={<AlvrynHomePage />} />
-<Route path="/early-access" element={<AlvrynHomePage />} />
+<Route path="/workforce" element={<ProductPage page="workforce" endpoint="https://alvryn-workforce-backend.onrender.com/early-access" />} />
+<Route path="/how-it-works" element={<ProductPage page="how-it-works" endpoint="https://alvryn-workforce-backend.onrender.com/early-access" />} />
+<Route path="/models" element={<ProductPage page="models" endpoint="https://alvryn-workforce-backend.onrender.com/early-access" />} />
+<Route path="/company" element={<ProductPage page="company" endpoint="https://alvryn-workforce-backend.onrender.com/early-access" />} />
+<Route path="/trial" element={<ProductPage page="trial" endpoint="https://alvryn-workforce-backend.onrender.com/early-access" />} />
+<Route path="/early-access" element={<ProductPage page="early-access" endpoint="https://alvryn-workforce-backend.onrender.com/early-access" />} />
+<Route path="/demo" element={<Navigate to="/trial" replace />} />
+<Route path="/privacy" element={<><style>{ACCESS_STYLES + PRODUCT_STYLES}</style><ProductNavigation /><main className="access-site access-detail"><h1>Application privacy</h1><ApplicationPrivacy /></main><ProductFooter /></>} />
 <Route path="/go"       element={<GoRoute title="Alvryn Go — AI Travel Planning"><LandingPage2 /></GoRoute>} />
 <Route path="/go/search" element={<GoRoute title="Search Flights, Buses, Hotels & Trains — Alvryn Go"><SearchPage /></GoRoute>} />
 <Route path="/go/ai"    element={<GoRoute title="AI Chat — Alvryn Go"><AIChatPage /></GoRoute>} />
