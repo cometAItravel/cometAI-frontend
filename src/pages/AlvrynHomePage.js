@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars, react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
-import { LandingOverview } from "../EarlyAccessExperience";
+import { ProductLanding } from "../ProductExperience";
 
 /* ─── CSS ─────────────────────────────────────────────────────────────────── */
 const CSS = `
@@ -9,7 +9,7 @@ const CSS = `
 :root{
   --ink:#0a0a0a;
   --paper:#ffffff;
-  --blue:#5B6EE8;
+  --blue:#292826;
   --blue-dim: rgba(91,110,232,0.10);
   --blue-line: rgba(91,110,232,0.32);
   --amber:#D9743C;
@@ -384,7 +384,7 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
   color:rgba(10,10,10,0.6); white-space:pre-line;
 }
 
-#content footer{background:#263d32}
+#content footer{background:#292826}
 .access-site .scroll-cue{margin-top:20px;height:28px}
 
 /* ══ RESPONSIVE — tablet ══ */
@@ -895,7 +895,7 @@ Do not send confidential financial records, passwords or bank details with your 
     const content = document.getElementById('content');
     const observer = new MutationObserver(() => {
       if (content.classList.contains('in')) {
-        document.getElementById('company-application')?.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('initial-access')?.scrollIntoView({ behavior: 'smooth' });
         observer.disconnect();
       }
     });
@@ -984,7 +984,7 @@ Do not send confidential financial records, passwords or bank details with your 
 
       <div id="content">
 
-        <LandingOverview endpoint="https://alvryn-workforce-backend.onrender.com/early-access" showScrollCue />
+        <ProductLanding intro />
 
         <footer>
           <div className="footer-inner">
@@ -992,7 +992,10 @@ Do not send confidential financial records, passwords or bank details with your 
             <div className="footer-cols">
               <div className="footer-col">
                 <div className="head">WORKFORCE</div>
-                <button onClick={() => scrollToId('products')}>Invoice processing & discrepancy review</button>
+                <a href="/workforce">Invoice processing & discrepancy review</a>
+                <a href="/trial">Trial run</a>
+                <a href="/how-it-works">How it works</a>
+                <a href="/models">Upcoming models</a>
               </div>
               <div className="footer-col">
                 <div className="head">COMPANY</div>
