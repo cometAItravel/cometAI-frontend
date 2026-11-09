@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars, react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
+import { LandingOverview } from "../EarlyAccessExperience";
 
 /* ─── CSS ─────────────────────────────────────────────────────────────────── */
 const CSS = `
@@ -383,6 +384,9 @@ footer{ background:var(--ink); color:#ffffff; padding:90px 6% 46px; }
   color:rgba(10,10,10,0.6); white-space:pre-line;
 }
 
+#content footer{background:#263d32}
+.access-site .scroll-cue{margin-top:20px;height:28px}
+
 /* ══ RESPONSIVE — tablet ══ */
 @media(max-width:860px){
   .workers-section{ padding:90px 6%; }
@@ -451,45 +455,37 @@ export default function AlvrynHomePage() {
   const maintenanceActive = MAINTENANCE_ENABLED && !maintBypass;
   // ══ END MAINTENANCE STATE ══
 
-  const ABOUT = `Alvryn is a technology company building digital workers for business operations.
+  const ABOUT = `Alvryn builds software for business operations, beginning with supplier invoice processing and financial discrepancy review.
 
-We don't build tools people have to operate all day. We build software that takes over the process itself — reading documents, checking them against the rules that matter, and only bringing in a person when a real decision needs to be made.
+Alvryn Workforce brings invoice checks, related purchasing records and supporting evidence together for finance teams to review. The proposed initial scope focuses on purchase-order-backed invoices for physical goods.
 
-Our first worker handles invoice and accounts payable operations: reading incoming invoices, matching them against purchase orders, flagging anything that doesn't line up, and routing exceptions to the right person — instead of a team doing that by hand every day.
+Private Early Access applications are assessed for operational fit. Supported capabilities, programme availability and participation conditions are confirmed before acceptance. Your team retains financial decisions.`;
 
-Alvryn was founded on the belief that repetitive back-office work is exactly the kind of work software should be doing, with people making the decisions that actually require judgment. We move deliberately — starting with one process done extremely well, rather than a long list of half-built features.
+  const PRIVACY = `Alvryn collects company, contact and workflow details entered in early-access applications, with the submission time and consent record. These details are used to assess fit and contact you about your application, not to enrol you in unrelated marketing. We do not sell application details or share them with advertisers.
 
-We are a small team with a long-term vision: one company, one platform, and over time, many digital workers.`;
+The website is hosted on Vercel. The application intake server and database use Render and Neon. Google Fonts receives a browser request when fonts load.
 
-  const PRIVACY = `Alvryn is committed to handling your information and your business data with the same care we put into every product we build. We collect only what is necessary to provide and improve our services. We do not sell your data, we do not share it with advertisers, and we do not use it to build profiles for third parties.
+Application records are retained while needed for assessment and related contact, subject to applicable retention requirements and backup expiry. You can request access, correction, withdrawal or deletion at hellothealvryn@gmail.com. Do not enter invoices, bank details, passwords or sensitive financial records in the application.
 
-Documents and data submitted for processing — such as invoices, purchase orders, or related business records — are used solely to perform the workflow you've asked Alvryn to handle. They are stored securely and are never used to train models without your explicit consent.
+Product document processing is separate from applying. Before company documents are submitted, the supported workflows, extraction providers, storage, retention and deletion conditions must be specified. The Workforce privacy notice provides further information about its document-processing workflow.`;
 
-You may request access to your data or request its permanent deletion at any time by contacting us at hellothealvryn@gmail.com. We will respond within 30 days. All data in transit and at rest is protected using industry-standard encryption.
+  const TERMS = `Applications are expressions of interest. Applying does not create a workspace account, reserve access, guarantee selection, or create a payment obligation.
 
-We use functional cookies only — for session management and basic analytics that help us understand how to improve our products. We do not use third-party advertising cookies.
+Selection depends on operational fit, supported workflows and onboarding capacity. Qualification alone does not guarantee an invitation. Launch timing, supported capabilities, programme scope and availability may change; the website describes the proposed initial scope.
 
-This policy applies to all products under the Alvryn umbrella. We will notify you of any material changes via email or in-product notice before they take effect.`;
+Any invitation identifies the supported capabilities, requirements and participation terms for review before you decide whether to proceed. Material changes affecting participation are identified before acceptance. Applicants can withdraw their request.
 
-  const TERMS = `By accessing or using any Alvryn product, you agree to these terms. If you do not agree, please do not use our services.
+Checks depend on readable documents, confirmed reference records and configured rules. Results can be incomplete or inaccurate and may require verification. A discrepancy is a finding to investigate, not proof of loss, fraud or an incorrect payment. A passed check is not approval or a guarantee of overall invoice accuracy.
 
-Alvryn products are designed for legitimate business use. You may not use our products to engage in illegal activity, harm others, or attempt to reverse-engineer or disrupt our systems.
+The initial focus is PO-backed supplier invoices for physical goods. Alvryn does not make payments, post to an ERP, or replace financial decisions. Universal tax compliance, service and non-PO workflows, advance billing, and automatic discrepancy resolution are outside the proposed initial scope.
 
-Alvryn Workforce provides software that assists with business operations, including document processing and workflow automation. It is designed to reduce manual work, not to replace human judgment. Any output — including matches, mismatches, or recommended actions — should be reviewed by an authorized person before being acted on, particularly where payments, approvals, or legal obligations are involved.
+These website conditions describe the application programme. Any product participation requires review and acceptance of its own scope and terms.`;
 
-Content generated or extracted by Alvryn's automated systems may occasionally be inaccurate or incomplete. Always verify important information independently before relying on it. We continuously work to improve accuracy and reliability.
+  const CONTACT = `Company enquiries, application updates and privacy requests: hellothealvryn@gmail.com
 
-These terms are governed by Indian law. Any disputes shall be resolved under the jurisdiction of Indian courts. We reserve the right to update these terms with reasonable notice.`;
+For early access, use the short company application on this page. Applying does not create a workspace account or guarantee selection or access.
 
-  const CONTACT = `We read every message. Response times are typically within 48 hours.
-
-General enquiries and privacy questions: hellothealvryn@gmail.com
-
-If you're a business dealing with meaningful invoice or document volume and want to explore Alvryn Workforce early, tell us a little about your current process when you write in — it helps us understand if and how we can help.
-
-We don't have a support phone line. Email is the fastest way to reach us, and it gives us a record of your issue so we can solve it properly.
-
-If you're a journalist, researcher or potential partner, include a brief description of who you are and what you're looking for. We'll get back to you.`;
+Do not send confidential financial records, passwords or bank details with your initial enquiry.`;
 
   const MODAL_CONTENT = {
     about: { title: "About Alvryn", body: ABOUT },
@@ -513,7 +509,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
   }
 
   useEffect(() => {
-    document.title = "Alvryn Workforce — Digital Workers for Business Operations";
+    document.title = "Alvryn Workforce | Invoice processing & financial discrepancy review";
   }, []);
 
   useEffect(() => {
@@ -893,7 +889,20 @@ If you're a journalist, researcher or potential partner, include a brief descrip
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const CONTACT_MAILTO = "https://workforce.alvryn.in/early-access";
+  // A direct application link opens the form after the unchanged introduction.
+  useEffect(() => {
+    if (maintenanceActive || (window.location.pathname !== '/early-access' && !['#initial-access', '#company-application'].includes(window.location.hash))) return;
+    const content = document.getElementById('content');
+    const observer = new MutationObserver(() => {
+      if (content.classList.contains('in')) {
+        document.getElementById('company-application')?.scrollIntoView({ behavior: 'smooth' });
+        observer.disconnect();
+      }
+    });
+    if (content) observer.observe(content, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, [maintenanceActive]);
+
 
   // ══ MAINTENANCE RENDER — returns early, existing page return below is untouched ══
   if (maintenanceActive) {
@@ -955,10 +964,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
         <button onClick={() => scrollToId('top')}>Home</button>
         <button onClick={() => scrollToId('products')}>Workforce</button>
         <button onClick={() => scrollToId('about')}>About</button>
-        <button onClick={() => scrollToId('vision')}>Vision</button>
-        <button aria-label="Search">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </button>
+        <button onClick={() => scrollToId('initial-access')}>Initial access</button>
       </div>
 
       <div id="nav-trigger"></div>
@@ -970,10 +976,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
         <div className="nav-spacer"></div>
         <div className="nav-group">
           <button onClick={() => scrollToId('about')}>About</button>
-          <button onClick={() => scrollToId('vision')}>Vision</button>
-          <button aria-label="Search">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </button>
+          <button onClick={() => scrollToId('initial-access')}>Initial access</button>
         </div>
       </div>
 
@@ -981,103 +984,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
 
       <div id="content">
 
-        <section className="thesis">
-          <h1>Software that does the work.<span className="sub">Not just tracks it.</span></h1>
-          <div className="scroll-cue" id="scroll-cue"><div className="drip"></div></div>
-        </section>
-
-        <div className="motion-strip">
-          <div className="motion-track" id="motion-track"></div>
-        </div>
-
-        <section className="workers-section" id="products">
-          <div className="workers-inner">
-            <div className="workers-head">
-              <div className="label">Alvryn Workforce</div>
-              <h2>Digital workers for business operations.</h2>
-              <p>Each worker takes over one repetitive process end-to-end — reading, checking, and flagging what actually needs a person.</p>
-            </div>
-
-            <div className="worker-grid">
-              <div className="worker-card active">
-                <div className="worker-tag">Active</div>
-                <h3>Invoice Operations</h3>
-                <p>Reads incoming invoices, matches them against purchase orders, checks suppliers and totals, and flags exceptions for approval — before anything is recorded.</p>
-                <a className="worker-card-cta" href="https://workforce.alvryn.in/demo">Run a sample invoice →</a>
-              </div>
-              <div className="worker-card building">
-                <div className="worker-tag">Building</div>
-                <h3>Procurement Operations</h3>
-                <p>Purchase order creation, supplier communication and approval routing.</p>
-              </div>
-              <div className="worker-card building">
-                <div className="worker-tag">Building</div>
-                <h3>HR Onboarding</h3>
-                <p>Document collection, verification and onboarding workflows for new hires.</p>
-              </div>
-              <div className="worker-card building">
-                <div className="worker-tag">Building</div>
-                <h3>Logistics Operations</h3>
-                <p>Shipping documents, delivery confirmations and reconciliation.</p>
-              </div>
-            </div>
-
-            <div className="how-it-works" id="how-it-works">
-              <span className="step">Invoice received</span><span className="arrow">→</span>
-              <span className="step">Data extracted</span><span className="arrow">→</span>
-              <span className="step">Matched to PO</span><span className="arrow">→</span>
-              <span className="step">Exceptions flagged</span><span className="arrow">→</span>
-              <span className="step">Human approves</span><span className="arrow">→</span>
-              <span className="step">Recorded</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="philosophy" id="about">
-          <svg className="philosophy-net" viewBox="0 0 1200 500" preserveAspectRatio="xMidYMid slice">
-            <circle cx="180" cy="120" r="2" fill="#5B6EE8"/><circle cx="380" cy="80" r="2" fill="#ffffff" opacity="0.4"/>
-            <circle cx="600" cy="180" r="2" fill="#D9743C"/><circle cx="850" cy="100" r="2" fill="#ffffff" opacity="0.3"/>
-            <circle cx="1020" cy="220" r="2" fill="#5B6EE8"/><circle cx="250" cy="380" r="2" fill="#ffffff" opacity="0.3"/>
-            <circle cx="700" cy="400" r="2" fill="#D9743C"/><circle cx="950" cy="360" r="2" fill="#ffffff" opacity="0.4"/>
-            <line x1="180" y1="120" x2="380" y2="80" stroke="#ffffff" strokeWidth="0.5" opacity="0.12"/>
-            <line x1="380" y1="80" x2="600" y2="180" stroke="#ffffff" strokeWidth="0.5" opacity="0.12"/>
-            <line x1="600" y1="180" x2="850" y2="100" stroke="#ffffff" strokeWidth="0.5" opacity="0.12"/>
-            <line x1="850" y1="100" x2="1020" y2="220" stroke="#ffffff" strokeWidth="0.5" opacity="0.12"/>
-            <line x1="250" y1="380" x2="700" y2="400" stroke="#ffffff" strokeWidth="0.5" opacity="0.1"/>
-            <line x1="700" y1="400" x2="950" y2="360" stroke="#ffffff" strokeWidth="0.5" opacity="0.1"/>
-          </svg>
-          <p>The work still gets done.<br/>You just <span className="tint">stop having to do it yourself</span>.</p>
-        </section>
-
-        <section className="vision" id="vision">
-          <svg className="vision-horizon" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMax slice">
-            <defs>
-              <radialGradient id="sunGlow" cx="50%" cy="100%" r="70%">
-                <stop offset="0%" stopColor="#5B6EE8" stopOpacity="0.16"/>
-                <stop offset="100%" stopColor="#D9743C" stopOpacity="0"/>
-              </radialGradient>
-            </defs>
-            <rect x="0" y="0" width="1200" height="260" fill="url(#sunGlow)"/>
-            <line x1="0" y1="220" x2="1200" y2="220" stroke="#0a0a0a" strokeWidth="1" opacity="0.1"/>
-          </svg>
-          <h2>Every business we work with starts the same way:<br/>one process too repetitive for a person, too important to get wrong.</h2>
-        </section>
-
-        <div className="closing">
-          <p>One rule guides everything we build:<br/>never automate a decision without a human able to see it.</p>
-        </div>
-
-        <section className="get-in-touch" id="contact">
-          <div className="get-in-touch-inner">
-            <div className="eyebrow">Currently onboarding</div>
-            <h2>We're working with a small number of companies right now.</h2>
-            <p>If invoice processing is quietly costing your team hours every week, we'd like to hear about it — and show you what we're building.</p>
-            <a className="get-in-touch-btn" href={CONTACT_MAILTO}>
-              Get in touch
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </a>
-          </div>
-        </section>
+        <LandingOverview endpoint="https://alvryn-workforce-backend.onrender.com/early-access" showScrollCue />
 
         <footer>
           <div className="footer-inner">
@@ -1085,10 +992,7 @@ If you're a journalist, researcher or potential partner, include a brief descrip
             <div className="footer-cols">
               <div className="footer-col">
                 <div className="head">WORKFORCE</div>
-                <button onClick={() => scrollToId('products')}>Invoice Operations — Active</button>
-                <span className="static-item">Procurement — Building</span>
-                <span className="static-item">HR Onboarding — Building</span>
-                <span className="static-item">Logistics — Building</span>
+                <button onClick={() => scrollToId('products')}>Invoice processing & discrepancy review</button>
               </div>
               <div className="footer-col">
                 <div className="head">COMPANY</div>

@@ -811,6 +811,7 @@ function App() {
     <Router>
       <Routes>
 <Route path="/"         element={<AlvrynHomePage />} />
+<Route path="/early-access" element={<AlvrynHomePage />} />
 <Route path="/go"       element={<GoRoute title="Alvryn Go — AI Travel Planning"><LandingPage2 /></GoRoute>} />
 <Route path="/go/search" element={<GoRoute title="Search Flights, Buses, Hotels & Trains — Alvryn Go"><SearchPage /></GoRoute>} />
 <Route path="/go/ai"    element={<GoRoute title="AI Chat — Alvryn Go"><AIChatPage /></GoRoute>} />
