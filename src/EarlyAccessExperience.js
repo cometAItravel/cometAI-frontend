@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { submitEarlyAccess } from './api/earlyAccess.js';
+import { COMPANY_EMAIL, COMPANY_GMAIL_URL } from './companyContact.js';
 
 export const ACCESS_STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap');
@@ -75,7 +76,7 @@ export function ApplicationPrivacy() {
     <summary>Application Privacy Notice</summary>
     <p>Alvryn collects the company, contact and workflow details entered in this form, along with the submission time and consent record. They are used to assess fit and contact you about this application. Applying does not enrol you in unrelated marketing.</p>
     <p>The website is hosted on Vercel; the intake server and application database use Render and Neon. These providers process application details to operate the service. Google Fonts receives a browser request when fonts load. Application details are not sold or shared with advertisers.</p>
-    <p>Application records are retained while needed for assessment and related contact, subject to applicable retention requirements and backup expiry. You can request access, correction, withdrawal or deletion at <a href="mailto:hellothealvryn@gmail.com">hellothealvryn@gmail.com</a>. Do not submit invoices, bank details, passwords or other sensitive financial records in this form.</p>
+    <p>Application records are retained while needed for assessment and related contact, subject to applicable retention requirements and backup expiry. You can request access, correction, withdrawal or deletion at <a href={COMPANY_GMAIL_URL} target="_blank" rel="noopener noreferrer" title="Compose an email to Alvryn in Gmail">{COMPANY_EMAIL}</a>. Do not submit invoices, bank details, passwords or other sensitive financial records in this form.</p>
     <p>Product data processing, extraction providers, storage, retention and deletion conditions are separate from this application and must be specified before company documents are submitted.</p>
   </details>;
 }

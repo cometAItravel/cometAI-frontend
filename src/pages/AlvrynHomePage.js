@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars, react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import { ProductLanding } from "../ProductExperience";
+import { COMPANY_EMAIL, COMPANY_GMAIL_URL } from "../companyContact.js";
 
 /* ─── CSS ─────────────────────────────────────────────────────────────────── */
 const CSS = `
@@ -502,7 +503,7 @@ Do not send confidential financial records, passwords or bank details with your 
           <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
           <div className="modal-label">ALVRYN</div>
           <h2>{title}</h2>
-          <div className="modal-body">{body}</div>
+          <div className="modal-body">{body.split(COMPANY_EMAIL).map((part, index) => <React.Fragment key={index}>{index > 0 && <a href={COMPANY_GMAIL_URL} target="_blank" rel="noopener noreferrer" title="Compose an email to Alvryn in Gmail">{COMPANY_EMAIL}</a>}{part}</React.Fragment>)}</div>
         </div>
       </div>
     );
@@ -1002,11 +1003,11 @@ Do not send confidential financial records, passwords or bank details with your 
                 <button onClick={() => setModal('about')}>About</button>
                 <button onClick={() => setModal('privacy')}>Privacy Policy</button>
                 <button onClick={() => setModal('terms')}>Terms of Use</button>
-                <button onClick={() => setModal('contact')}>Contact</button>
+                <a href={COMPANY_GMAIL_URL} target="_blank" rel="noopener noreferrer" title="Compose an email to Alvryn in Gmail">Contact ↗</a>
               </div>
               <div className="footer-col">
                 <div className="head">GET IN TOUCH</div>
-                <a href="mailto:hellothealvryn@gmail.com">hellothealvryn@gmail.com</a>
+                <a href={COMPANY_GMAIL_URL} target="_blank" rel="noopener noreferrer" title="Compose an email to Alvryn in Gmail">{COMPANY_EMAIL}</a>
               </div>
             </div>
             <div className="footer-bottom">
